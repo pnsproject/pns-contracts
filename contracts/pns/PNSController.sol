@@ -19,6 +19,13 @@ import "./IResolver.sol";
 
 contract Controller is IController, Context, ManagerOwnable, ERC165 {
 
+    struct Record {
+        uint256 origin;
+        uint64 expire;
+        uint64 capacity;
+        uint64 children;
+    }
+
     AggregatorV3Interface public priceFeed;
 
     using SafeMath for *;
@@ -56,16 +63,28 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
             super.supportsInterface(interfaceId);
     }
 
-    function nameRecord(uint256 tokenId) public override view returns(Record memory) {
-        return records[tokenId];
-    }
-
     function nameExpired(uint256 tokenId) public view returns(bool) {
         return records[records[tokenId].origin].expire + GRACE_PERIOD < block.timestamp;
     }
 
     function available(uint256 tokenId) public override view returns(bool) {
         return records[tokenId].origin == 0;
+    }
+
+    function expire(uint256 tokenId) public override view returns(uint256) {
+        return uint256(records[tokenId].expire);
+    }
+
+    function capacity(uint256 tokenId) public override view returns(uint256) {
+        return uint256(records[tokenId].capacity);
+    }
+
+    function children(uint256 tokenId) public override view returns(uint256) {
+        return uint256(records[tokenId].children);
+    }
+
+    function origin(uint256 tokenId) public override view returns(uint256) {
+        return records[tokenId].origin;
     }
 
     // register
@@ -131,11 +150,11 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
     function nameRegisterByManager(string calldata name, address to, uint256 duration) public override live onlyManager returns(uint256) {
         uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
         require(available(tokenId), "tokenId not available");
-        uint256 expire = block.timestamp + duration;
-        records[tokenId].expire = uint64(expire);
+        uint256 exp = block.timestamp + duration;
+        records[tokenId].expire = uint64(exp);
         records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
         records[tokenId].origin = tokenId;
-        emit NameRegistered(to, tokenId, 0, expire, name);
+        emit NameRegistered(to, tokenId, 0, exp, name);
 
         return tokenId;
     }
@@ -148,8 +167,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
         require(available(tokenId), "tokenId not available");
 
-        uint256 expire = block.timestamp + duration;
-        records[tokenId].expire = uint64(expire);
+        uint256 expr = block.timestamp + duration;
+        records[tokenId].expire = uint64(expr);
         records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
         records[tokenId].origin = tokenId;
 
@@ -157,7 +176,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         require(duration >= MIN_REGISTRATION_DURATION, "duration too small");
         require(msg.value >= cost, "insufficient fee");
 
-        emit NameRegistered(to, tokenId, cost, expire, name);
+        emit NameRegistered(to, tokenId, cost, expr, name);
 
         payable(_root).transfer(cost);
         if(msg.value > cost) {
@@ -223,12 +242,12 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
         require(available(tokenId), "tokenId not available");
 
-        uint256 expire = block.timestamp + duration;
-        records[tokenId].expire = uint64(expire);
+        uint256 exp = block.timestamp + duration;
+        records[tokenId].expire = uint64(exp);
         records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
         records[tokenId].origin = tokenId;
 
-        emit NameRegistered(to, tokenId, 0, expire, name);
+        emit NameRegistered(to, tokenId, 0, exp, name);
 
         return tokenId;
     }

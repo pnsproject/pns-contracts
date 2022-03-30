@@ -42,15 +42,23 @@ describe("PNS", async function () {
     }
 
     async function getExpire(tokenId: any) {
-      return (await controller.nameRecord(tokenId)).expire;
+      return controller.expire(tokenId);
     }
 
-    async function checkNameData(tokenId: string, origin: any, expire: Number, capacity: Number, children: Number) {
-      let nameRecord = await controller.nameRecord(tokenId);
-      expect(nameRecord.origin).to.eq(origin);
-      expect(nameRecord.expire).to.eq(expire);
-      expect(nameRecord.capacity).to.eq(capacity);
-      expect(nameRecord.children).to.eq(children);
+    async function checkNameRecord(tokenId: string, origin: any, expire: Number, capacity: Number, children: Number) {
+      expect(await controller.origin(tokenId)).to.eq(origin);
+      expect(await controller.expire(tokenId)).to.eq(expire);
+      expect(await controller.capacity(tokenId)).to.eq(capacity);
+      expect(await controller.children(tokenId)).to.eq(children);
+    }
+
+    async function getNameRecord(tokenId: string, ctlr_opt?: any) {
+      let ctlr = ctlr_opt || controller
+      let origin = await controller.origin(tokenId);
+      let expire = await controller.expire(tokenId);
+      let capacity = await controller.capacity(tokenId);
+      let children = await controller.children(tokenId);
+      return {origin, expire, capacity, children}
     }
 
     beforeEach(async () => {
@@ -398,8 +406,7 @@ describe("PNS", async function () {
         let beforeRootBalance = await ethers.provider.getBalance(oneAddr);
         let beforeUserBalance = await ethers.provider.getBalance(twoAddr);
 
-        expire = (await controller.nameRecord(tokenId)).expire;
-
+        expire = await controller.expire(tokenId);
         fee = (await controller.renewPrice("gavinwood100", 86400)).toString();
         tx = await controller.connect(two).renew("gavinwood100", 86400, {
           value: fee,
@@ -434,11 +441,11 @@ describe("PNS", async function () {
       it("should renew an existing domain name by manager", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        expire = (await controller.nameRecord(tokenId)).expire;
+        expire = await controller.expire(tokenId);
 
         await controller.renewByManager("gavinwood100", 86400 * 100);
 
-        newExpire = (await controller.nameRecord(tokenId)).expire;
+        newExpire = await controller.expire(tokenId);;
         expect(newExpire.sub(expire)).to.eq(86400 * 100);
       });
     });
@@ -477,10 +484,9 @@ describe("PNS", async function () {
       it("should register a new domain name with metadata", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        nameRecord = await controller.nameRecord(tokenId);
-        expect(nameRecord.capacity).to.eq(20);
-        expect(nameRecord.children).to.eq(0);
-        expect(nameRecord.origin).to.eq(tokenId);
+        expect(await controller.capacity(tokenId)).to.eq(20);
+        expect(await controller.children(tokenId)).to.eq(0);
+        expect(await controller.origin(tokenId)).to.eq(tokenId);
         expect(await controller.available(tokenId)).to.eq(false);
       });
 
@@ -497,33 +503,31 @@ describe("PNS", async function () {
         expect(await pns.ownerOf(subTokenId)).to.eq(threeAddr);
         expect(await pns.ownerOf(subSubTokenId)).to.eq(threeAddr);
 
-        nameRecord = await controller.nameRecord(tokenId);
+        expire = await controller.expire(tokenId);
 
-        expire = nameRecord.expire;
-
-        await checkNameData(tokenId, tokenId, ts, 20, 2);
+        await checkNameRecord(tokenId, tokenId, ts, 20, 2);
         expect(await controller.available(tokenId)).to.eq(false);
 
-        await checkNameData(subTokenId, tokenId, 0, 0, 0);
+        await checkNameRecord(subTokenId, tokenId, 0, 0, 0);
         expect(await controller.nameExpired(subTokenId)).to.eq(false);
         expect(await pns.exists(subTokenId)).to.eq(true);
 
         // after subTokenId burn
         await controller.connect(three).burn(subTokenId);
         await expect(controller.connect(two).burn(tokenId)).revertedWith(revert`subdomains not cleared`);
-        await checkNameData(tokenId, tokenId, ts, 20, 1);
-        await checkNameData(subTokenId, 0, 0, 0, 0);
+        await checkNameRecord(tokenId, tokenId, ts, 20, 1);
+        await checkNameRecord(subTokenId, 0, 0, 0, 0);
 
         expect(await controller.nameExpired(subTokenId)).to.eq(true);
         expect(await controller.available(subTokenId)).to.eq(true);
 
-        await checkNameData(subSubTokenId, tokenId, 0, 0, 0);
+        await checkNameRecord(subSubTokenId, tokenId, 0, 0, 0);
         expect(await controller.available(subSubTokenId)).to.eq(false);
 
         await controller.connect(three).burn(subSubTokenId);
         await controller.connect(two).burn(tokenId);
 
-        await checkNameData(subSubTokenId, 0, 0, 0, 0);
+        await checkNameRecord(subSubTokenId, 0, 0, 0, 0);
       });
     });
 
@@ -531,14 +535,14 @@ describe("PNS", async function () {
       it("should expire after registration period", async () => {
         await registerName();
 
-        expiresAt = (await controller.nameRecord(tokenId)).expire;
+        expire = await controller.expire(tokenId);
 
-        await ethers.provider.send("evm_setNextBlockTimestamp", [expiresAt.toNumber() + 86400 * 360]);
+        await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 360]);
         await ethers.provider.send("evm_mine", []);
 
         expect(await controller.nameExpired(tokenId)).to.eq(false);
 
-        await ethers.provider.send("evm_setNextBlockTimestamp", [expiresAt.toNumber() + 86400 * 365 + 100]);
+        await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 365 + 100]);
         await ethers.provider.send("evm_mine", []);
 
         expect(await controller.nameExpired(tokenId)).to.eq(true);
@@ -546,36 +550,30 @@ describe("PNS", async function () {
     });
 
     describe("PNSController#setCapacity", async () => {
-      async function getCapacity(tokenId: string) {
-        return (await controller.nameRecord(tokenId)).capacity;
-      }
-      async function getChildren(tokenId: string) {
-        return (await controller.nameRecord(tokenId)).children;
-      }
-
+      
       beforeEach(async () => {
         await registerName("gavinwood100", twoAddr);
       });
 
       it("should be able to set capacity by manager", async () => {
-        expect(await getCapacity(tokenId)).to.eq(20);
+        expect(await controller.capacity(tokenId)).to.eq(20);
         await controller.connect(one).setCapacityByManager(tokenId, 40);
-        expect(await getCapacity(tokenId)).to.eq(40);
+        expect(await controller.capacity(tokenId)).to.eq(40);
         await controller.connect(one).setCapacityByManager(tokenId, 10);
-        expect(await getCapacity(tokenId)).to.eq(10);
+        expect(await controller.capacity(tokenId)).to.eq(10);
       });
 
       it("should be able to set capacity with fee", async () => {
-        expect(await getCapacity(tokenId)).to.eq(20);
+        expect(await controller.capacity(tokenId)).to.eq(20);
         await expect(controller.connect(one).setCapacity(tokenId, 40)).revertedWith(`insufficient fee`);
         let capfee = await controller.getCapacityPrice(20);
         await controller.connect(one).setCapacity(tokenId, 40, { value: capfee });
-        expect(await getCapacity(tokenId)).to.eq(40);
+        expect(await controller.capacity(tokenId)).to.eq(40);
       });
 
       it("should not mint subdomains excceed capacity", async () => {
         await controller.connect(one).setCapacityByManager(tokenId, 3);
-        expect(await getCapacity(tokenId)).to.eq(3);
+        expect(await controller.capacity(tokenId)).to.eq(3);
         await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
         await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub1");
         await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub2");
@@ -740,7 +738,11 @@ describe("PNS", async function () {
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);
 
-        checkNameData(tokenId, tokenId, 1677200000, 20, 0);
+        expect(await controller.origin(tokenId)).to.eq(tokenId);
+        expect(await controller.expire(tokenId)).to.eq(1677200000);
+        expect(await controller.capacity(tokenId)).to.eq(20);
+        expect(await controller.children(tokenId)).to.eq(0);
+
         await controller.connect(one).burn(tokenId);
       });
     });
@@ -804,8 +806,7 @@ describe("PNS", async function () {
         await expect(controller2.connect(one).burn(tokenId)).revertedWith(revert`missing metadata`);
         await controller2.connect(one).burn(altTokenId);
 
-        nameRecord = await controller.nameRecord(tokenId);
-        await controller2.setMetadataBatch([tokenId, nameRecord.origin, nameRecord.expire, nameRecord.capacity, nameRecord.children]);
+        await controller2.setMetadataBatch([tokenId, await controller.origin(tokenId), await controller.expire(tokenId), await controller.capacity(tokenId), await controller.children(tokenId)]);
         await controller2.connect(one).burn(tokenId);
       });
 
@@ -826,26 +827,26 @@ describe("PNS", async function () {
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.ownerOf(altTokenId)).to.eq(twoAddr);
 
-        // migrate token metadata
-        let nameRecord = await controller.nameRecord(tokenId);
-        await controller2.setMetadataBatch([tokenId, nameRecord.origin, nameRecord.expire, nameRecord.capacity, nameRecord.children]);
+        let {origin, expire, capacity, children} = await getNameRecord(tokenId)
 
-        let nameData2 = await controller2.nameRecord(tokenId);
-        expect(nameRecord.origin).to.eq(nameData2.origin);
-        expect(nameRecord.expire).to.eq(nameData2.expire);
-        expect(nameRecord.capacity).to.eq(nameData2.capacity);
-        expect(nameRecord.children).to.eq(nameData2.children);
+        // migrate token metadata
+        await controller2.setMetadataBatch([tokenId, origin, expire, capacity, children]);
+
+        expect(await controller.origin(tokenId)).to.eq(await controller2.origin(tokenId));
+        expect(await controller.expire(tokenId)).to.eq(await controller2.expire(tokenId));
+        expect(await controller.capacity(tokenId)).to.eq(await controller2.capacity(tokenId));
+        expect(await controller.children(tokenId)).to.eq(await controller2.children(tokenId));
 
         // migrate subtoken metadata
 
-        let subNameData = await controller.nameRecord(subTokenId);
+        let subNameData = await getNameRecord(subTokenId)
+
         await controller2.setMetadataBatch([subTokenId, subNameData.origin, subNameData.expire, subNameData.capacity, subNameData.children]);
 
-        let subNameData2 = await controller2.nameRecord(subTokenId);
-        expect(subNameData.origin).to.eq(subNameData2.origin);
-        expect(subNameData.expire).to.eq(subNameData2.expire);
-        expect(subNameData.capacity).to.eq(subNameData2.capacity);
-        expect(subNameData.children).to.eq(subNameData2.children);
+        expect(await controller.origin(subTokenId)).to.eq(await controller2.origin(subTokenId));
+        expect(await controller.expire(subTokenId)).to.eq(await controller2.expire(subTokenId));
+        expect(await controller.capacity(subTokenId)).to.eq(await controller2.capacity(subTokenId));
+        expect(await controller.children(subTokenId)).to.eq(await controller2.children(subTokenId));
 
         // controller2 can burn tokenId with metadata migrated
         await controller2.connect(one).burn(subTokenId);

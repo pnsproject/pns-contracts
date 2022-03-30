@@ -69,14 +69,13 @@ describe("PNS", async function () {
         let blocktime = (await ethers.provider.getBlock(resp.blockNumber)).timestamp;
         let expiresAt = blocktime + 86400 * 365;
 
-        expect(await controller.expires(tokenId)).to.eq(expiresAt);
+        expect(await controller.expire(tokenId)).to.eq(expiresAt);
         expect(await controller.capacity(tokenId)).to.eq(20);
         expect(await controller.children(tokenId)).to.eq(2);
         expect(await controller.origin(tokenId)).to.eq(tokenId);
         expect(await controller.available(tokenId)).to.eq(false);
 
-        expect(await controller.nameExpires(subTokenId)).to.eq(expiresAt);
-        expect(await controller.expires(subTokenId)).to.eq(0);
+        expect(await controller.expire(subTokenId)).to.eq(0);
         expect(await controller.capacity(subTokenId)).to.eq(0);
         expect(await controller.children(subTokenId)).to.eq(0);
         expect(await controller.origin(subTokenId)).to.eq(tokenId);
@@ -86,24 +85,23 @@ describe("PNS", async function () {
         // burn sub sub token
 
         await controller.connect(three).burn(subTokenId);
-        await expect(controller.connect(two).burn(tokenId)).revertedWith(revert`subdomains should be cleared`);
+        await expect(controller.connect(two).burn(tokenId)).revertedWith(revert`subdomains not cleared`);
 
-        expect(await controller.nameExpires(tokenId)).to.eq(expiresAt);
-        expect(await controller.expires(tokenId)).to.eq(expiresAt);
+        expect(await controller.expire(tokenId)).to.eq(expiresAt);
         expect(await controller.capacity(tokenId)).to.eq(20);
         expect(await controller.children(tokenId)).to.eq(1);
         expect(await controller.origin(tokenId)).to.eq(tokenId);
         expect(await controller.available(tokenId)).to.eq(false);
 
-        expect(await controller.nameExpires(subTokenId)).to.eq(0);
-        expect(await controller.expires(subTokenId)).to.eq(0);
+        expect(await controller.nameExpired(subTokenId)).to.eq(true);
+        expect(await controller.expire(subTokenId)).to.eq(0);
         expect(await controller.capacity(subTokenId)).to.eq(0);
         expect(await controller.children(subTokenId)).to.eq(0);
         expect(await controller.origin(subTokenId)).to.eq(0);
         expect(await controller.available(subTokenId)).to.eq(true);
 
-        expect(await controller.nameExpires(subSubTokenId)).to.eq(expiresAt);
-        expect(await controller.expires(subSubTokenId)).to.eq(0);
+        expect(await controller.nameExpired(subSubTokenId)).to.eq(false);
+        expect(await controller.expire(subSubTokenId)).to.eq(0);
         expect(await controller.capacity(subSubTokenId)).to.eq(0);
         expect(await controller.children(subSubTokenId)).to.eq(0);
         expect(await controller.origin(subSubTokenId)).to.eq(tokenId);
@@ -135,23 +133,24 @@ describe("PNS", async function () {
         let expireAt = blocktime + 86400 * 365;
         let availableAt = expireAt + 86400 * 360;
 
-        expect(await controller.expires(tokenId)).to.eq(expireAt);
+        expect(await controller.expire(tokenId)).to.eq(expireAt);
         expect(await controller.capacity(tokenId)).to.eq(20);
         expect(await controller.children(tokenId)).to.eq(1);
         expect(await controller.origin(tokenId)).to.eq(tokenId);
         expect(await controller.available(tokenId)).to.eq(false);
+        expect(await controller.nameExpired(tokenId)).to.eq(false);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [expireAt + 86400 * 360]);
         await ethers.provider.send("evm_mine", []);
 
-        expect(await controller.available(tokenId)).to.eq(false);
+        expect(await controller.nameExpired(tokenId)).to.eq(false);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [availableAt + 100]);
         await ethers.provider.send("evm_mine", []);
 
-        expect(await controller.available(tokenId)).to.eq(true);
+        expect(await controller.nameExpired(tokenId)).to.eq(true);
 
-        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`subdomains should be cleared`);
+        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`subdomains not cleared`);
         await controller.connect(three).burn(subTokenId);
         await controller.connect(three).burn(tokenId);
 
@@ -161,7 +160,7 @@ describe("PNS", async function () {
 
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);
-        expect(await controller.available(tokenId)).to.eq(false);
+        expect(await controller.nameExpired(tokenId)).to.eq(false);
       });
 
       it("should register a new domain name with config and renew it", async () => {
@@ -179,29 +178,29 @@ describe("PNS", async function () {
 
         expect(await pns.get("text.email", tokenId)).to.eq("user@example.com");
 
-        let expires: BigNumber;
-        let newExpires: BigNumber;
+        let expire: BigNumber;
+        let newExpire: BigNumber;
 
-        expires = await controller.expires(tokenId);
+        expire = await controller.expire(tokenId);
 
         fee = (await controller.totalRegisterPrice("gavinwood100", 86400 * 10)).toString();
         await controller.renew("gavinwood100", 86400 * 10, {
           value: fee,
         });
 
-        newExpires = await controller.expires(tokenId);
-        expect(newExpires.sub(expires)).to.eq(86400 * 10);
-        expires = newExpires;
+        newExpire = await controller.expire(tokenId);
+        expect(newExpire.sub(expire)).to.eq(86400 * 10);
+        expire = newExpire;
 
         await controller.renewByManager("gavinwood100", 86400 * 100);
 
-        newExpires = await controller.expires(tokenId);
-        expect(newExpires.sub(expires)).to.eq(86400 * 100);
+        newExpire = await controller.expire(tokenId);
+        expect(newExpire.sub(expire)).to.eq(86400 * 100);
       });
 
       it("should register a new domain name by manager", async () => {
         await expect(controller.connect(three).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365)).revertedWith(
-          revert`caller is not the root or manager`
+          revert`caller is not root or manager`
         );
         await controller.connect(one).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365);
 
@@ -212,16 +211,16 @@ describe("PNS", async function () {
         expect(await controller.origin(tokenId)).to.eq(tokenId);
         expect(await controller.available(tokenId)).to.eq(false);
 
-        let expires: BigNumber;
-        let newExpires: BigNumber;
+        let expire: BigNumber;
+        let newExpire: BigNumber;
 
-        expires = await controller.expires(tokenId);
+        expire = await controller.expire(tokenId);
 
-        await expect(controller.connect(three).renewByManager("gavinwood100", 86400 * 100)).revertedWith(revert`caller is not the root or manager`);
+        await expect(controller.connect(three).renewByManager("gavinwood100", 86400 * 100)).revertedWith(revert`caller is not root or manager`);
         await controller.connect(one).renewByManager("gavinwood100", 86400 * 100);
 
-        newExpires = await controller.expires(tokenId);
-        expect(newExpires.sub(expires)).to.eq(86400 * 100);
+        newExpire = await controller.expire(tokenId);
+        expect(newExpire.sub(expire)).to.eq(86400 * 100);
       });
     });
   });

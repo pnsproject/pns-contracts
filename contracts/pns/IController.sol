@@ -6,15 +6,6 @@ import "../utils/RootOwnable.sol";
 
 interface IController {
 
-    struct Record {
-        uint256 origin;
-        uint64 expire;
-        uint64 capacity;
-        uint64 children;
-    }
-
-    function nameRecord(uint256 tokenId) external view returns(Record memory);
-
     event PriceChanged(uint256[] basePrices, uint256[] rentPrices);
     event ConfigUpdated(uint256 flags);
     event CapacityUpdated(uint256 tokenId, uint256 capacity);
@@ -22,6 +13,14 @@ interface IController {
     event NameRenewed(uint256 node, uint256 cost, uint256 expires, string name);
     event NameRegistered(address to, uint256 node, uint256 cost, uint256 expires, string name);
     event NewSubdomain(address to, uint256 parent, uint256 node, string name);
+
+    function origin(uint256 tokenId) external view returns(uint256);
+
+    function expire(uint256 tokenId) external view returns(uint256);
+
+    function capacity(uint256 tokenId) external view returns(uint256);
+
+    function children(uint256 tokenId) external view returns(uint256);
 
     function available(uint256 tokenId) external view returns(bool);
 

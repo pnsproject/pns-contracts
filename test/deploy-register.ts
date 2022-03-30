@@ -18,14 +18,13 @@ describe("PNS", function () {
     [deployerSign, otherSign] = await ethers.getSigners();
     [deployer, other] = await Promise.all([deployerSign, otherSign].map((s) => s.getAddress()));
 
-    let { pns, controller, resolver } = await deployPNS();
+    let { pns, controller } = await deployPNS();
 
     console.log(
       JSON.stringify(
         {
           pns: pns.address,
           controller: controller.address,
-          resolver: resolver.address,
         },
         null,
         2
@@ -45,15 +44,11 @@ describe("PNS", function () {
     ).wait();
     let tokenId = getNamehash("gavinwood100.dot");
     console.log("gavinwood100.dot owner:", await pns.ownerOf(tokenId));
-    console.log("gavinwood100.dot nameExpires:", (await controller.nameExpires(getNamehash("gavinwood100.dot"))).toString());
+    console.log("gavinwood100.dot expire:", (await controller.expire(getNamehash("gavinwood100.dot"))).toString());
     console.log("gavinwood100.dot available:", await controller.available(getNamehash("gavinwood100.dot")));
 
-    await pns.setResolver(tokenId, resolver.address);
-    console.log("pns setResolver:");
-    console.log("pns resolver:", await pns.getResolver(tokenId));
-
-    await resolver.set("ETH", deployer, tokenId);
+    await pns.set("ETH", deployer, tokenId);
     console.log("gavinwood100.dot set:");
-    console.log("gavinwood100.dot get:", await resolver.get("ETH", tokenId));
+    console.log("gavinwood100.dot get:", await pns.get("ETH", tokenId));
   });
 });
