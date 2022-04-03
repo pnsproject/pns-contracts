@@ -6,7 +6,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "../utils/RootOwnable.sol";
 
-contract PriceOracle is AggregatorV3Interface, RootOwnable {
+contract PriceOracle is AggregatorV3Interface, ManagerOwnable {
 
   uint256 public constant override version = 0;
   uint8 public override decimals;

@@ -12,12 +12,6 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
         internalType: "string",
         name: "keyIndex",
         type: "string",
@@ -56,21 +50,9 @@ const _abi = [
       },
       {
         indexed: true,
-        internalType: "string",
-        name: "keyIndex",
-        type: "string",
-      },
-      {
-        indexed: true,
-        internalType: "string",
-        name: "valueIndex",
-        type: "string",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "key",
-        type: "string",
+        internalType: "uint256",
+        name: "keyHash",
+        type: "uint256",
       },
       {
         indexed: false,

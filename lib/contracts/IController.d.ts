@@ -33,7 +33,7 @@ interface IControllerInterface extends ethers.utils.Interface {
     "mintSubdomain(address,uint256,string)": FunctionFragment;
     "nameRedeem(string,address,uint256,bytes)": FunctionFragment;
     "nameRegister(string,address,uint256)": FunctionFragment;
-    "nameRegisterByManager(string,address,uint256)": FunctionFragment;
+    "nameRegisterByManager(string,address,uint256,uint256[],string[])": FunctionFragment;
     "nameRegisterWithConfig(string,address,uint256,uint256[],string[])": FunctionFragment;
     "origin(uint256)": FunctionFragment;
     "renew(string,uint256)": FunctionFragment;
@@ -84,7 +84,7 @@ interface IControllerInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "nameRegisterByManager",
-    values: [string, string, BigNumberish]
+    values: [string, string, BigNumberish, BigNumberish[], string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "nameRegisterWithConfig",
@@ -344,6 +344,8 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      keyHashes: BigNumberish[],
+      values: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -465,6 +467,8 @@ export class IController extends BaseContract {
     name: string,
     owner: string,
     duration: BigNumberish,
+    keyHashes: BigNumberish[],
+    values: string[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -586,6 +590,8 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      keyHashes: BigNumberish[],
+      values: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -836,6 +842,8 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      keyHashes: BigNumberish[],
+      values: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -967,6 +975,8 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      keyHashes: BigNumberish[],
+      values: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

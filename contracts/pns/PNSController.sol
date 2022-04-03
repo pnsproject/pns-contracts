@@ -135,7 +135,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
 
     function setMetadataBatch(uint256[] calldata data) public live onlyManager {
         uint256 len = data.length;
-        require(len % 5 == 0, "len invalid");
+        require(len % 5 == 0, "length invalid");
 
         for (uint256 i = 0; i < len; i+=5) {
             uint256 tokenId = data[i];
@@ -147,7 +147,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         emit MetadataUpdated(data);
     }
 
-    function nameRegisterByManager(string calldata name, address to, uint256 duration) public override live onlyManager returns(uint256) {
+    function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
         uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
         require(available(tokenId), "tokenId not available");
         uint256 exp = block.timestamp + duration;
@@ -156,6 +156,9 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         records[tokenId].origin = tokenId;
         emit NameRegistered(to, tokenId, 0, exp, name);
 
+        if (keyHashes.length > 0) {
+          IResolver(address(_pns)).setManyByHash(keyHashes, values, tokenId);
+        }
         return tokenId;
     }
 
@@ -257,7 +260,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         pure
         returns (uint8, bytes32, bytes32)
     {
-        require(sig.length == 65);
+        require(sig.length == 65, "sig invalid");
 
         bytes32 r;
         bytes32 s;
@@ -291,7 +294,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         _;
     }
 
-    function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override open authorised(tokenId) {
+    function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override live authorised(tokenId) {
         uint256 originId = records[tokenId].origin;
         require(records[originId].children < records[originId].capacity, "reach subdomain capacity");
         uint256 subtokenId = _pns.mintSubdomain(to, tokenId, name);
@@ -302,7 +305,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         emit NewSubdomain(to, tokenId, subtokenId, name);
     }
 
-    function burn(uint256 tokenId) public virtual open override {
+    function burn(uint256 tokenId) public virtual live override {
         require(nameExpired(tokenId) || _root == _msgSender() || _pns.isApprovedOrOwner(_msgSender(), tokenId) || _pns.isApprovedOrOwner(_msgSender(), records[tokenId].origin), "not owner nor approved");
         // require subtokens cleared
         require(records[tokenId].origin != 0, "missing metadata");

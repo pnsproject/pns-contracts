@@ -116,9 +116,9 @@ interface IResolverInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "setNftName", data: BytesLike): Result;
 
   events: {
-    "NewKey(uint256,string,string)": EventFragment;
+    "NewKey(string,string)": EventFragment;
     "ResetRecords(uint256)": EventFragment;
-    "Set(uint256,string,string,string,string)": EventFragment;
+    "Set(uint256,uint256,string)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "NewKey"): EventFragment;
@@ -127,11 +127,7 @@ interface IResolverInterface extends ethers.utils.Interface {
 }
 
 export type NewKeyEvent = TypedEvent<
-  [BigNumber, string, string] & {
-    tokenId: BigNumber;
-    keyIndex: string;
-    key: string;
-  }
+  [string, string] & { keyIndex: string; key: string }
 >;
 
 export type ResetRecordsEvent = TypedEvent<
@@ -139,11 +135,9 @@ export type ResetRecordsEvent = TypedEvent<
 >;
 
 export type SetEvent = TypedEvent<
-  [BigNumber, string, string, string, string] & {
+  [BigNumber, BigNumber, string] & {
     tokenId: BigNumber;
-    keyIndex: string;
-    valueIndex: string;
-    key: string;
+    keyHash: BigNumber;
     value: string;
   }
 >;
@@ -439,23 +433,15 @@ export class IResolver extends BaseContract {
   };
 
   filters: {
-    "NewKey(uint256,string,string)"(
-      tokenId?: BigNumberish | null,
+    "NewKey(string,string)"(
       keyIndex?: string | null,
       key?: null
-    ): TypedEventFilter<
-      [BigNumber, string, string],
-      { tokenId: BigNumber; keyIndex: string; key: string }
-    >;
+    ): TypedEventFilter<[string, string], { keyIndex: string; key: string }>;
 
     NewKey(
-      tokenId?: BigNumberish | null,
       keyIndex?: string | null,
       key?: null
-    ): TypedEventFilter<
-      [BigNumber, string, string],
-      { tokenId: BigNumber; keyIndex: string; key: string }
-    >;
+    ): TypedEventFilter<[string, string], { keyIndex: string; key: string }>;
 
     "ResetRecords(uint256)"(
       tokenId?: BigNumberish | null
@@ -465,38 +451,22 @@ export class IResolver extends BaseContract {
       tokenId?: BigNumberish | null
     ): TypedEventFilter<[BigNumber], { tokenId: BigNumber }>;
 
-    "Set(uint256,string,string,string,string)"(
+    "Set(uint256,uint256,string)"(
       tokenId?: BigNumberish | null,
-      keyIndex?: string | null,
-      valueIndex?: string | null,
-      key?: null,
+      keyHash?: BigNumberish | null,
       value?: null
     ): TypedEventFilter<
-      [BigNumber, string, string, string, string],
-      {
-        tokenId: BigNumber;
-        keyIndex: string;
-        valueIndex: string;
-        key: string;
-        value: string;
-      }
+      [BigNumber, BigNumber, string],
+      { tokenId: BigNumber; keyHash: BigNumber; value: string }
     >;
 
     Set(
       tokenId?: BigNumberish | null,
-      keyIndex?: string | null,
-      valueIndex?: string | null,
-      key?: null,
+      keyHash?: BigNumberish | null,
       value?: null
     ): TypedEventFilter<
-      [BigNumber, string, string, string, string],
-      {
-        tokenId: BigNumber;
-        keyIndex: string;
-        valueIndex: string;
-        key: string;
-        value: string;
-      }
+      [BigNumber, BigNumber, string],
+      { tokenId: BigNumber; keyHash: BigNumber; value: string }
     >;
   };
 

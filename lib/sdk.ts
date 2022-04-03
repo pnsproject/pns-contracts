@@ -386,7 +386,7 @@ export async function nameRedeem(label: DomainString, account: string, duration:
 }
 
 export async function registerByManager(label: DomainString, account: string, duration: number) {
-  return controller.nameRegisterByManager(label, account, duration);
+  return controller.nameRegisterByManager(label, account, duration, [], []);
 }
 
 export async function renew(label: LabelString, duration: number) {

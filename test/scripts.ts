@@ -14,8 +14,12 @@ export async function deployPriceOracle(): Promise<string> {
   }
 
   let PriceOracle = await ethers.getContractFactory("PriceOracle");
-  let priceOracle = await PriceOracle.deploy(10000000000);
+  let priceOracle = await PriceOracle.deploy(336000000);
   await priceOracle.deployed();
+  if (process.env.PRINT_START_BLOCK) {
+    console.log("priceOracle deployed to:", priceOracle.address);
+  }
+
   return priceOracle.address;
 }
 
@@ -90,7 +94,7 @@ export async function deployPNSMultipleController() {
   PNS = await ethers.getContractFactory("PNS");
   pns = await upgrades.deployProxy(PNS, []);
   await pns.deployed();
-  // console.log("pns deployed to:", pns.address);
+  console.log("pns deployed to:", pns.address);
 
   Controller = await ethers.getContractFactory("Controller");
   controller = await Controller.deploy(pns.address, baseNode, basePrices, rentPrices, PriceOracleAddr);
@@ -99,12 +103,12 @@ export async function deployPNSMultipleController() {
   controller2 = await Controller.deploy(pns.address, altBaseNode, basePrices, rentPrices, PriceOracleAddr);
   await controller2.deployed();
 
-  // console.log("controller deployed to:", controller.address);
+  console.log("controller deployed to:", controller.address);
 
   await (await pns.mint(controller.address, baseNode)).wait();
   await (await pns.mint(controller2.address, altBaseNode)).wait();
 
-  // console.log("transferRoot:");
+  console.log("transferRoot:");
   await (await pns.setManager(controller.address, true)).wait();
   await (await pns.setManager(controller2.address, true)).wait();
 
@@ -125,10 +129,10 @@ export async function deployPNSMultipleController() {
     "cname",
     "resolver",
   ];
-  // console.log("addKeys:");
+  console.log("addKeys:");
   await pns.addKeys(keylist);
 
-  // console.log("dot owner:", await pns.ownerOf(getNamehash("dot")));
+  console.log("dot owner:", await pns.ownerOf(getNamehash("dot")));
 
   return {
     pns,

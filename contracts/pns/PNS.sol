@@ -14,26 +14,26 @@ import "../utils/RootOwnable.sol";
 
 contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
 
-    uint256 public WRITABLE;
+    uint256 public FLAGS;
 
     modifier writable {
-        require((WRITABLE & 1) > 0, "invalid op");
+        require((FLAGS & 1) > 0, "invalid op");
         _;
     }
 
     function setContractConfig(uint256 _writable) public onlyRoot {
-        WRITABLE = _writable;
+        FLAGS = _writable;
     }
 
     function initialize() initializer public override {
       __ERC721_init("PNS", "PNS");
       ManagerOwnableUpgradeable.initialize();
-      WRITABLE = 1;
+      FLAGS = 1;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
         return
-            interfaceId == type(IPNS).interfaceId ||
+            interfaceId == type(IPNS).interfaceId || interfaceId == type(IResolver).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -106,7 +106,6 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     mapping(address => uint256) private _names;
     mapping(address => mapping(uint256 => uint256)) internal _nft_names;
 
-
     function setName(
         uint256 tokenId
     ) external override writable authorised(tokenId) {
@@ -122,7 +121,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 nftTokenId,
         uint256 nameTokenId
     ) external override writable authorised(nameTokenId) {
-        require(IERC721Upgradeable(nft).ownerOf(nftTokenId) == _msgSender(), 'PNSResolver: NOT_TOKEN_OWNER');
+        require(IERC721Upgradeable(nft).ownerOf(nftTokenId) == _msgSender(), 'not token owner');
         _nft_names[nft][nftTokenId] = nameTokenId;
     }
 
@@ -155,6 +154,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     function _addKey(uint256 keyHash, string memory key) internal {
         if (!_existsKey(keyHash)) {
             _keys[keyHash] = key;
+            emit NewKey(key, key);
         }
     }
 
@@ -213,21 +213,16 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     ) external override writable authorised(tokenId) {
         uint256 keyHash = uint256(keccak256(abi.encodePacked(key)));
         _addKey(keyHash, key);
-        _set(keyHash, key, value, tokenId);
+        _set(keyHash, value, tokenId);
     }
 
     function _set(
         uint256 keyHash,
-        string memory key,
         string memory value,
         uint256 tokenId
     ) private {
-        if (bytes(_records[tokenId][keyHash]).length == 0) {
-            emit NewKey(tokenId, key, key);
-        }
-
         _records[tokenId][keyHash] = value;
-        emit Set(tokenId, key, value, key, value);
+        emit Set(tokenId, keyHash, value);
     }
 
     function _set(
@@ -237,7 +232,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     ) internal {
         uint256 keyHash = uint256(keccak256(abi.encodePacked(key)));
         _addKey(keyHash, key);
-        _set(keyHash, key, value, tokenId);
+        _set(keyHash, value, tokenId);
     }
 
     function setMany(
@@ -246,7 +241,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         for (uint256 i = 0; i < keys.length; i++) {
-            _set(keys[i], values[i], tokenId);
+            _set(uint256(keccak256(abi.encodePacked(keys[i]))), values[i], tokenId);
         }
     }
 
@@ -255,8 +250,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         string calldata value,
         uint256 tokenId
     ) external override writable authorised(tokenId) {
-        require(_existsKey(keyHash), 'KEY_NOT_FOUND');
-        _set(keyHash, getKey(keyHash), value, tokenId);
+        require(_existsKey(keyHash), 'key not found');
+        _set(keyHash, value, tokenId);
     }
 
     function setManyByHash(
@@ -265,8 +260,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         for (uint256 i = 0; i < keyHashes.length; i++) {
-            require(_existsKey(keyHashes[i]), 'KEY_NOT_FOUND');
-            _set(keyHashes[i], getKey(keyHashes[i]), values[i], tokenId);
+            require(_existsKey(keyHashes[i]), 'key not found');
+            _set(keyHashes[i], values[i], tokenId);
         }
     }
 }

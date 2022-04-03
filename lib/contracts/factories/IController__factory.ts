@@ -412,6 +412,16 @@ const _abi = [
         name: "duration",
         type: "uint256",
       },
+      {
+        internalType: "uint256[]",
+        name: "keyHashes",
+        type: "uint256[]",
+      },
+      {
+        internalType: "string[]",
+        name: "values",
+        type: "string[]",
+      },
     ],
     name: "nameRegisterByManager",
     outputs: [

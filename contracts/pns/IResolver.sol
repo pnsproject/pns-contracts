@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 
 interface IResolver {
 
-    event Set(uint256 indexed tokenId, string indexed keyIndex, string indexed valueIndex, string key, string value);
-    event NewKey(uint256 indexed tokenId, string indexed keyIndex, string key);
+    event NewKey(string indexed keyIndex, string key);
+    event Set(uint256 indexed tokenId, uint256 indexed keyHash, string value);
     event ResetRecords(uint256 indexed tokenId);
 
     function getName(address addr) external view returns (uint256);

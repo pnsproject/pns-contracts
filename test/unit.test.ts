@@ -14,6 +14,7 @@ let oneyear = 86400 * 365;
 let tokenId = getNamehash("gavinwood100.dot");
 let subTokenId = getNamehash("sub0.gavinwood100.dot");
 let altTokenId = getNamehash("gavinwood100.com");
+let TOKEN_PRICE = 336000000;
 
 export const revert = (messages: TemplateStringsArray) => `Error: VM Exception while processing transaction: reverted with reason string '${messages[0]}'`;
 
@@ -53,12 +54,12 @@ describe("PNS", async function () {
     }
 
     async function getNameRecord(tokenId: string, ctlr_opt?: any) {
-      let ctlr = ctlr_opt || controller
+      let ctlr = ctlr_opt || controller;
       let origin = await controller.origin(tokenId);
       let expire = await controller.expire(tokenId);
       let capacity = await controller.capacity(tokenId);
       let children = await controller.children(tokenId);
-      return {origin, expire, capacity, children}
+      return { origin, expire, capacity, children };
     }
 
     beforeEach(async () => {
@@ -204,6 +205,14 @@ describe("PNS", async function () {
 
         await controller.connect(one).setManager(twoAddr, true);
         expect(await controller.isManager(twoAddr)).to.eq(true);
+      });
+    });
+
+    describe("PNSController#nameRegisterByManager", async () => {
+      it("should register a new domain name by manager", async () => {
+        tx = await controller.connect(one).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365, [sha3("text.email")], ["user@example.com"]);
+        expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
+        expect(await pns.exists(tokenId)).to.eq(true);
       });
     });
 
@@ -445,7 +454,7 @@ describe("PNS", async function () {
 
         await controller.renewByManager("gavinwood100", 86400 * 100);
 
-        newExpire = await controller.expire(tokenId);;
+        newExpire = await controller.expire(tokenId);
         expect(newExpire.sub(expire)).to.eq(86400 * 100);
       });
     });
@@ -550,7 +559,6 @@ describe("PNS", async function () {
     });
 
     describe("PNSController#setCapacity", async () => {
-      
       beforeEach(async () => {
         await registerName("gavinwood100", twoAddr);
       });
@@ -684,7 +692,7 @@ describe("PNS", async function () {
 
     describe("PNSController#setPrices", async () => {
       it("should be able to set the price", async () => {
-        expect(await controller.getTokenPrice()).to.eq(10000000000);
+        expect(await controller.getTokenPrice()).to.eq(TOKEN_PRICE);
         let prices = await controller.getPrices();
         prices = [prices[0].map((x: BigNumber) => x.toNumber()), prices[1].map((x: BigNumber) => x.toNumber())];
 
@@ -806,7 +814,13 @@ describe("PNS", async function () {
         await expect(controller2.connect(one).burn(tokenId)).revertedWith(revert`missing metadata`);
         await controller2.connect(one).burn(altTokenId);
 
-        await controller2.setMetadataBatch([tokenId, await controller.origin(tokenId), await controller.expire(tokenId), await controller.capacity(tokenId), await controller.children(tokenId)]);
+        await controller2.setMetadataBatch([
+          tokenId,
+          await controller.origin(tokenId),
+          await controller.expire(tokenId),
+          await controller.capacity(tokenId),
+          await controller.children(tokenId),
+        ]);
         await controller2.connect(one).burn(tokenId);
       });
 
@@ -827,7 +841,7 @@ describe("PNS", async function () {
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.ownerOf(altTokenId)).to.eq(twoAddr);
 
-        let {origin, expire, capacity, children} = await getNameRecord(tokenId)
+        let { origin, expire, capacity, children } = await getNameRecord(tokenId);
 
         // migrate token metadata
         await controller2.setMetadataBatch([tokenId, origin, expire, capacity, children]);
@@ -839,7 +853,7 @@ describe("PNS", async function () {
 
         // migrate subtoken metadata
 
-        let subNameData = await getNameRecord(subTokenId)
+        let subNameData = await getNameRecord(subTokenId);
 
         await controller2.setMetadataBatch([subTokenId, subNameData.origin, subNameData.expire, subNameData.capacity, subNameData.children]);
 
