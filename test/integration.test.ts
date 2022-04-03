@@ -199,10 +199,8 @@ describe("PNS", async function () {
       });
 
       it("should register a new domain name by manager", async () => {
-        await expect(controller.connect(three).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365)).revertedWith(
-          revert`caller is not root or manager`
-        );
-        await controller.connect(one).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365);
+        await expect(controller.connect(three).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365, [], [])).revertedWith(revert`caller is not root or manager`);
+        await controller.connect(one).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365, [], []);
 
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);
