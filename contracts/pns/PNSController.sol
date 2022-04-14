@@ -17,7 +17,7 @@ import "./IPNS.sol";
 import "./IController.sol";
 import "./IResolver.sol";
 
-contract Controller is IController, Context, ManagerOwnable, ERC165 {
+contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticallable {
 
     struct Record {
         uint256 origin;
@@ -121,7 +121,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
     }
 
     function setCapacity(uint256 tokenId, uint256 _capacity) public payable override live {
-        uint256 cost = getCapacityPrice(_capacity - records[tokenId].capacity); // todo : check _capacity >records[tokenId].capacity
+        require(_capacity > records[tokenId].capacity, "invalid capacity");
+        uint256 cost = getCapacityPrice(_capacity - records[tokenId].capacity);
         require(msg.value >= cost, "insufficient fee");
 
         payable(_root).transfer(cost);
@@ -129,7 +130,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
             payable(_msgSender()).transfer(msg.value - cost);
         }
 
-        records[tokenId].capacity = uint64(_capacity); // todo : check overflow
+        records[tokenId].capacity = uint64(_capacity);
         emit CapacityUpdated(tokenId, _capacity);
     }
 
@@ -140,7 +141,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
 
         for (uint256 i = 0; i < len; i+=5) {
             uint256 tokenId = data[i];
-            records[tokenId].origin = data[i+1]; // todo : check origin exists
+            records[tokenId].origin = data[i+1];
             records[tokenId].expire = uint64(data[i+2]);
             records[tokenId].capacity = uint64(data[i+3]);
             records[tokenId].children = uint64(data[i+4]);
@@ -148,14 +149,18 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         emit MetadataUpdated(data);
     }
 
-    function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
+    function _register(string calldata name, address to, uint256 duration) internal returns(uint256) {
         uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
         require(available(tokenId), "tokenId not available");
+
         uint256 exp = block.timestamp + duration;
         records[tokenId].expire = uint64(exp);
         records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
         records[tokenId].origin = tokenId;
-        emit NameRegistered(to, tokenId, 0, exp, name);
+    }
+
+    function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
+        uint256 tokenId = _register(name, to, duration);
 
         if (keyHashes.length > 0) {
           IResolver(address(_pns)).setManyByHash(keyHashes, values, tokenId);
@@ -172,16 +177,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         uint256 cost = totalRegisterPrice(name, duration);
         require(msg.value >= cost, "insufficient fee");
 
-        uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
-        require(available(tokenId), "tokenId not available");
-
-        uint256 expr = block.timestamp + duration;
-        records[tokenId].expire = uint64(expr);
-        records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
-        records[tokenId].origin = tokenId;
-
-
-        emit NameRegistered(to, tokenId, cost, expr, name);
+        uint256 tokenId = _register(name, to, duration);
 
         payable(_root).transfer(cost);
         if(msg.value > cost) {
@@ -201,10 +197,19 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         return tokenId;
     }
 
-    function _renew(uint256 id, uint256 duration) internal returns(uint256) {
-        // require(records[id].expire + GRACE_PERIOD >= block.timestamp, "exceed grace period");
-        require(records[id].expire + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "prevent overflow");
+    function nameRedeem(string calldata name, address to, uint256 duration, uint256 deadline, bytes calldata code) public override redeemable returns(uint256) {
+        bytes32 label = keccak256(bytes(name));
+        bytes memory combined = abi.encodePacked(label, to, duration, deadline);
+        require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
+        require(block.timestamp < deadline);
 
+        uint256 tokenId = _register(name, to, duration);
+
+        return tokenId;
+    }
+
+    function _renew(uint256 id, uint256 duration) internal returns(uint256) {
+        require(records[id].expire + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "prevent overflow");
         records[id].expire += uint64(duration);
         return records[id].expire;
     }
@@ -222,7 +227,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
 
         emit NameRenewed(tokenId, cost, expireAt, name);
 
-        payable(_root).transfer(cost); // todo : transfer / call
+        payable(_root).transfer(cost);
         if(msg.value > cost) {
             payable(_msgSender()).transfer(msg.value - cost);
         }
@@ -239,26 +244,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
 
     // redeem
 
-    function nameRedeem(string calldata name, address to, uint256 duration, bytes calldata code) public override redeemable returns(uint256) {
-        bytes32 label = keccak256(bytes(name));
-        // todo : add code deadline
-        bytes memory combined = abi.encodePacked(label, to, duration);
-        require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
-
-        uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
-        require(available(tokenId), "tokenId not available");
-
-        uint256 exp = block.timestamp + duration;
-        records[tokenId].expire = uint64(exp);
-        records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
-        records[tokenId].origin = tokenId;
-
-        emit NameRegistered(to, tokenId, 0, exp, name);
-
-        return tokenId;
-    }
-
-    // todo : use openzepplin
     function splitSignature(bytes memory sig)
         internal
         pure
@@ -271,11 +256,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         uint8 v;
 
         assembly {
-            // first 32 bytes, after the length prefix
             r := mload(add(sig, 32))
-            // second 32 bytes
             s := mload(add(sig, 64))
-            // final byte (first byte of the next 32 bytes)
             v := byte(0, mload(add(sig, 96)))
         }
 
@@ -381,7 +363,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         return delta.mul(capacityPrice).mul(10 ** 24).div(price);
     }
 
-    // todo : maybe combine two methods
     function basePrice(string memory name) view public override returns(uint256) {
         uint256 len = name.strlen();
         if(len > basePrices.length) {
@@ -400,5 +381,15 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         uint256 price = rentPrices[len - 1].mul(duration);
 
         return price;
+    }
+
+    function multicall(bytes[] calldata data) external override returns(bytes[] memory results) {
+        results = new bytes[](data.length);
+        for(uint i = 0; i < data.length; i++) {
+            (bool success, bytes memory result) = address(this).delegatecall(data[i]);
+            require(success);
+            results[i] = result;
+        }
+        return results;
     }
 }

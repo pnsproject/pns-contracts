@@ -45,10 +45,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         return "https://meta.dot.site/";
     }
     
-    // todo : reorder modifier and functions
-    // todo : is root or manager permission necessary
     modifier authorised(uint256 tokenId) {
-        require(_root == _msgSender() || isManager(_msgSender()) || isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
+        require(isManager(_msgSender()) || isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
         _;
     }
 
@@ -100,7 +98,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         _names[_msgSender()] = tokenId;
-        // todo : emit event
+        emit SetName(_msgSender(), tokenId);
     }
 
     function getName(address addr) public view override returns (uint256) {
@@ -108,19 +106,17 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     }
 
     function setNftName(
-        address nft,
+        address nftAddr,
         uint256 nftTokenId,
-        uint256 nameTokenId
-    ) external override writable authorised(nameTokenId) {
-        // todo : replace IERC721Upgradeable with IERC721
-        require(IERC721Upgradeable(nft).ownerOf(nftTokenId) == _msgSender(), 'not token owner');
-        _nft_names[nft][nftTokenId] = nameTokenId;
-        // todo : emit event
+        uint256 tokenId
+    ) external override writable authorised(tokenId) {
+        require(IERC721Upgradeable(nftAddr).ownerOf(nftTokenId) == _msgSender(), 'not token owner');
+        _nft_names[nftAddr][nftTokenId] = tokenId;
+        emit SetNftName(nftAddr, nftTokenId, tokenId);
     }
 
     function getNftName(address nftAddr, uint256 nftTokenId) public view override returns (uint256) {
         return _nft_names[nftAddr][nftTokenId];
-        // todo : check nft owner == name owner
     }
 
     function getKey(uint256 keyHash) public view override returns (string memory) {
@@ -206,13 +202,13 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         uint256 keyHash = uint256(keccak256(abi.encodePacked(key)));
-        _addKey(keyHash, key);  // todo : redundant
+        require(_existsKey(keyHash), 'key not found');
         _set(keyHash, value, tokenId);
     }
 
     function _set(
         uint256 keyHash,
-        string memory value,
+        string calldata value,
         uint256 tokenId
     ) private {
         _records[tokenId][keyHash] = value;

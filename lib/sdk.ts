@@ -433,14 +433,15 @@ export function abiDataEncode(data: any, datatype: string): Buffer {
   return Buffer.from(encoded, "hex");
 }
 
-export function encodeMsg(nameTokenId: string, address: string, duration: number): Uint8Array {
+export function encodeMsg(nameTokenId: string, address: string, duration: number, deadline: number): Uint8Array {
   let nameTokenIdBuffer = abiDataEncode(nameTokenId, "uint");
   let addressBuffer = abiDataEncode(address, "uint160").slice(12);
   let durationBuffer = abiDataEncode(duration, "uint");
+  let deadlineBuffer = abiDataEncode(deadline, "uint");
   // console.log('data', Buffer.concat([nameTokenIdBuffer, addressBuffer, durationBuffer]).toString('hex'))
   // address type has strange padding, which doesn't work
   // console.log(ethers.utils.defaultAbiCoder.encode(['uint256', 'address', 'uint256'], [nameTokenId, address, duration]))
-  return Buffer.concat([nameTokenIdBuffer, addressBuffer, durationBuffer]);
+  return Buffer.concat([nameTokenIdBuffer, addressBuffer, durationBuffer, deadlineBuffer]);
 }
 
 export function hashMsg(data: Uint8Array): Uint8Array {
@@ -448,8 +449,8 @@ export function hashMsg(data: Uint8Array): Uint8Array {
   return ethers.utils.arrayify(hashed);
 }
 
-export async function generateRedeemCode(nameTokenId: string, address: string, duration: number, signer: any): Promise<string> {
-  let msg = encodeMsg(nameTokenId, address, duration);
+export async function generateRedeemCode(nameTokenId: string, address: string, duration: number, deadline: number, signer: any): Promise<string> {
+  let msg = encodeMsg(nameTokenId, address, duration, deadline);
   let hashedMsg = hashMsg(msg);
   return signer.signMessage(hashedMsg);
 }

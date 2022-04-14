@@ -38,7 +38,7 @@ interface IController {
 
     function renewByManager(string calldata name, uint256 duration) external;
 
-    function nameRedeem(string calldata name, address owner, uint256 duration, bytes memory code) external returns(uint256);
+    function nameRedeem(string calldata name, address owner, uint256 duration, uint256 deadline, bytes memory code) external returns(uint256);
 
     function mintSubdomain(address to, uint256 tokenId, string calldata name) external;
 
@@ -57,6 +57,4 @@ interface IController {
     function basePrice(string memory name) view external returns(uint256);
 
     function rentPrice(string memory name, uint256 duration) view external returns(uint256);
-
-    function withdraw() external;
 }

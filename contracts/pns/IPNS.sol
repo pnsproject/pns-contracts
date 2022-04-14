@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 
 pragma solidity ^0.8.0;
 
-interface IPNS is IERC721Upgradeable {
+interface IPNS is IERC721MetadataUpgradeable {
 
     // registry
 
@@ -22,4 +22,8 @@ interface IPNS is IERC721Upgradeable {
 
     function mint(address to, uint256 newTokenId) external;
 
+}
+
+interface IMulticallable {
+    function multicall(bytes[] calldata data) external returns(bytes[] memory results);
 }

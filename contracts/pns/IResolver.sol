@@ -8,6 +8,9 @@ interface IResolver {
     event Set(uint256 indexed tokenId, uint256 indexed keyHash, string value);
     event ResetRecords(uint256 indexed tokenId);
 
+    event SetName(address indexed addr, uint256 indexed tokenId);
+    event SetNftName(address indexed nftAddr, uint256 indexed nftTokenId, uint256 indexed tokenId);
+
     function getName(address addr) external view returns (uint256);
     function setName(uint256 tokenId ) external;
 
