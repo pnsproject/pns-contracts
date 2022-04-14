@@ -37,19 +37,6 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
             super.supportsInterface(interfaceId);
     }
 
-    // ERC721 methods
-    function approve(address to, uint256 tokenId) public virtual override(ERC721Upgradeable, IERC721Upgradeable) {
-        address owner = ERC721Upgradeable.ownerOf(tokenId);
-        require(to != owner, "approval to current owner");
-
-        require(
-            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-            "ERC721: approve caller is not owner nor approved for all"
-        );
-
-        _approve(to, tokenId);
-    }
-
     function exists(uint256 tokenId) public view virtual override returns(bool) {
         return _exists(tokenId);
     }
@@ -57,9 +44,11 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     function _baseURI() internal pure override returns (string memory) {
         return "https://meta.dot.site/";
     }
-
+    
+    // todo : reorder modifier and functions
+    // todo : is root or manager permission necessary
     modifier authorised(uint256 tokenId) {
-        require(_root == _msgSender() || isApprovedOrOwner(_msgSender(), tokenId) || isManager(_msgSender()), "not owner nor approved");
+        require(_root == _msgSender() || isManager(_msgSender()) || isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
         _;
     }
 
@@ -84,6 +73,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         return subtokenId;
     }
 
+    // todo : consider using multicall
     function mintSubdomainBatch(address[] calldata addrs, uint256[] calldata tokenIds, string[] calldata names) public virtual onlyManager {
         for (uint256 i = 0; i < addrs.length; i++) {
             bytes32 label = keccak256(bytes(names[i]));
@@ -110,6 +100,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         _names[_msgSender()] = tokenId;
+        // todo : emit event
     }
 
     function getName(address addr) public view override returns (uint256) {
@@ -121,12 +112,15 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 nftTokenId,
         uint256 nameTokenId
     ) external override writable authorised(nameTokenId) {
+        // todo : replace IERC721Upgradeable with IERC721
         require(IERC721Upgradeable(nft).ownerOf(nftTokenId) == _msgSender(), 'not token owner');
         _nft_names[nft][nftTokenId] = nameTokenId;
+        // todo : emit event
     }
 
     function getNftName(address nftAddr, uint256 nftTokenId) public view override returns (uint256) {
         return _nft_names[nftAddr][nftTokenId];
+        // todo : check nft owner == name owner
     }
 
     function getKey(uint256 keyHash) public view override returns (string memory) {
@@ -212,7 +206,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         uint256 keyHash = uint256(keccak256(abi.encodePacked(key)));
-        _addKey(keyHash, key);
+        _addKey(keyHash, key);  // todo : redundant
         _set(keyHash, value, tokenId);
     }
 
@@ -223,16 +217,6 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     ) private {
         _records[tokenId][keyHash] = value;
         emit Set(tokenId, keyHash, value);
-    }
-
-    function _set(
-        string calldata key,
-        string calldata value,
-        uint256 tokenId
-    ) internal {
-        uint256 keyHash = uint256(keccak256(abi.encodePacked(key)));
-        _addKey(keyHash, key);
-        _set(keyHash, value, tokenId);
     }
 
     function setMany(

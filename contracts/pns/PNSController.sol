@@ -95,16 +95,16 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
     }
 
     modifier open {
-        require((FLAGS & 3) > 0, "invalid op");
+        require((FLAGS & 2) > 0, "invalid op");
         _;
     }
 
     modifier redeemable {
-        require((FLAGS & 5) > 0, "invalid op");
+        require((FLAGS & 4) > 0, "invalid op");
         _;
     }
 
-    function setContractConfig(uint256 _flags, uint256 _min_length, uint256 _min_duration, uint256 _grace_period, uint256 _default_capacity, uint256 _capacity_price, address _price_feed) public live onlyRoot {
+    function setContractConfig(uint256 _flags, uint256 _min_length, uint256 _min_duration, uint256 _grace_period, uint256 _default_capacity, uint256 _capacity_price, address _price_feed) public onlyRoot {
         FLAGS = _flags;
         MIN_REGISTRATION_LENGTH = _min_length;
         MIN_REGISTRATION_DURATION = _min_duration;
@@ -121,7 +121,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
     }
 
     function setCapacity(uint256 tokenId, uint256 _capacity) public payable override live {
-        uint256 cost = getCapacityPrice(_capacity - records[tokenId].capacity);
+        uint256 cost = getCapacityPrice(_capacity - records[tokenId].capacity); // todo : check _capacity >records[tokenId].capacity
         require(msg.value >= cost, "insufficient fee");
 
         payable(_root).transfer(cost);
@@ -129,17 +129,18 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
             payable(_msgSender()).transfer(msg.value - cost);
         }
 
-        records[tokenId].capacity = uint64(_capacity);
+        records[tokenId].capacity = uint64(_capacity); // todo : check overflow
         emit CapacityUpdated(tokenId, _capacity);
     }
 
-    function setMetadataBatch(uint256[] calldata data) public live onlyManager {
+    // use Record[] instead of uint256[]
+    function setMetadataBatch(uint256[] calldata data) public onlyManager {
         uint256 len = data.length;
         require(len % 5 == 0, "length invalid");
 
         for (uint256 i = 0; i < len; i+=5) {
             uint256 tokenId = data[i];
-            records[tokenId].origin = data[i+1];
+            records[tokenId].origin = data[i+1]; // todo : check origin exists
             records[tokenId].expire = uint64(data[i+2]);
             records[tokenId].capacity = uint64(data[i+3]);
             records[tokenId].children = uint64(data[i+4]);
@@ -165,8 +166,12 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
     function nameRegister(string calldata name, address to, uint256 duration) public override payable open returns(uint256) {
         uint256 len = name.strlen();
         require(len >= MIN_REGISTRATION_LENGTH, "name too short");
-
         require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD);
+        require(duration >= MIN_REGISTRATION_DURATION, "duration too small");
+
+        uint256 cost = totalRegisterPrice(name, duration);
+        require(msg.value >= cost, "insufficient fee");
+
         uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
         require(available(tokenId), "tokenId not available");
 
@@ -175,9 +180,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
         records[tokenId].origin = tokenId;
 
-        uint256 cost = totalRegisterPrice(name, duration);
-        require(duration >= MIN_REGISTRATION_DURATION, "duration too small");
-        require(msg.value >= cost, "insufficient fee");
 
         emit NameRegistered(to, tokenId, cost, expr, name);
 
@@ -220,7 +222,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
 
         emit NameRenewed(tokenId, cost, expireAt, name);
 
-        payable(_root).transfer(cost);
+        payable(_root).transfer(cost); // todo : transfer / call
         if(msg.value > cost) {
             payable(_msgSender()).transfer(msg.value - cost);
         }
@@ -239,6 +241,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
 
     function nameRedeem(string calldata name, address to, uint256 duration, bytes calldata code) public override redeemable returns(uint256) {
         bytes32 label = keccak256(bytes(name));
+        // todo : add code deadline
         bytes memory combined = abi.encodePacked(label, to, duration);
         require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
 
@@ -255,6 +258,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         return tokenId;
     }
 
+    // todo : use openzepplin
     function splitSignature(bytes memory sig)
         internal
         pure
@@ -297,8 +301,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
     function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override live authorised(tokenId) {
         uint256 originId = records[tokenId].origin;
         require(records[originId].children < records[originId].capacity, "reach subdomain capacity");
-        uint256 subtokenId = _pns.mintSubdomain(to, tokenId, name);
 
+        uint256 subtokenId = _pns.mintSubdomain(to, tokenId, name);
         records[originId].children += 1;
         records[subtokenId].origin = originId;
 
@@ -377,6 +381,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         return delta.mul(capacityPrice).mul(10 ** 24).div(price);
     }
 
+    // todo : maybe combine two methods
     function basePrice(string memory name) view public override returns(uint256) {
         uint256 len = name.strlen();
         if(len > basePrices.length) {
@@ -395,12 +400,5 @@ contract Controller is IController, Context, ManagerOwnable, ERC165 {
         uint256 price = rentPrices[len - 1].mul(duration);
 
         return price;
-    }
-
-    function withdraw() public override onlyRoot {
-        uint256 amount = address(this).balance;
-
-        (bool success, ) = payable(_root).call{value: amount}("");
-        require(success, "Failed to send Ether");
     }
 }
