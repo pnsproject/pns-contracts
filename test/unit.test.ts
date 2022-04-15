@@ -362,26 +362,26 @@ describe("PNS", async function () {
 
     describe("PNSController#nameRedeem", async () => {
       it("should redeem a new domain name", async () => {
-        let deadline = Math.floor(Date.now() / 1000) + 86400
+        let deadline = Math.floor(Date.now() / 1000) + 86400;
         let sig = await generateRedeemCode(sha3("gavinwood100"), twoAddr, 86400 * 365, deadline, one);
         await controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig);
         expect(await pns.exists(tokenId)).to.eq(true);
       });
 
       it("should not redeem with invalid name", async () => {
-        let deadline = Math.floor(Date.now() / 1000) + 86400
+        let deadline = Math.floor(Date.now() / 1000) + 86400;
         let sig = await generateRedeemCode(sha3("gavinwood101"), twoAddr, 86400 * 365, deadline, one);
         await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
       });
 
       it("should not redeem with invalid address", async () => {
-        let deadline = Math.floor(Date.now() / 1000) + 86400
+        let deadline = Math.floor(Date.now() / 1000) + 86400;
         let sig = await generateRedeemCode(sha3("gavinwood101"), threeAddr, 86400 * 365, deadline, one);
         await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
       });
 
       it("should not redeem with invalid signer", async () => {
-        let deadline = Math.floor(Date.now() / 1000) + 86400
+        let deadline = Math.floor(Date.now() / 1000) + 86400;
         let sig = await generateRedeemCode(sha3("gavinwood101"), threeAddr, 86400 * 365, deadline, three);
         await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
       });
@@ -896,10 +896,10 @@ describe("PNS", async function () {
     });
 
     describe("PNS#set", async () => {
-      it("should be able to set and get record", async () => {
+      it("should be able to setByHash and get record", async () => {
         await registerName("gavinwood100", twoAddr);
-        await pns.connect(two).set("ETH", twoAddr, tokenId);
-        await pns.connect(two).set("text.email", "user@example.com", tokenId);
+        await pns.connect(two).setByHash(sha3("ETH"), twoAddr, tokenId);
+        await pns.connect(two).setByHash(sha3("text.email"), "user@example.com", tokenId);
 
         expect(await pns.get("ETH", tokenId)).to.eq(twoAddr);
         expect(await pns.get("text.email", tokenId)).to.eq("user@example.com");
@@ -907,21 +907,6 @@ describe("PNS", async function () {
         expect(await pns.getMany(["ETH", "text.email"], tokenId)).to.deep.equal([twoAddr, "user@example.com"]);
         expect(await pns.getByHash(sha3("ETH"), tokenId)).to.deep.equal(twoAddr);
         expect(await pns.getManyByHash([sha3("ETH"), sha3("text.email")], tokenId)).to.deep.equal([twoAddr, "user@example.com"]);
-      });
-
-      it("should be able to setByHash and get record", async () => {
-        await registerName("gavinwood100", twoAddr);
-        await pns.connect(two).setByHash(sha3("ETH"), twoAddr, tokenId);
-        await pns.connect(two).setByHash(sha3("text.email"), "user@example.com", tokenId);
-
-        expect(await pns.getMany(["ETH", "text.email"], tokenId)).to.deep.equal([twoAddr, "user@example.com"]);
-      });
-
-      it("should be able to setMany and get record", async () => {
-        await registerName("gavinwood100", twoAddr);
-        await pns.connect(two).setMany(["ETH", "text.email"], [twoAddr, "user@example.com"], tokenId);
-
-        expect(await pns.getMany(["ETH", "text.email"], tokenId)).to.deep.equal([twoAddr, "user@example.com"]);
       });
 
       it("should be able to setManyByHash and get record", async () => {
@@ -933,9 +918,7 @@ describe("PNS", async function () {
 
       it("should not be able to set by non-owner", async () => {
         await registerName("gavinwood100", twoAddr);
-        await expect(pns.connect(three).set("ETH", twoAddr, tokenId)).revertedWith(revert`not owner nor approved`);
         await expect(pns.connect(three).setByHash(sha3("ETH"), twoAddr, tokenId)).revertedWith(revert`not owner nor approved`);
-        await expect(pns.connect(three).setMany(["ETH", "text.email"], [twoAddr, "user@example.com"], tokenId)).revertedWith(revert`not owner nor approved`);
         await expect(pns.connect(three).setManyByHash([sha3("ETH"), sha3("text.email")], [twoAddr, "user@example.com"], tokenId)).revertedWith(
           revert`not owner nor approved`
         );
@@ -944,17 +927,13 @@ describe("PNS", async function () {
       it("should be able to set by approved user", async () => {
         await registerName("gavinwood100", twoAddr);
         await pns.connect(two).approve(threeAddr, tokenId);
-        await pns.connect(three).set("ETH", twoAddr, tokenId);
         await pns.connect(three).setByHash(sha3("ETH"), twoAddr, tokenId);
-        await pns.connect(three).setMany(["ETH", "text.email"], [twoAddr, "user@example.com"], tokenId);
         await pns.connect(three).setManyByHash([sha3("ETH"), sha3("text.email")], [twoAddr, "user@example.com"], tokenId);
       });
 
       it("should be able to set by root", async () => {
         await registerName("gavinwood100", twoAddr);
-        await pns.connect(one).set("ETH", twoAddr, tokenId);
         await pns.connect(one).setByHash(sha3("ETH"), twoAddr, tokenId);
-        await pns.connect(one).setMany(["ETH", "text.email"], [twoAddr, "user@example.com"], tokenId);
         await pns.connect(one).setManyByHash([sha3("ETH"), sha3("text.email")], [twoAddr, "user@example.com"], tokenId);
       });
 
@@ -962,17 +941,13 @@ describe("PNS", async function () {
         await registerName("gavinwood100", twoAddr);
 
         await pns.connect(one).setContractConfig(0);
-        await expect(pns.connect(three).set("ETH", twoAddr, tokenId)).revertedWith(revert`invalid op`);
         await expect(pns.connect(three).setByHash(sha3("ETH"), twoAddr, tokenId)).revertedWith(revert`invalid op`);
-        await expect(pns.connect(three).setMany(["ETH", "text.email"], [twoAddr, "user@example.com"], tokenId)).revertedWith(revert`invalid op`);
         await expect(pns.connect(three).setManyByHash([sha3("ETH"), sha3("text.email")], [twoAddr, "user@example.com"], tokenId)).revertedWith(
           revert`invalid op`
         );
 
         await pns.connect(one).setContractConfig(1);
-        await pns.connect(one).set("ETH", twoAddr, tokenId);
         await pns.connect(one).setByHash(sha3("ETH"), twoAddr, tokenId);
-        await pns.connect(one).setMany(["ETH", "text.email"], [twoAddr, "user@example.com"], tokenId);
         await pns.connect(one).setManyByHash([sha3("ETH"), sha3("text.email")], [twoAddr, "user@example.com"], tokenId);
       });
     });

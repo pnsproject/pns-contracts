@@ -48,7 +48,7 @@ describe("PNS", async function () {
       let tx: any;
 
       it("should register a new domain name", async () => {
-        await controller.setManager(twoAddr, true)
+        await controller.setManager(twoAddr, true);
 
         console.log(
           JSON.stringify(
@@ -61,9 +61,9 @@ describe("PNS", async function () {
           )
         );
 
-        console.log('pns root', await pns.root())
-        console.log('controller root', await controller.root())
-        console.log('controller manager', twoAddr)
+        console.log("pns root", await pns.root());
+        console.log("controller root", await controller.root());
+        console.log("controller manager", twoAddr);
 
         //   await registerName("gavinwood100", twoAddr);
 

@@ -5,9 +5,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721Metad
 pragma solidity ^0.8.0;
 
 interface IPNS is IERC721MetadataUpgradeable {
-
-    // registry
-
     event NewResolver(uint256 tokenId, address resolver);
 
     event NewSubdomain(address to, uint256 tokenId, uint256 subtokenId, string name);
@@ -21,7 +18,6 @@ interface IPNS is IERC721MetadataUpgradeable {
     function exists(uint256 tokenId) external view returns(bool);
 
     function mint(address to, uint256 newTokenId) external;
-
 }
 
 interface IMulticallable {

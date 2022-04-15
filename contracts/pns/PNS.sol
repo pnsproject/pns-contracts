@@ -123,13 +123,6 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         return _keys[keyHash];
     }
 
-    function getKeys(uint256[] calldata hashes) public view override returns (string[] memory values) {
-        values = new string[](hashes.length);
-        for (uint256 i = 0; i < hashes.length; i++) {
-            values[i] = getKey(hashes[i]);
-        }
-    }
-
     function addKeys(string[] memory keys) external override {
         for (uint256 i = 0; i < keys.length; i++) {
             string memory key = keys[i];
@@ -196,16 +189,6 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         }
     }
 
-    function set(
-        string calldata key,
-        string calldata value,
-        uint256 tokenId
-    ) external override writable authorised(tokenId) {
-        uint256 keyHash = uint256(keccak256(abi.encodePacked(key)));
-        require(_existsKey(keyHash), 'key not found');
-        _set(keyHash, value, tokenId);
-    }
-
     function _set(
         uint256 keyHash,
         string calldata value,
@@ -213,16 +196,6 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     ) private {
         _records[tokenId][keyHash] = value;
         emit Set(tokenId, keyHash, value);
-    }
-
-    function setMany(
-        string[] calldata keys,
-        string[] calldata values,
-        uint256 tokenId
-    ) external override writable authorised(tokenId) {
-        for (uint256 i = 0; i < keys.length; i++) {
-            _set(uint256(keccak256(abi.encodePacked(keys[i]))), values[i], tokenId);
-        }
     }
 
     function setByHash(
