@@ -614,24 +614,6 @@ describe("PNS", async function () {
         expect(await pns.exists(subTokenId)).to.eq(false);
       });
 
-      it("should be able to burnBatch token", async () => {
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
-
-        expect(await pns.exists(subTokenId)).to.eq(true);
-
-        await controller.connect(one).burnBatch([subTokenId, tokenId]);
-
-        expect(await pns.exists(subTokenId)).to.eq(false);
-      });
-
-      it("should not be able to burnBatch token by non-root", async () => {
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
-
-        expect(await pns.exists(subTokenId)).to.eq(true);
-
-        await expect(controller.connect(two).burnBatch([subTokenId, tokenId])).revertedWith(revert`caller is not root or manager`);
-      });
-
       it("should be able to burn subdomains by parent owner", async () => {
         await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
 
@@ -744,8 +726,8 @@ describe("PNS", async function () {
 
     describe("PNSController#setNameBatch", async () => {
       it("should register a new domain name", async () => {
-        await pns.mintSubdomainBatch([twoAddr], [baseNode], ["gavinwood100"]);
-        await controller.setMetadataBatch([tokenId, tokenId, 1677200000, 20, 0]);
+        await pns.connect(one).mintSubdomain(twoAddr, baseNode, "gavinwood100");
+        await controller.connect(one).setMetadataBatch([tokenId, tokenId, 1677200000, 20, 0]);
 
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);
@@ -949,6 +931,36 @@ describe("PNS", async function () {
         await pns.connect(one).setContractConfig(1);
         await pns.connect(one).setByHash(sha3("ETH"), twoAddr, tokenId);
         await pns.connect(one).setManyByHash([sha3("ETH"), sha3("text.email")], [twoAddr, "user@example.com"], tokenId);
+      });
+    });
+
+    describe("PNSController#multicall", async () => {
+      it("should be able to burn multiple domains", async () => {
+        await registerName("gavinwood100", twoAddr);
+        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+
+        let ABI = ["function burn(uint256 tokenId)"];
+        let iface = new ethers.utils.Interface(ABI);
+        await controller.connect(two).multicall([iface.encodeFunctionData("burn", [subTokenId]), iface.encodeFunctionData("burn", [tokenId])]);
+        expect(await pns.exists(subTokenId)).to.eq(false);
+        expect(await pns.exists(tokenId)).to.eq(false);
+      });
+
+      it("should be able to setByHash and get record", async () => {
+        await registerName("gavinwood100", twoAddr);
+
+        let ABI = ["function mintSubdomain(address to, uint256 tokenId, string calldata name)"];
+        let iface = new ethers.utils.Interface(ABI);
+        await controller
+          .connect(two)
+          .multicall([
+            iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub0"]),
+            iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub1"]),
+            iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub2"]),
+          ]);
+        expect(await pns.exists(getNamehash("sub0.gavinwood100.dot"))).to.eq(true);
+        expect(await pns.exists(getNamehash("sub1.gavinwood100.dot"))).to.eq(true);
+        expect(await pns.exists(getNamehash("sub2.gavinwood100.dot"))).to.eq(true);
       });
     });
   });

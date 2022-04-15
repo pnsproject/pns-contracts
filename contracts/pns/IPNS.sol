@@ -19,7 +19,3 @@ interface IPNS is IERC721MetadataUpgradeable {
 
     function mint(address to, uint256 newTokenId) external;
 }
-
-interface IMulticallable {
-    function multicall(bytes[] calldata data) external returns(bytes[] memory results);
-}

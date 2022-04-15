@@ -307,25 +307,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         records[tokenId].origin = 0;
     }
 
-    function burnBatch(uint256[] calldata data) public virtual onlyManager {
-        uint256 len = data.length;
-
-        for (uint256 i = 0; i < len; i++) {
-            uint256 tokenId = data[i];
-            uint256 originId = records[tokenId].origin;
-            require(originId != 0, "missing metadata");
-            require(records[tokenId].children == 0, "subdomains not cleared");
-            _pns.burn(tokenId);
-
-            if (records[originId].children > 0) {
-              records[originId].children -= 1;
-            }
-            records[tokenId].expire = 0;
-            records[tokenId].capacity = 0;
-            records[tokenId].origin = 0;
-        }
-    }
-
     // price
 
     uint256[] private basePrices;

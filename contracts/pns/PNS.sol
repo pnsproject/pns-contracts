@@ -71,18 +71,6 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         return subtokenId;
     }
 
-    // todo : consider using multicall
-    function mintSubdomainBatch(address[] calldata addrs, uint256[] calldata tokenIds, string[] calldata names) public virtual onlyManager {
-        for (uint256 i = 0; i < addrs.length; i++) {
-            bytes32 label = keccak256(bytes(names[i]));
-            bytes32 subnode = keccak256(abi.encodePacked(tokenIds[i], label));
-            uint256 subtokenId = uint256(subnode);
-            _mint(addrs[i], subtokenId);
-
-            emit NewSubdomain(addrs[i], tokenIds[i], subtokenId, names[i]);
-        }
-    }
-
     function burn(uint256 tokenId) public virtual override onlyManager {
         _burn(tokenId);
     }
