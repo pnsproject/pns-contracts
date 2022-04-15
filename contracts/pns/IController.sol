@@ -16,7 +16,6 @@ interface IController {
     event MetadataUpdated(uint256[] data);
     event NameRenewed(uint256 node, uint256 cost, uint256 expires, string name);
     event NameRegistered(address to, uint256 node, uint256 cost, uint256 expires, string name);
-    event NewSubdomain(address to, uint256 parent, uint256 node, string name);
 
     function origin(uint256 tokenId) external view returns(uint256);
 

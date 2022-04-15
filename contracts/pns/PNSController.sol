@@ -134,22 +134,18 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         emit CapacityUpdated(tokenId, _capacity);
     }
 
-    // use Record[] instead of uint256[]
-    function setMetadataBatch(uint256[] calldata data) public onlyManager {
-        uint256 len = data.length;
-        require(len % 5 == 0, "length invalid");
-
-        for (uint256 i = 0; i < len; i+=5) {
-            uint256 tokenId = data[i];
-            records[tokenId].origin = data[i+1];
-            records[tokenId].expire = uint64(data[i+2]);
-            records[tokenId].capacity = uint64(data[i+3]);
-            records[tokenId].children = uint64(data[i+4]);
+    function setMetadataBatch(uint256[] calldata tokenIds, Record[] calldata data) public onlyManager {
+        for (uint256 i = 0; i < tokenIds.length; i+=1) {
+            uint256 tokenId = tokenIds[i];
+            records[tokenId].origin = data[i].origin;
+            records[tokenId].expire = data[i].expire;
+            records[tokenId].capacity = data[i].capacity;
+            records[tokenId].children = data[i].children;
         }
-        emit MetadataUpdated(data);
+        emit MetadataUpdated(tokenIds);
     }
 
-    function _register(string calldata name, address to, uint256 duration) internal returns(uint256) {
+    function _register(string calldata name, address to, uint256 duration, uint256 cost) internal returns(uint256) {
         uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
         require(available(tokenId), "tokenId not available");
 
@@ -157,10 +153,12 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         records[tokenId].expire = uint64(exp);
         records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
         records[tokenId].origin = tokenId;
+
+        emit NameRegistered(to, tokenId, cost, exp, name);
     }
 
     function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
-        uint256 tokenId = _register(name, to, duration);
+        uint256 tokenId = _register(name, to, duration, 0);
 
         if (keyHashes.length > 0) {
           IResolver(address(_pns)).setManyByHash(keyHashes, values, tokenId);
@@ -171,13 +169,13 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     function nameRegister(string calldata name, address to, uint256 duration) public override payable open returns(uint256) {
         uint256 len = name.strlen();
         require(len >= MIN_REGISTRATION_LENGTH, "name too short");
-        require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD);
+        require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "overflow");
         require(duration >= MIN_REGISTRATION_DURATION, "duration too small");
 
         uint256 cost = totalRegisterPrice(name, duration);
         require(msg.value >= cost, "insufficient fee");
 
-        uint256 tokenId = _register(name, to, duration);
+        uint256 tokenId = _register(name, to, duration, cost);
 
         payable(_root).transfer(cost);
         if(msg.value > cost) {
@@ -201,9 +199,9 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         bytes32 label = keccak256(bytes(name));
         bytes memory combined = abi.encodePacked(label, to, duration, deadline);
         require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
-        require(block.timestamp < deadline);
+        require(block.timestamp < deadline, "deadline mismatched");
 
-        uint256 tokenId = _register(name, to, duration);
+        uint256 tokenId = _register(name, to, duration, 0);
 
         return tokenId;
     }
@@ -287,8 +285,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         uint256 subtokenId = _pns.mintSubdomain(to, tokenId, name);
         records[originId].children += 1;
         records[subtokenId].origin = originId;
-
-        emit NewSubdomain(to, tokenId, subtokenId, name);
     }
 
     function burn(uint256 tokenId) public virtual live override {

@@ -727,7 +727,7 @@ describe("PNS", async function () {
     describe("PNSController#setNameBatch", async () => {
       it("should register a new domain name", async () => {
         await pns.connect(one).mintSubdomain(twoAddr, baseNode, "gavinwood100");
-        await controller.connect(one).setMetadataBatch([tokenId, tokenId, 1677200000, 20, 0]);
+        await controller.connect(one).setMetadataBatch([tokenId], [{ origin: tokenId, expire: 1677200000, capacity: 20, children: 0 }]);
 
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);
@@ -800,13 +800,17 @@ describe("PNS", async function () {
         await expect(controller2.connect(one).burn(tokenId)).revertedWith(revert`missing metadata`);
         await controller2.connect(one).burn(altTokenId);
 
-        await controller2.setMetadataBatch([
-          tokenId,
-          await controller.origin(tokenId),
-          await controller.expire(tokenId),
-          await controller.capacity(tokenId),
-          await controller.children(tokenId),
-        ]);
+        await controller2.setMetadataBatch(
+          [tokenId],
+          [
+            {
+              origin: await controller.origin(tokenId),
+              expire: await controller.expire(tokenId),
+              capacity: await controller.capacity(tokenId),
+              children: await controller.children(tokenId),
+            },
+          ]
+        );
         await controller2.connect(one).burn(tokenId);
       });
 
@@ -830,7 +834,7 @@ describe("PNS", async function () {
         let { origin, expire, capacity, children } = await getNameRecord(tokenId);
 
         // migrate token metadata
-        await controller2.setMetadataBatch([tokenId, origin, expire, capacity, children]);
+        await controller2.setMetadataBatch([tokenId], [{ origin: origin, expire: expire, capacity: capacity, children: children }]);
 
         expect(await controller.origin(tokenId)).to.eq(await controller2.origin(tokenId));
         expect(await controller.expire(tokenId)).to.eq(await controller2.expire(tokenId));
@@ -841,7 +845,12 @@ describe("PNS", async function () {
 
         let subNameData = await getNameRecord(subTokenId);
 
-        await controller2.setMetadataBatch([subTokenId, subNameData.origin, subNameData.expire, subNameData.capacity, subNameData.children]);
+        await controller2.setMetadataBatch(
+          [subTokenId],
+          [{ origin: subNameData.origin, expire: subNameData.expire, capacity: subNameData.capacity, children: subNameData.children }]
+        );
+
+        // await controller.connect(one).setMetadataBatch([tokenId], [{origin: tokenId, expire: 1677200000, capacity: 20, children: 0 }]);
 
         expect(await controller.origin(subTokenId)).to.eq(await controller2.origin(subTokenId));
         expect(await controller.expire(subTokenId)).to.eq(await controller2.expire(subTokenId));
