@@ -116,11 +116,13 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     }
 
     function setCapacityByManager(uint256 tokenId, uint256 _capacity) public override live onlyManager {
+        require(records[tokenId].origin == tokenId, "not origin");
         records[tokenId].capacity = uint64(_capacity);
         emit CapacityUpdated(tokenId, _capacity);
     }
 
     function setCapacity(uint256 tokenId, uint256 _capacity) public payable override live {
+        require(records[tokenId].origin == tokenId, "not origin");
         require(_capacity > records[tokenId].capacity, "invalid capacity");
         uint256 cost = getCapacityPrice(_capacity - records[tokenId].capacity);
         require(msg.value >= cost, "insufficient fee");
@@ -135,8 +137,11 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     }
 
     function setMetadataBatch(uint256[] calldata tokenIds, Record[] calldata data) public onlyManager {
+        require(tokenIds.length == data.length, "invalid data");
+
         for (uint256 i = 0; i < tokenIds.length; i+=1) {
             uint256 tokenId = tokenIds[i];
+
             records[tokenId].origin = data[i].origin;
             records[tokenId].expire = data[i].expire;
             records[tokenId].capacity = data[i].capacity;
@@ -207,6 +212,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     }
 
     function _renew(uint256 id, uint256 duration) internal returns(uint256) {
+        require(records[id].origin == id, "not renewable");
         require(records[id].expire + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "prevent overflow");
         records[id].expire += uint64(duration);
         return records[id].expire;
@@ -274,7 +280,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     }
 
     modifier authorised(uint256 tokenId) {
-        require(_root == _msgSender() || _pns.isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
+        require(_pns.isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
         _;
     }
 
@@ -326,7 +332,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
 
     function totalRegisterPrice(string memory name, uint256 duration) view public override returns(uint256) {
         uint256 price = uint256(getTokenPrice());
-        return (basePrice(name) + rentPrice(name, duration).div(86400*365)).mul(10 ** 26).div(price);
+        return basePrice(name).mul(10 ** 26).div(price) + rentPrice(name, duration).mul(10 ** 26).div(price).div(86400*365);
     }
 
     function renewPrice(string memory name, uint256 duration) view public override returns(uint256) {

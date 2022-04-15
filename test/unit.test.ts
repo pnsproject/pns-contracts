@@ -850,8 +850,6 @@ describe("PNS", async function () {
           [{ origin: subNameData.origin, expire: subNameData.expire, capacity: subNameData.capacity, children: subNameData.children }]
         );
 
-        // await controller.connect(one).setMetadataBatch([tokenId], [{origin: tokenId, expire: 1677200000, capacity: 20, children: 0 }]);
-
         expect(await controller.origin(subTokenId)).to.eq(await controller2.origin(subTokenId));
         expect(await controller.expire(subTokenId)).to.eq(await controller2.expire(subTokenId));
         expect(await controller.capacity(subTokenId)).to.eq(await controller2.capacity(subTokenId));
@@ -898,6 +896,22 @@ describe("PNS", async function () {
         expect(await pns.getMany(["ETH", "text.email"], tokenId)).to.deep.equal([twoAddr, "user@example.com"]);
         expect(await pns.getByHash(sha3("ETH"), tokenId)).to.deep.equal(twoAddr);
         expect(await pns.getManyByHash([sha3("ETH"), sha3("text.email")], tokenId)).to.deep.equal([twoAddr, "user@example.com"]);
+      });
+
+      it("should return empty string for nonexistent keys", async () => {
+        await registerName("gavinwood100", twoAddr);
+        await expect(pns.connect(two).setByHash(sha3("ETH2"), twoAddr, tokenId)).revertedWith(`key not found`);
+        await expect(pns.connect(two).setManyByHash([sha3("ETH"), sha3("text.email2")], [twoAddr, "user@example.com"], tokenId)).revertedWith(`key not found`);
+        expect(await pns.get("ETH2", tokenId)).to.eq("");
+
+        await pns.connect(two).setByHash(sha3("ETH"), twoAddr, tokenId);
+        await pns.connect(two).setByHash(sha3("text.email"), "user@example.com", tokenId);
+
+        expect(await pns.get("ETH2", tokenId)).to.deep.equal("");
+        expect(await pns.getByHash(sha3("ETH2"), tokenId)).to.deep.equal("");
+        expect(await pns.getMany(["ETH", "text.email"], tokenId)).to.deep.equal([twoAddr, "user@example.com"]);
+        expect(await pns.getMany(["ETH2", "text.email"], tokenId)).to.deep.equal(["", "user@example.com"]);
+        expect(await pns.getManyByHash([sha3("ETH2"), sha3("text.email")], tokenId)).to.deep.equal(["", "user@example.com"]);
       });
 
       it("should be able to setManyByHash and get record", async () => {

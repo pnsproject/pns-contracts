@@ -104,7 +104,7 @@ contract ManagerOwnableUpgradeable is Initializable {
     }
 
     function isManager(address addr) public view returns (bool) {
-        return _managers[addr] || _root == msg.sender;
+        return _managers[addr] || _root == addr;
     }
 }
 

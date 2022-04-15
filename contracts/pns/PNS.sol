@@ -14,6 +14,8 @@ import "../utils/RootOwnable.sol";
 
 contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
 
+    event ConfigUpdated(uint256 flags);
+
     uint256 public FLAGS;
 
     modifier writable {
@@ -23,6 +25,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
 
     function setContractConfig(uint256 _writable) public onlyRoot {
         FLAGS = _writable;
+        emit ConfigUpdated(_writable);
     }
 
     function initialize() initializer public override {
@@ -200,6 +203,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         string[] calldata values,
         uint256 tokenId
     ) external override writable authorised(tokenId) {
+        require(keyHashes.length == values.length, "invalid data");
+
         for (uint256 i = 0; i < keyHashes.length; i++) {
             require(_existsKey(keyHashes[i]), 'key not found');
             _set(keyHashes[i], values[i], tokenId);
