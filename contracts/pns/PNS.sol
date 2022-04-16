@@ -49,7 +49,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     }
     
     modifier authorised(uint256 tokenId) {
-        require(isManager(_msgSender()) || isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
+        require(isManager(_msgSender()) || _isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
         _;
     }
 
