@@ -12,7 +12,7 @@ interface IResolver {
     event SetNftName(address indexed nftAddr, uint256 indexed nftTokenId, uint256 indexed tokenId);
 
     function getName(address addr) external view returns (uint256);
-    function setName(uint256 tokenId ) external;
+    function setName(address addr, uint256 tokenId) external;
 
     function getNftName(address nftAddr, uint256 nftTokenId) external view returns (uint256);
     function setNftName(address nft, uint256 nftTokenId, uint256 nameTokenId ) external;

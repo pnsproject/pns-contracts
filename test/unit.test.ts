@@ -884,6 +884,16 @@ describe("PNS", async function () {
       });
     });
 
+    describe("PNS#setName", async () => {
+      it("should be able to setName of addr", async () => {
+        await registerName("gavinwood100", twoAddr);
+
+        await pns.setName(twoAddr, tokenId);
+
+        expect((await pns.getName(twoAddr)).toHexString()).to.eq(tokenId);
+      });
+    });
+
     describe("PNS#set", async () => {
       it("should be able to setByHash and get record", async () => {
         await registerName("gavinwood100", twoAddr);

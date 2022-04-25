@@ -3,9 +3,11 @@
 pragma solidity ^0.8.0;
 
 
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
+
 
 import "./IPNS.sol";
 import "./IResolver.sol";
@@ -86,10 +88,23 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     mapping(address => mapping(uint256 => uint256)) internal _nft_names;
 
     function setName(
+        address addr,
         uint256 tokenId
-    ) external override writable authorised(tokenId) {
-        _names[_msgSender()] = tokenId;
-        emit SetName(_msgSender(), tokenId);
+    ) external override writable {
+        require(isManager(_msgSender()) ||
+               (_isApprovedOrOwner(_msgSender(), tokenId) &&
+                  (_msgSender() == addr || ownsContract(addr))), "not owner nor approved");
+
+        _names[addr] = tokenId;
+        emit SetName(addr, tokenId);
+    }
+
+    function ownsContract(address addr) internal view returns (bool) {
+        try OwnableUpgradeable(addr).owner() returns (address owner) {
+            return owner == msg.sender;
+        } catch {
+            return false;
+        }
     }
 
     function getName(address addr) public view override returns (uint256) {
@@ -101,7 +116,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 nftTokenId,
         uint256 tokenId
     ) external override writable authorised(tokenId) {
-        require(IERC721Upgradeable(nftAddr).ownerOf(nftTokenId) == _msgSender(), 'not token owner');
+        address tokenOwner = IERC721Upgradeable(nftAddr).ownerOf(nftTokenId);
+        require(tokenOwner == _msgSender() || IERC721Upgradeable(nftAddr).isApprovedForAll(tokenOwner, _msgSender()) , 'not owner nor approved');
         _nft_names[nftAddr][nftTokenId] = tokenId;
         emit SetNftName(nftAddr, nftTokenId, tokenId);
     }
