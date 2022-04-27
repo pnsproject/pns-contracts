@@ -125,37 +125,6 @@ const _abi = [
     inputs: [
       {
         indexed: false,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "parent",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "node",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
-    ],
-    name: "NewSubdomain",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
         internalType: "uint256[]",
         name: "basePrices",
         type: "uint256[]",
@@ -347,6 +316,11 @@ const _abi = [
       {
         internalType: "uint256",
         name: "duration",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "deadline",
         type: "uint256",
       },
       {
@@ -652,13 +626,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "withdraw",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ];

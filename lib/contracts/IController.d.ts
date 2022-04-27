@@ -31,7 +31,7 @@ interface IControllerInterface extends ethers.utils.Interface {
     "getPrices()": FunctionFragment;
     "getTokenPrice()": FunctionFragment;
     "mintSubdomain(address,uint256,string)": FunctionFragment;
-    "nameRedeem(string,address,uint256,bytes)": FunctionFragment;
+    "nameRedeem(string,address,uint256,uint256,bytes)": FunctionFragment;
     "nameRegister(string,address,uint256)": FunctionFragment;
     "nameRegisterByManager(string,address,uint256,uint256[],string[])": FunctionFragment;
     "nameRegisterWithConfig(string,address,uint256,uint256[],string[])": FunctionFragment;
@@ -44,7 +44,6 @@ interface IControllerInterface extends ethers.utils.Interface {
     "setCapacityByManager(uint256,uint256)": FunctionFragment;
     "setPrices(uint256[],uint256[])": FunctionFragment;
     "totalRegisterPrice(string,uint256)": FunctionFragment;
-    "withdraw()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -76,7 +75,7 @@ interface IControllerInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "nameRedeem",
-    values: [string, string, BigNumberish, BytesLike]
+    values: [string, string, BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "nameRegister",
@@ -126,7 +125,6 @@ interface IControllerInterface extends ethers.utils.Interface {
     functionFragment: "totalRegisterPrice",
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "available", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "basePrice", data: BytesLike): Result;
@@ -177,7 +175,6 @@ interface IControllerInterface extends ethers.utils.Interface {
     functionFragment: "totalRegisterPrice",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "CapacityUpdated(uint256,uint256)": EventFragment;
@@ -185,7 +182,6 @@ interface IControllerInterface extends ethers.utils.Interface {
     "MetadataUpdated(uint256[])": EventFragment;
     "NameRegistered(address,uint256,uint256,uint256,string)": EventFragment;
     "NameRenewed(uint256,uint256,uint256,string)": EventFragment;
-    "NewSubdomain(address,uint256,uint256,string)": EventFragment;
     "PriceChanged(uint256[],uint256[])": EventFragment;
   };
 
@@ -194,7 +190,6 @@ interface IControllerInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "MetadataUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NameRegistered"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "NameRenewed"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "NewSubdomain"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PriceChanged"): EventFragment;
 }
 
@@ -223,15 +218,6 @@ export type NameRenewedEvent = TypedEvent<
     node: BigNumber;
     cost: BigNumber;
     expires: BigNumber;
-    name: string;
-  }
->;
-
-export type NewSubdomainEvent = TypedEvent<
-  [string, BigNumber, BigNumber, string] & {
-    to: string;
-    parent: BigNumber;
-    node: BigNumber;
     name: string;
   }
 >;
@@ -329,6 +315,7 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      deadline: BigNumberish,
       code: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -410,10 +397,6 @@ export class IController extends BaseContract {
       duration: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    withdraw(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
   };
 
   available(tokenId: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
@@ -452,6 +435,7 @@ export class IController extends BaseContract {
     name: string,
     owner: string,
     duration: BigNumberish,
+    deadline: BigNumberish,
     code: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -531,10 +515,6 @@ export class IController extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  withdraw(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     available(
       tokenId: BigNumberish,
@@ -575,6 +555,7 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      deadline: BigNumberish,
       code: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -656,8 +637,6 @@ export class IController extends BaseContract {
       duration: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    withdraw(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -747,26 +726,6 @@ export class IController extends BaseContract {
       { node: BigNumber; cost: BigNumber; expires: BigNumber; name: string }
     >;
 
-    "NewSubdomain(address,uint256,uint256,string)"(
-      to?: null,
-      parent?: null,
-      node?: null,
-      name?: null
-    ): TypedEventFilter<
-      [string, BigNumber, BigNumber, string],
-      { to: string; parent: BigNumber; node: BigNumber; name: string }
-    >;
-
-    NewSubdomain(
-      to?: null,
-      parent?: null,
-      node?: null,
-      name?: null
-    ): TypedEventFilter<
-      [string, BigNumber, BigNumber, string],
-      { to: string; parent: BigNumber; node: BigNumber; name: string }
-    >;
-
     "PriceChanged(uint256[],uint256[])"(
       basePrices?: null,
       rentPrices?: null
@@ -827,6 +786,7 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      deadline: BigNumberish,
       code: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -907,10 +867,6 @@ export class IController extends BaseContract {
       name: string,
       duration: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    withdraw(
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
@@ -960,6 +916,7 @@ export class IController extends BaseContract {
       name: string,
       owner: string,
       duration: BigNumberish,
+      deadline: BigNumberish,
       code: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1040,10 +997,6 @@ export class IController extends BaseContract {
       name: string,
       duration: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    withdraw(
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -279,9 +279,9 @@ export function removeTld(label: DomainString): DomainString {
   return label.replace(".dot", "");
 }
 
-export async function setName(name: DomainString, resv?: IResolver) {
+export async function setName(addr: HexAddress, name: DomainString, resv?: IResolver) {
   const tokenId = getNamehash(name);
-  return resolver.setName(tokenId);
+  return resolver.setName(addr, tokenId);
 }
 
 export async function getName(addr: HexAddress, resv?: IResolver): Promise<BigNumber> {
@@ -296,19 +296,9 @@ export async function getNftName(nftAddr: HexAddress, nftTokenId: string) {
   return resolver.getNftName(nftAddr, nftTokenId);
 }
 
-export async function setKey(name: DomainString, key: string, value: string, resv?: IResolver) {
-  const tokenId = getNamehash(name);
-  return resolver.set(key, value, tokenId);
-}
-
 export async function getKey(name: DomainString, key: string, resv?: IResolver): Promise<string> {
   const tokenId = getNamehash(name);
   return resolver.get(key, tokenId);
-}
-
-export async function setKeys(name: DomainString, keys: string[], values: string[], resv?: IResolver) {
-  const tokenId = getNamehash(name);
-  return resolver.setMany(keys, values, tokenId);
 }
 
 export async function setKeysByHash(name: DomainString, keys: string[], values: string[], resv?: IResolver) {
@@ -381,8 +371,8 @@ export async function getDomainDetails(name: DomainString): Promise<DomainDetail
   };
 }
 
-export async function nameRedeem(label: DomainString, account: string, duration: number, code: string) {
-  return controller.nameRedeem(label, account, duration, code);
+export async function nameRedeem(label: DomainString, account: string, duration: number, deadline: number, code: string) {
+  return controller.nameRedeem(label, account, duration, deadline, code);
 }
 
 export async function registerByManager(label: DomainString, account: string, duration: number) {

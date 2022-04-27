@@ -65,6 +65,50 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "addr",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "SetName",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "nftAddr",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "nftTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "SetNftName",
+    type: "event",
+  },
+  {
     inputs: [
       {
         internalType: "string[]",
@@ -139,25 +183,6 @@ const _abi = [
         internalType: "string",
         name: "",
         type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256[]",
-        name: "hashes",
-        type: "uint256[]",
-      },
-    ],
-    name: "getKeys",
-    outputs: [
-      {
-        internalType: "string[]",
-        name: "values",
-        type: "string[]",
       },
     ],
     stateMutability: "view",
@@ -257,29 +282,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "string",
-        name: "key",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "value",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "set",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
         name: "keyHash",
         type: "uint256",
@@ -296,29 +298,6 @@ const _abi = [
       },
     ],
     name: "setByHash",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string[]",
-        name: "keys",
-        type: "string[]",
-      },
-      {
-        internalType: "string[]",
-        name: "values",
-        type: "string[]",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "setMany",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -348,6 +327,11 @@ const _abi = [
   },
   {
     inputs: [
+      {
+        internalType: "address",
+        name: "addr",
+        type: "address",
+      },
       {
         internalType: "uint256",
         name: "tokenId",
