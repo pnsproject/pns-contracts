@@ -44,24 +44,24 @@ const config: HardhatUserConfig = {
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.KEY2 || "", process.env.KEY3 || ""] : [],
     },
     fuji: {
       url: `https://api.avax-test.network/ext/bc/C/rpc`,
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.OTHER_KEY || ""] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.KEY2 || "", process.env.KEY3 || ""] : [],
       timeout: 3600000
     },
     movr: {
       url: `https://moonriver.api.onfinality.io/public`,
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.OTHER_KEY || ""] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.KEY2 || "", process.env.KEY3 || ""] : [],
       timeout: 3600000
     },
     glmr: {
       url: `https://moonbeam.api.onfinality.io/rpc?apikey=${process.env.ONFINALITY_KEY}`,
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.OTHER_KEY || ""] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.KEY2 || "", process.env.KEY3 || ""] : [],
       timeout: 3600000
     },
   },

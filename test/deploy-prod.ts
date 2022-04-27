@@ -21,8 +21,8 @@ describe("PNS", async function () {
     let one: Signer, two: Signer, three: Signer, four: Signer, five: Signer;
     let pns: any, controller: any, controller2: any;
 
-    [one, two] = await ethers.getSigners();
-    [oneAddr, twoAddr] = await Promise.all([one, two].map((s) => s.getAddress()));
+    [one, two, three] = await ethers.getSigners();
+    [oneAddr, twoAddr, threeAddr] = await Promise.all([one, two, three].map((s) => s.getAddress()));
 
     async function getFee(name: string) {
       return (await controller.totalRegisterPrice("gavinwood100", oneyear)).toString();
@@ -48,7 +48,10 @@ describe("PNS", async function () {
       let tx: any;
 
       it("should register a new domain name", async () => {
+        console.log("controller.setManager(twoAddr, true)");
         await controller.setManager(twoAddr, true);
+        console.log("controller.setManager(threeAddr, true)");
+        await controller.setManager(threeAddr, true);
 
         console.log(
           JSON.stringify(
@@ -64,12 +67,6 @@ describe("PNS", async function () {
         console.log("pns root", await pns.root());
         console.log("controller root", await controller.root());
         console.log("controller manager", twoAddr);
-
-        //   await registerName("gavinwood100", twoAddr);
-
-        //   expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
-
-        //   expect(await pns.exists(tokenId)).to.eq(true);
       });
     });
   });

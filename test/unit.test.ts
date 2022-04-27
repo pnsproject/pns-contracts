@@ -67,6 +67,14 @@ describe("PNS", async function () {
       ({ pns, controller } = await deployPNS());
     });
 
+    describe("PNS#tokenURI", async () => {
+      it("should be able to setName of addr", async () => {
+        await registerName("gavinwood100", twoAddr);
+
+        expect(await pns.tokenURI(tokenId)).to.eq("https://meta.dot.site/45485484836517034172298673305712904811136851755288311985927962471717132928483");
+      });
+    });
+
     describe("PNS#root", async () => {
       it("should be equal to controller address", async () => {
         expect(await pns.root()).to.eq(oneAddr);
@@ -977,6 +985,15 @@ describe("PNS", async function () {
         await controller.connect(two).multicall([iface.encodeFunctionData("burn", [subTokenId]), iface.encodeFunctionData("burn", [tokenId])]);
         expect(await pns.exists(subTokenId)).to.eq(false);
         expect(await pns.exists(tokenId)).to.eq(false);
+      });
+
+      it("should be able to register multiple domains", async () => {
+        let ABI = [
+          "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
+        ];
+        let iface = new ethers.utils.Interface(ABI);
+        await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, [], []])]);
+        expect(await pns.exists(tokenId)).to.eq(true);
       });
 
       it("should be able to setByHash and get record", async () => {
