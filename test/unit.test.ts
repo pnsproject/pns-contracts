@@ -14,7 +14,7 @@ let oneyear = 86400 * 365;
 let tokenId = getNamehash("gavinwood100.dot");
 let subTokenId = getNamehash("sub0.gavinwood100.dot");
 let altTokenId = getNamehash("gavinwood100.com");
-let TOKEN_PRICE = 336000000;
+let TOKEN_PRICE = 326000000;
 
 export const revert = (messages: TemplateStringsArray) => `Error: VM Exception while processing transaction: reverted with reason string '${messages[0]}'`;
 
@@ -888,7 +888,7 @@ describe("PNS", async function () {
         fee = await controller.totalRegisterPrice("gavinwood100", 86400 * 365);
 
         await expect(priceOracle.connect(two).transferRootOwnership(twoAddr)).revertedWith(revert`caller is not root`);
-        await expect(priceOracle.connect(two).updateAnswer(2500000000)).revertedWith(revert`caller is not root`);
+        await expect(priceOracle.connect(two).updateAnswer(2500000000)).revertedWith(revert`caller is not root or manager`);
       });
     });
 

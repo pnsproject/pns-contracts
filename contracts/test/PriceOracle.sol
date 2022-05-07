@@ -24,7 +24,7 @@ contract PriceOracle is AggregatorV3Interface, ManagerOwnable {
     updateAnswer(_answer);
   }
 
-  function updateAnswer(int256 _answer) public onlyRoot {
+  function updateAnswer(int256 _answer) public onlyManager {
     latestAnswer = _answer;
     latestTimestamp = block.timestamp;
     latestRound++;

@@ -160,6 +160,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         records[tokenId].origin = tokenId;
 
         emit NameRegistered(to, tokenId, cost, exp, name);
+
+        return tokenId;
     }
 
     function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
