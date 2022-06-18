@@ -31,11 +31,11 @@ interface IController {
 
     function setCapacityByManager(uint256 tokenId, uint256 _capacity) external;
 
-    function nameRegisterByManager(string calldata name, address owner, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) external returns(uint256);
+    function nameRegisterByManager(string calldata name, address owner, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) external returns(uint256);
 
     function nameRegister(string calldata name, address owner, uint256 duration) external payable returns(uint256);
 
-    function nameRegisterWithConfig(string calldata name, address owner, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) external payable returns(uint256);
+    function nameRegisterWithConfig(string calldata name, address owner, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) external payable returns(uint256);
 
     function renew(string calldata name, uint256 duration) external payable;
 

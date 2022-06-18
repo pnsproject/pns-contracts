@@ -64,6 +64,12 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.KEY2 || "", process.env.KEY3 || ""] : [],
       timeout: 3600000
     },
+    moonbase: {
+      url: `https://moonbeam-alpha.api.onfinality.io/public`,
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, process.env.KEY2 || "", process.env.KEY3 || ""] : [],
+      timeout: 3600000
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

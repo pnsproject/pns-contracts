@@ -17,7 +17,7 @@ app
 ignore/
 
 test/connect.ts
-test/connect2.ts
-test/connect3.ts
+test/demo
+
 .openzeppelin/
 data/

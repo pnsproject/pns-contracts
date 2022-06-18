@@ -164,12 +164,17 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         return tokenId;
     }
 
-    function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
+    function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
         uint256 tokenId = _register(name, to, duration, 0);
 
         if (keyHashes.length > 0) {
           IResolver(address(_pns)).setManyByHash(keyHashes, values, tokenId);
         }
+
+        if (data & 1 == 1) {
+            IResolver(address(_pns)).setName(to, tokenId);
+        }
+
         return tokenId;
     }
 
@@ -192,11 +197,15 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         return tokenId;
     }
 
-    function nameRegisterWithConfig(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public override payable returns(uint256) {
+    function nameRegisterWithConfig(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override payable returns(uint256) {
         uint256 tokenId = nameRegister(name, to, duration);
 
         if (keyHashes.length > 0) {
           IResolver(address(_pns)).setManyByHash(keyHashes, values, tokenId);
+        }
+
+        if (data & 1 == 1) {
+            IResolver(address(_pns)).setName(to, tokenId);
         }
 
         return tokenId;

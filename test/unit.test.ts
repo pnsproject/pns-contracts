@@ -218,9 +218,19 @@ describe("PNS", async function () {
 
     describe("PNSController#nameRegisterByManager", async () => {
       it("should register a new domain name by manager", async () => {
-        tx = await controller.connect(one).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365, [sha3("text.email")], ["user@example.com"]);
+        tx = await controller.connect(one).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365, 0, [sha3("text.email")], ["user@example.com"]);
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);
+        expect(await pns.getName(twoAddr)).to.eq(0)
+      });
+    });
+
+    describe("PNSController#nameRegisterByManager and set reverse name", async () => {
+      it("should register a new domain name by manager", async () => {
+        tx = await controller.connect(one).nameRegisterByManager("gavinwood100", twoAddr, 86400 * 365, 1, [sha3("text.email")], ["user@example.com"]);
+        expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
+        expect(await pns.exists(tokenId)).to.eq(true);
+        expect(await pns.getName(twoAddr)).to.eq(tokenId)
       });
     });
 
@@ -352,19 +362,40 @@ describe("PNS", async function () {
       });
     });
 
-    describe("PNSController#nameRegister", async () => {
+    describe("PNSController#nameRegister and set reverse name", async () => {
       it("should register a new domain name with config", async () => {
         fee = (await controller.totalRegisterPrice("gavinwood100", 86400 * 365)).toString();
-        await controller.nameRegisterWithConfig("gavinwood100", twoAddr, 86400 * 365, [sha3("text.email")], ["user@example.com"], {
+        await controller.nameRegisterWithConfig("gavinwood100", twoAddr, 86400 * 365, 1, [sha3("text.email")], ["user@example.com"], {
           value: fee,
         });
+        expect(await pns.getName(twoAddr)).to.eq(tokenId)
       });
 
       it("should register a new domain name with empty config", async () => {
         fee = (await controller.totalRegisterPrice("gavinwood100", 86400 * 365)).toString();
-        await controller.nameRegisterWithConfig("gavinwood100", twoAddr, 86400 * 365, [], [], {
+        await controller.nameRegisterWithConfig("gavinwood100", twoAddr, 86400 * 365, 1, [], [], {
           value: fee,
         });
+        console.log(await pns.getName(twoAddr))
+        expect(await pns.getName(twoAddr)).to.eq(tokenId)
+      });
+    });
+
+    describe("PNSController#nameRegister", async () => {
+      it("should register a new domain name with config", async () => {
+        fee = (await controller.totalRegisterPrice("gavinwood100", 86400 * 365)).toString();
+        await controller.nameRegisterWithConfig("gavinwood100", twoAddr, 86400 * 365, 0, [sha3("text.email")], ["user@example.com"], {
+          value: fee,
+        });
+        expect(await pns.getName(twoAddr)).to.eq(0)
+      });
+
+      it("should register a new domain name with empty config", async () => {
+        fee = (await controller.totalRegisterPrice("gavinwood100", 86400 * 365)).toString();
+        await controller.nameRegisterWithConfig("gavinwood100", twoAddr, 86400 * 365, 0, [], [], {
+          value: fee,
+        });
+        expect(await pns.getName(twoAddr)).to.eq(0)
       });
     });
 
@@ -989,12 +1020,23 @@ describe("PNS", async function () {
 
       it("should be able to register multiple domains", async () => {
         let ABI = [
-          "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
+          "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
         ];
         let iface = new ethers.utils.Interface(ABI);
-        await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, [], []])]);
+        await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, 0, [], []])]);
         expect(await pns.exists(tokenId)).to.eq(true);
       });
+
+      it("should be able to register multiple domains", async () => {
+        let ABI = [
+          "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
+        ];
+        let iface = new ethers.utils.Interface(ABI);
+        await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, 1, [], []])]);
+        expect(await pns.exists(tokenId)).to.eq(true);
+        expect(await pns.getName(twoAddr)).to.eq(tokenId)
+      });
+
 
       it("should be able to setByHash and get record", async () => {
         await registerName("gavinwood100", twoAddr);
