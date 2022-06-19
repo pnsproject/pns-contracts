@@ -229,7 +229,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
 
     mapping(uint256 => mapping(uint256 => uint256)) internal _links;
 
-    function getlinks(uint256 source, uint256[] memory targets) external view returns (uint256[] memory values) {
+    function getlinks(uint256 source, uint256[] memory targets) external view override returns (uint256[] memory values) {
         values = new uint256[](targets.length);
         for (uint256 i = 0; i < targets.length; i++) {
              values[i] = _links[source][targets[i]];
@@ -253,7 +253,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         uint256 source,
         uint256[] calldata targets,
         uint256[] calldata values
-    ) external writable authorised(source) {
+    ) external override writable authorised(source) {
         require(targets.length == values.length, "invalid data");
 
         for (uint256 i = 0; i < targets.length; i++) {
