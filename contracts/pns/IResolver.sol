@@ -26,4 +26,9 @@ interface IResolver {
     function getManyByHash(uint256[] calldata keyHashes, uint256 tokenId) external view returns (string[] memory values);
     function setByHash(uint256 keyHash, string calldata value, uint256 tokenId ) external;
     function setManyByHash(uint256[] calldata keyHashes, string[] calldata values, uint256 tokenId ) external;
+
+    event SetLink(uint256 indexed tokenId, uint256 indexed keyHash, uint256 indexed value);
+    function getlink(uint256 source, uint256 target) external view returns (uint256);
+    function setlink(uint256 source, uint256 target, uint256 value ) external;
 }
+

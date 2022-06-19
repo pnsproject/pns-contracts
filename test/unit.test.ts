@@ -14,6 +14,8 @@ let oneyear = 86400 * 365;
 let tokenId = getNamehash("gavinwood100.dot");
 let subTokenId = getNamehash("sub0.gavinwood100.dot");
 let altTokenId = getNamehash("gavinwood100.com");
+let otherTokenId1 = getNamehash("friend1001.dot");
+let otherTokenId2 = getNamehash("friend1002.dot");
 let TOKEN_PRICE = 326000000;
 
 export const revert = (messages: TemplateStringsArray) => `Error: VM Exception while processing transaction: reverted with reason string '${messages[0]}'`;
@@ -1003,6 +1005,49 @@ describe("PNS", async function () {
         await pns.connect(one).setContractConfig(1);
         await pns.connect(one).setByHash(sha3("ETH"), twoAddr, tokenId);
         await pns.connect(one).setManyByHash([sha3("ETH"), sha3("text.email")], [twoAddr, "user@example.com"], tokenId);
+      });
+    });
+
+    describe("PNS#setlink", async () => {
+      it("should be able to setByHash and get record", async () => {
+        await registerName("gavinwood100", twoAddr);
+        await pns.connect(two).setlink(tokenId, otherTokenId1, 1);
+        await pns.connect(two).setlink(tokenId, otherTokenId2, 2);
+
+        expect(await pns.getlink(tokenId, otherTokenId1)).to.eq(1);
+        expect(await pns.getlink(tokenId, otherTokenId2)).to.eq(2);
+
+        await pns.connect(two).setlinks(tokenId, [otherTokenId1, otherTokenId2], [3,4]);
+
+        expect((await pns.getlinks(tokenId, [otherTokenId1, otherTokenId2])).map((x: any) => x.toNumber())).to.deep.eq([3,4]);
+      });
+
+      it("should return empty string for nonexistent keys", async () => {
+        await registerName("gavinwood100", twoAddr);
+        expect(await pns.getlink(otherTokenId1, otherTokenId2)).to.eq(0);
+      });
+
+      it("should be able to set by approved user", async () => {
+        await registerName("gavinwood100", twoAddr);
+        await expect(pns.connect(three).setlink(tokenId, otherTokenId1, 1)).revertedWith(revert`not owner nor approved`);
+
+        await pns.connect(two).approve(threeAddr, tokenId);
+        await pns.connect(three).setlink(tokenId, otherTokenId1, 1);
+      });
+
+      it("should be able to set by root", async () => {
+        await registerName("gavinwood100", twoAddr);
+        await pns.connect(one).setlink(tokenId, otherTokenId1, 1);
+      });
+
+      it("should be able to set only when writable", async () => {
+        await registerName("gavinwood100", twoAddr);
+
+        await pns.connect(one).setContractConfig(0);
+        await expect(pns.connect(three).setlink(tokenId, otherTokenId1, 1)).revertedWith(revert`invalid op`);
+
+        await pns.connect(one).setContractConfig(1);
+        await pns.connect(one).setlink(tokenId, otherTokenId1, 1);
       });
     });
 
