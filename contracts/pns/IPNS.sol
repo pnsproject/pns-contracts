@@ -19,4 +19,9 @@ interface IPNS is IERC721MetadataUpgradeable {
     function exists(uint256 tokenId) external view returns(bool);
 
     function mint(address to, uint256 newTokenId) external;
+
+    function bounded(uint256 tokenId) external view returns (bool);
+
+    function bound(uint256 tokenId) external;
+
 }

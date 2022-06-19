@@ -60,4 +60,6 @@ interface IController {
     function basePrice(string memory name) view external returns(uint256);
 
     function rentPrice(string memory name, uint256 duration) view external returns(uint256);
+
+    function bound(uint256 tokenId) external;
 }

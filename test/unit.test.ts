@@ -378,7 +378,6 @@ describe("PNS", async function () {
         await controller.nameRegisterWithConfig("gavinwood100", twoAddr, 86400 * 365, 1, [], [], {
           value: fee,
         });
-        console.log(await pns.getName(twoAddr))
         expect(await pns.getName(twoAddr)).to.eq(tokenId)
       });
     });
@@ -1051,6 +1050,70 @@ describe("PNS", async function () {
       });
     });
 
+    describe("PNS#bound", async () => {
+      it("should be able to bound the tokenId by root", async () => {
+        await registerName("gavinwood100", twoAddr);
+
+        expect(await pns.bounded(tokenId)).to.eq(false);
+        await pns.connect(two).transferFrom(twoAddr, threeAddr, tokenId);
+
+        await expect(pns.connect(two).bound(tokenId)).revertedWith(revert`caller is not root or manager`);
+        await expect(pns.connect(three).bound(tokenId)).revertedWith(revert`caller is not root or manager`);
+
+        await pns.connect(one).bound(tokenId);
+        expect(await pns.bounded(tokenId)).to.eq(true);
+
+        await expect(pns.connect(three).transferFrom(threeAddr, twoAddr, tokenId)).revertedWith(revert`token bounded`);
+      });
+    });
+
+    describe("PNSController#bound", async () => {
+      it("should be able to bound the tokenId by owner", async () => {
+        await registerName("gavinwood100", twoAddr);
+
+        expect(await pns.bounded(tokenId)).to.eq(false);
+        await pns.connect(two).transferFrom(twoAddr, threeAddr, tokenId);
+
+        await expect(controller.connect(two).bound(tokenId)).revertedWith(revert`not owner nor approved`);
+        await controller.connect(three).bound(tokenId)
+
+        expect(await pns.bounded(tokenId)).to.eq(true);
+        await controller.connect(three).burn(tokenId)
+      });
+
+      it("should not be burnable after registration period for bounded tokenId", async () => {
+        await registerName("gavinwood100", twoAddr);
+        await controller.connect(two).bound(tokenId)
+
+        expire = await controller.expire(tokenId);
+
+        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
+
+        await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 365 + 100]);
+        await ethers.provider.send("evm_mine", []);
+
+        expect(await controller.nameExpired(tokenId)).to.eq(true);
+
+        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
+        await controller.connect(two).burn(tokenId)
+      });
+
+      it("should be burnable after registration period for unbounded tokenId", async () => {
+        await registerName("gavinwood100", twoAddr);
+
+        expire = await controller.expire(tokenId);
+
+        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
+
+        await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 365 + 100]);
+        await ethers.provider.send("evm_mine", []);
+
+        expect(await controller.nameExpired(tokenId)).to.eq(true);
+
+        await controller.connect(three).burn(tokenId)
+      });
+    });
+
     describe("PNSController#multicall", async () => {
       it("should be able to burn multiple domains", async () => {
         await registerName("gavinwood100", twoAddr);
@@ -1081,7 +1144,6 @@ describe("PNS", async function () {
         expect(await pns.exists(tokenId)).to.eq(true);
         expect(await pns.getName(twoAddr)).to.eq(tokenId)
       });
-
 
       it("should be able to setByHash and get record", async () => {
         await registerName("gavinwood100", twoAddr);

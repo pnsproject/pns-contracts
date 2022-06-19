@@ -263,4 +263,24 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
             emit SetLink(source, target, value);
         }
     }
+
+    mapping(uint256 => bool) internal _bounds;
+
+    function bounded(uint256 tokenId) external view override returns (bool) {
+        return _bounds[tokenId];
+    }
+
+    function bound(uint256 tokenId) external override writable onlyManager {
+        _bounds[tokenId] = true;
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override {
+        if (to != address(0)) {
+          require(!_bounds[tokenId], "token bounded");
+        }
+    }
 }

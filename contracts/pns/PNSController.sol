@@ -305,7 +305,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     }
 
     function burn(uint256 tokenId) public virtual live override {
-        require(nameExpired(tokenId) || _root == _msgSender() || _pns.isApprovedOrOwner(_msgSender(), tokenId) || _pns.isApprovedOrOwner(_msgSender(), records[tokenId].origin), "not owner nor approved");
+        require((nameExpired(tokenId) && !_pns.bounded(tokenId)) || _root == _msgSender() || _pns.isApprovedOrOwner(_msgSender(), tokenId) || _pns.isApprovedOrOwner(_msgSender(), records[tokenId].origin), "not owner nor approved");
         // require subtokens cleared
         require(records[tokenId].origin != 0, "missing metadata");
         require(records[tokenId].children == 0, "subdomains not cleared");
@@ -318,6 +318,11 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         records[tokenId].expire = 0;
         records[tokenId].capacity = 0;
         records[tokenId].origin = 0;
+    }
+
+    function bound(uint256 tokenId) public override live authorised(tokenId) {
+        require(records[tokenId].origin == tokenId || _pns.bounded(records[tokenId].origin), "token origin is not bounded");
+        _pns.bound(tokenId);
     }
 
     // price
