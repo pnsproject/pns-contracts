@@ -10,9 +10,6 @@ interface IPNS is IERC721MetadataUpgradeable {
 
     event NewSubdomain(address to, uint256 tokenId, uint256 subtokenId, string name);
 
-    // event NameRenewed(uint256 node, uint256 cost, uint256 expires, string name);
-    event NameRegistered(address to, uint256 node, uint256 cost, uint256 expires, string name);
-
     function mintSubdomain(address to, uint256 tokenId, string calldata name) external returns (uint256);
 
     function burn(uint256 tokenId) external;
@@ -29,7 +26,13 @@ interface IPNS is IERC721MetadataUpgradeable {
 
     function origin(uint256 tokenId) external view returns(uint256);
 
+    function parent(uint256 tokenId) external view returns(uint256);
+
     function expire(uint256 tokenId) external view returns(uint256);
 
     function available(uint256 tokenId) external view returns(bool);
+
+    function register(string calldata name, address to, uint256 duration, uint256 BASE_NODE) external returns(uint256);
+
+    function renew(uint256 id, uint256 duration) external returns(uint256);
 }

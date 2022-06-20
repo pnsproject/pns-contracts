@@ -13,7 +13,6 @@ import "../utils/StringUtils.sol";
 import "../utils/SafeMath.sol";
 import "../utils/RootOwnable.sol";
 
-import "./PNS.sol";
 import "./IPNS.sol";
 import "./IController.sol";
 import "./IResolver.sol";
@@ -25,7 +24,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     using SafeMath for *;
     using StringUtils for *;
 
-    PNS public _pns;
+    IPNS public _pns;
 
     uint256 public BASE_NODE;
     uint256 public MIN_REGISTRATION_DURATION;
@@ -33,7 +32,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     uint256 public GRACE_PERIOD;
     uint256 public FLAGS;
 
-    constructor(PNS pns, uint256 _baseNode, uint256[] memory _basePrices, uint256[] memory _rentPrices, address _priceFeed) {
+    constructor(IPNS pns, uint256 _baseNode, uint256[] memory _basePrices, uint256[] memory _rentPrices, address _priceFeed) {
         _pns = pns;
         BASE_NODE = _baseNode;
 
@@ -79,7 +78,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     }
 
     function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
-        uint256 tokenId = _pns._register(name, to, duration, 0, BASE_NODE);
+        uint256 tokenId = _pns.register(name, to, duration, BASE_NODE);
 
         if (keyHashes.length > 0) {
           IResolver(address(_pns)).setManyByHash(keyHashes, values, tokenId);
@@ -101,7 +100,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         uint256 cost = totalRegisterPrice(name, duration);
         require(msg.value >= cost, "insufficient fee");
 
-        uint256 tokenId = _pns._register(name, to, duration, cost, BASE_NODE);
+        uint256 tokenId = _pns.register(name, to, duration, BASE_NODE);
 
         payable(_root).transfer(cost);
         if(msg.value > cost) {
@@ -131,7 +130,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
         require(block.timestamp < deadline, "deadline mismatched");
 
-        uint256 tokenId = _pns._register(name, to, duration, 0, BASE_NODE);
+        uint256 tokenId = _pns.register(name, to, duration, BASE_NODE);
 
         return tokenId;
     }
@@ -142,7 +141,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(BASE_NODE, label));
         uint256 tokenId = uint256(subnode);
-        uint256 expireAt = _pns._renew(tokenId, duration);
+        uint256 expireAt = _pns.renew(tokenId, duration);
 
         uint256 cost = renewPrice(name, duration);
         require(msg.value >= cost, "insufficient fee");
@@ -159,7 +158,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(BASE_NODE, label));
         uint256 tokenId = uint256(subnode);
-        uint256 expireAt = _pns._renew(tokenId, duration);
+        uint256 expireAt = _pns.renew(tokenId, duration);
 
         emit NameRenewed(tokenId, 0, expireAt, name);
     }

@@ -723,7 +723,7 @@ describe("PNS", async function () {
     describe("PNSController#setNameBatch", async () => {
       it("should register a new domain name", async () => {
         await pns.connect(one).mintSubdomain(twoAddr, baseNode, "gavinwood100");
-        await pns.connect(one).setMetadataBatch([tokenId], [{ origin: tokenId, expire: 1677200000 }]);
+        await pns.connect(one).setMetadataBatch([tokenId], [{ origin: tokenId, parent: tokenId, expire: 1677200000 }]);
 
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);

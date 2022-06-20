@@ -16,7 +16,6 @@ interface IController {
     event NameRenewed(uint256 node, uint256 cost, uint256 expires, string name);
     event NameRegistered(address to, uint256 node, uint256 cost, uint256 expires, string name);
 
-
     function nameRegisterByManager(string calldata name, address owner, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) external returns(uint256);
 
     function nameRegister(string calldata name, address owner, uint256 duration) external payable returns(uint256);
