@@ -22,8 +22,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     struct Record {
         uint256 origin;
         uint64 expire;
-        uint64 capacity;
-        uint64 children;
     }
 
     AggregatorV3Interface public priceFeed;
@@ -36,7 +34,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     mapping(uint256=>Record) records;
 
     uint256 public BASE_NODE;
-    uint256 public DEFAULT_DOMAIN_CAPACITY;
     uint256 public MIN_REGISTRATION_DURATION;
     uint256 public MIN_REGISTRATION_LENGTH;
     uint256 public GRACE_PERIOD;
@@ -46,12 +43,10 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         _pns = pns;
         BASE_NODE = _baseNode;
 
-        DEFAULT_DOMAIN_CAPACITY = 20;
         MIN_REGISTRATION_LENGTH = 10;
         MIN_REGISTRATION_DURATION = 28 days;
         GRACE_PERIOD = 360 days;
         FLAGS = 7;
-        capacityPrice = 100;
 
         setPrices(_basePrices, _rentPrices);
         priceFeed = AggregatorV3Interface(_priceFeed);
@@ -75,14 +70,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         return uint256(records[tokenId].expire);
     }
 
-    function capacity(uint256 tokenId) public override view returns(uint256) {
-        return uint256(records[tokenId].capacity);
-    }
-
-    function children(uint256 tokenId) public override view returns(uint256) {
-        return uint256(records[tokenId].children);
-    }
-
     function origin(uint256 tokenId) public override view returns(uint256) {
         return records[tokenId].origin;
     }
@@ -104,36 +91,13 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         _;
     }
 
-    function setContractConfig(uint256 _flags, uint256 _min_length, uint256 _min_duration, uint256 _grace_period, uint256 _default_capacity, uint256 _capacity_price, address _price_feed) public onlyRoot {
+    function setContractConfig(uint256 _flags, uint256 _min_length, uint256 _min_duration, uint256 _grace_period, address _price_feed) public onlyRoot {
         FLAGS = _flags;
         MIN_REGISTRATION_LENGTH = _min_length;
         MIN_REGISTRATION_DURATION = _min_duration;
         GRACE_PERIOD = _grace_period;
-        DEFAULT_DOMAIN_CAPACITY = _default_capacity;
-        capacityPrice = _capacity_price;
         priceFeed = AggregatorV3Interface(_price_feed);
         emit ConfigUpdated(_flags);
-    }
-
-    function setCapacityByManager(uint256 tokenId, uint256 _capacity) public override live onlyManager {
-        require(records[tokenId].origin == tokenId, "not origin");
-        records[tokenId].capacity = uint64(_capacity);
-        emit CapacityUpdated(tokenId, _capacity);
-    }
-
-    function setCapacity(uint256 tokenId, uint256 _capacity) public payable override live {
-        require(records[tokenId].origin == tokenId, "not origin");
-        require(_capacity > records[tokenId].capacity, "invalid capacity");
-        uint256 cost = getCapacityPrice(_capacity - records[tokenId].capacity);
-        require(msg.value >= cost, "insufficient fee");
-
-        payable(_root).transfer(cost);
-        if(msg.value > cost) {
-            payable(_msgSender()).transfer(msg.value - cost);
-        }
-
-        records[tokenId].capacity = uint64(_capacity);
-        emit CapacityUpdated(tokenId, _capacity);
     }
 
     function setMetadataBatch(uint256[] calldata tokenIds, Record[] calldata data) public onlyManager {
@@ -144,8 +108,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
 
             records[tokenId].origin = data[i].origin;
             records[tokenId].expire = data[i].expire;
-            records[tokenId].capacity = data[i].capacity;
-            records[tokenId].children = data[i].children;
         }
         emit MetadataUpdated(tokenIds);
     }
@@ -156,7 +118,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
 
         uint256 exp = block.timestamp + duration;
         records[tokenId].expire = uint64(exp);
-        records[tokenId].capacity = uint64(DEFAULT_DOMAIN_CAPACITY);
         records[tokenId].origin = tokenId;
 
         emit NameRegistered(to, tokenId, cost, exp, name);
@@ -297,10 +258,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
 
     function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override live authorised(tokenId) {
         uint256 originId = records[tokenId].origin;
-        require(records[originId].children < records[originId].capacity, "reach subdomain capacity");
 
         uint256 subtokenId = _pns.mintSubdomain(to, tokenId, name);
-        records[originId].children += 1;
         records[subtokenId].origin = originId;
     }
 
@@ -308,15 +267,10 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         require((nameExpired(tokenId) && !_pns.bounded(tokenId)) || _root == _msgSender() || _pns.isApprovedOrOwner(_msgSender(), tokenId) || _pns.isApprovedOrOwner(_msgSender(), records[tokenId].origin), "not owner nor approved");
         // require subtokens cleared
         require(records[tokenId].origin != 0, "missing metadata");
-        require(records[tokenId].children == 0, "subdomains not cleared");
         _pns.burn(tokenId);
 
         uint256 originId = records[tokenId].origin;
-        if (records[originId].children > 0) {
-          records[originId].children -= 1;
-        }
         records[tokenId].expire = 0;
-        records[tokenId].capacity = 0;
         records[tokenId].origin = 0;
     }
 
@@ -329,7 +283,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
 
     uint256[] private basePrices;
     uint256[] private rentPrices;
-    uint256 public capacityPrice;
 
     function getTokenPrice() public override view returns (int) {
         (, int price, , , ) = priceFeed.latestRoundData();
@@ -354,12 +307,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     function renewPrice(string memory name, uint256 duration) view public override returns(uint256) {
         uint256 price = uint256(getTokenPrice());
         return rentPrice(name, duration).mul(10 ** 26).div(price).div(86400*365);
-    }
-
-    function getCapacityPrice(uint256 delta) view public returns(uint256) {
-        require(delta > 0, "invalid delta");
-        uint256 price = uint256(getTokenPrice());
-        return delta.mul(capacityPrice).mul(10 ** 24).div(price);
     }
 
     function basePrice(string memory name) view public override returns(uint256) {

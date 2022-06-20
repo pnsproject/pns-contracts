@@ -21,15 +21,7 @@ interface IController {
 
     function expire(uint256 tokenId) external view returns(uint256);
 
-    function capacity(uint256 tokenId) external view returns(uint256);
-
-    function children(uint256 tokenId) external view returns(uint256);
-
     function available(uint256 tokenId) external view returns(bool);
-
-    function setCapacity(uint256 tokenId, uint256 _capacity) external payable;
-
-    function setCapacityByManager(uint256 tokenId, uint256 _capacity) external;
 
     function nameRegisterByManager(string calldata name, address owner, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) external returns(uint256);
 
