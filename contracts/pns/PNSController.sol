@@ -13,25 +13,19 @@ import "../utils/StringUtils.sol";
 import "../utils/SafeMath.sol";
 import "../utils/RootOwnable.sol";
 
+import "./PNS.sol";
 import "./IPNS.sol";
 import "./IController.sol";
 import "./IResolver.sol";
 
 contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticallable {
 
-    struct Record {
-        uint256 origin;
-        uint64 expire;
-    }
-
     AggregatorV3Interface public priceFeed;
 
     using SafeMath for *;
     using StringUtils for *;
 
-    IPNS public _pns;
-
-    mapping(uint256=>Record) records;
+    PNS public _pns;
 
     uint256 public BASE_NODE;
     uint256 public MIN_REGISTRATION_DURATION;
@@ -39,7 +33,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     uint256 public GRACE_PERIOD;
     uint256 public FLAGS;
 
-    constructor(IPNS pns, uint256 _baseNode, uint256[] memory _basePrices, uint256[] memory _rentPrices, address _priceFeed) {
+    constructor(PNS pns, uint256 _baseNode, uint256[] memory _basePrices, uint256[] memory _rentPrices, address _priceFeed) {
         _pns = pns;
         BASE_NODE = _baseNode;
 
@@ -56,22 +50,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         return
             interfaceId == type(IController).interfaceId ||
             super.supportsInterface(interfaceId);
-    }
-
-    function nameExpired(uint256 tokenId) public view returns(bool) {
-        return records[records[tokenId].origin].expire + GRACE_PERIOD < block.timestamp;
-    }
-
-    function available(uint256 tokenId) public override view returns(bool) {
-        return records[tokenId].origin == 0;
-    }
-
-    function expire(uint256 tokenId) public override view returns(uint256) {
-        return uint256(records[tokenId].expire);
-    }
-
-    function origin(uint256 tokenId) public override view returns(uint256) {
-        return records[tokenId].origin;
     }
 
     // register
@@ -100,33 +78,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         emit ConfigUpdated(_flags);
     }
 
-    function setMetadataBatch(uint256[] calldata tokenIds, Record[] calldata data) public onlyManager {
-        require(tokenIds.length == data.length, "invalid data");
-
-        for (uint256 i = 0; i < tokenIds.length; i+=1) {
-            uint256 tokenId = tokenIds[i];
-
-            records[tokenId].origin = data[i].origin;
-            records[tokenId].expire = data[i].expire;
-        }
-        emit MetadataUpdated(tokenIds);
-    }
-
-    function _register(string calldata name, address to, uint256 duration, uint256 cost) internal returns(uint256) {
-        uint256 tokenId = _pns.mintSubdomain(to, BASE_NODE, name);
-        require(available(tokenId), "tokenId not available");
-
-        uint256 exp = block.timestamp + duration;
-        records[tokenId].expire = uint64(exp);
-        records[tokenId].origin = tokenId;
-
-        emit NameRegistered(to, tokenId, cost, exp, name);
-
-        return tokenId;
-    }
-
     function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
-        uint256 tokenId = _register(name, to, duration, 0);
+        uint256 tokenId = _pns._register(name, to, duration, 0, BASE_NODE);
 
         if (keyHashes.length > 0) {
           IResolver(address(_pns)).setManyByHash(keyHashes, values, tokenId);
@@ -148,7 +101,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         uint256 cost = totalRegisterPrice(name, duration);
         require(msg.value >= cost, "insufficient fee");
 
-        uint256 tokenId = _register(name, to, duration, cost);
+        uint256 tokenId = _pns._register(name, to, duration, cost, BASE_NODE);
 
         payable(_root).transfer(cost);
         if(msg.value > cost) {
@@ -178,16 +131,9 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
         require(block.timestamp < deadline, "deadline mismatched");
 
-        uint256 tokenId = _register(name, to, duration, 0);
+        uint256 tokenId = _pns._register(name, to, duration, 0, BASE_NODE);
 
         return tokenId;
-    }
-
-    function _renew(uint256 id, uint256 duration) internal returns(uint256) {
-        require(records[id].origin == id, "not renewable");
-        require(records[id].expire + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "prevent overflow");
-        records[id].expire += uint64(duration);
-        return records[id].expire;
     }
 
     // controller methods
@@ -196,7 +142,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(BASE_NODE, label));
         uint256 tokenId = uint256(subnode);
-        uint256 expireAt = _renew(tokenId, duration);
+        uint256 expireAt = _pns._renew(tokenId, duration);
 
         uint256 cost = renewPrice(name, duration);
         require(msg.value >= cost, "insufficient fee");
@@ -213,7 +159,7 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(BASE_NODE, label));
         uint256 tokenId = uint256(subnode);
-        uint256 expireAt = _renew(tokenId, duration);
+        uint256 expireAt = _pns._renew(tokenId, duration);
 
         emit NameRenewed(tokenId, 0, expireAt, name);
     }
@@ -254,29 +200,6 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     modifier authorised(uint256 tokenId) {
         require(_pns.isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
         _;
-    }
-
-    function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override live authorised(tokenId) {
-        uint256 originId = records[tokenId].origin;
-
-        uint256 subtokenId = _pns.mintSubdomain(to, tokenId, name);
-        records[subtokenId].origin = originId;
-    }
-
-    function burn(uint256 tokenId) public virtual live override {
-        require((nameExpired(tokenId) && !_pns.bounded(tokenId)) || _root == _msgSender() || _pns.isApprovedOrOwner(_msgSender(), tokenId) || _pns.isApprovedOrOwner(_msgSender(), records[tokenId].origin), "not owner nor approved");
-        // require subtokens cleared
-        require(records[tokenId].origin != 0, "missing metadata");
-        _pns.burn(tokenId);
-
-        uint256 originId = records[tokenId].origin;
-        records[tokenId].expire = 0;
-        records[tokenId].origin = 0;
-    }
-
-    function bound(uint256 tokenId) public override live authorised(tokenId) {
-        require(records[tokenId].origin == tokenId || _pns.bounded(records[tokenId].origin), "token origin is not bounded");
-        _pns.bound(tokenId);
     }
 
     // price

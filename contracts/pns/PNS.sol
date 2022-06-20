@@ -19,6 +19,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     event ConfigUpdated(uint256 flags);
 
     uint256 public FLAGS;
+    uint256 public GRACE_PERIOD;
 
     modifier writable {
         require((FLAGS & 1) > 0, "invalid op");
@@ -34,6 +35,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
       __ERC721_init("PNS", "PNS");
       ManagerOwnableUpgradeable.initialize();
       FLAGS = 1;
+      GRACE_PERIOD = 360 days;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
@@ -65,19 +67,27 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         _mint(to, newTokenId);
     }
 
-    function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override onlyManager returns (uint256) {
+    function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override  authorised(tokenId) returns (uint256) {
         // parent domain owner only
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(tokenId, label));
         uint256 subtokenId = uint256(subnode);
         _mint(to, subtokenId);
 
+        uint256 originId = records[tokenId].origin;
+        records[subtokenId].origin = originId;
+
         emit NewSubdomain(to, tokenId, subtokenId, name);
         return subtokenId;
     }
 
-    function burn(uint256 tokenId) public virtual override onlyManager {
+    function burn(uint256 tokenId) public virtual override {
+        require((nameExpired(tokenId) && !_bounds[tokenId]) || _root == _msgSender() || isApprovedOrOwner(_msgSender(), tokenId) || isApprovedOrOwner(_msgSender(), records[tokenId].origin), "not owner nor approved");
+        // require subtokens cleared
         _burn(tokenId);
+
+        records[tokenId].expire = 0;
+        records[tokenId].origin = 0;
     }
 
     // records
@@ -270,7 +280,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         return _bounds[tokenId];
     }
 
-    function bound(uint256 tokenId) external override writable onlyManager {
+    function bound(uint256 tokenId) public override authorised(tokenId) {
+        require(records[tokenId].origin == tokenId || _bounds[records[tokenId].origin], "token origin is not bounded");
         _bounds[tokenId] = true;
     }
 
@@ -278,9 +289,71 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         address from,
         address to,
         uint256 tokenId
-    ) internal override {
+    ) internal view override {
         if (to != address(0)) {
           require(!_bounds[tokenId], "token bounded");
         }
+    }
+
+
+    struct Record {
+        uint256 origin;
+        uint64 expire;
+    }
+
+    mapping(uint256=>Record) records;
+
+    function nameExpired(uint256 tokenId) public view returns(bool) {
+        return records[records[tokenId].origin].expire + GRACE_PERIOD < block.timestamp;
+        // todo
+        return records[records[tokenId].origin].expire < block.timestamp;
+    }
+
+    function available(uint256 tokenId) public override view returns(bool) {
+        return records[tokenId].origin == 0;
+    }
+
+    function expire(uint256 tokenId) public override view returns(uint256) {
+        return uint256(records[tokenId].expire);
+    }
+
+    function origin(uint256 tokenId) public override view returns(uint256) {
+        return records[tokenId].origin;
+    }
+
+    event MetadataUpdated(uint256[] data);
+    // todo
+
+    function setMetadataBatch(uint256[] calldata tokenIds, Record[] calldata data) public onlyManager {
+        require(tokenIds.length == data.length, "invalid data");
+
+        for (uint256 i = 0; i < tokenIds.length; i+=1) {
+            uint256 tokenId = tokenIds[i];
+
+            records[tokenId].origin = data[i].origin;
+            records[tokenId].expire = data[i].expire;
+        }
+        emit MetadataUpdated(tokenIds);
+    }
+
+    function _register(string calldata name, address to, uint256 duration, uint256 cost, uint256 BASE_NODE) public onlyManager returns(uint256) {
+        uint256 tokenId = mintSubdomain(to, BASE_NODE, name);
+        require(available(tokenId), "tokenId not available");
+
+        uint256 exp = block.timestamp + duration;
+        records[tokenId].expire = uint64(exp);
+        records[tokenId].origin = tokenId;
+
+        emit NameRegistered(to, tokenId, cost, exp, name);
+
+        return tokenId;
+    }
+
+    function _renew(uint256 id, uint256 duration) public onlyManager returns(uint256) {
+        require(records[id].origin == id, "not renewable");
+        require(records[id].expire + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "prevent overflow");
+        // todo
+        records[id].expire += uint64(duration);
+        return records[id].expire;
     }
 }

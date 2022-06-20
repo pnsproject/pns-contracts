@@ -13,15 +13,9 @@ interface IController {
     event PriceChanged(uint256[] basePrices, uint256[] rentPrices);
     event ConfigUpdated(uint256 flags);
     event CapacityUpdated(uint256 tokenId, uint256 capacity);
-    event MetadataUpdated(uint256[] data);
     event NameRenewed(uint256 node, uint256 cost, uint256 expires, string name);
     event NameRegistered(address to, uint256 node, uint256 cost, uint256 expires, string name);
 
-    function origin(uint256 tokenId) external view returns(uint256);
-
-    function expire(uint256 tokenId) external view returns(uint256);
-
-    function available(uint256 tokenId) external view returns(bool);
 
     function nameRegisterByManager(string calldata name, address owner, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) external returns(uint256);
 
@@ -34,10 +28,6 @@ interface IController {
     function renewByManager(string calldata name, uint256 duration) external;
 
     function nameRedeem(string calldata name, address owner, uint256 duration, uint256 deadline, bytes memory code) external returns(uint256);
-
-    function mintSubdomain(address to, uint256 tokenId, string calldata name) external;
-
-    function burn(uint256 tokenId) external;
 
     function getTokenPrice() external view returns (int);
 
@@ -52,6 +42,4 @@ interface IController {
     function basePrice(string memory name) view external returns(uint256);
 
     function rentPrice(string memory name, uint256 duration) view external returns(uint256);
-
-    function bound(uint256 tokenId) external;
 }

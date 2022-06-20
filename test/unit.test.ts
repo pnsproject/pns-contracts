@@ -45,18 +45,18 @@ describe("PNS", async function () {
     }
 
     async function getExpire(tokenId: any) {
-      return controller.expire(tokenId);
+      return pns.expire(tokenId);
     }
 
     async function checkNameRecord(tokenId: string, origin: any, expire: Number) {
-      expect(await controller.origin(tokenId)).to.eq(origin);
-      expect(await controller.expire(tokenId)).to.eq(expire);
+      expect(await pns.origin(tokenId)).to.eq(origin);
+      expect(await pns.expire(tokenId)).to.eq(expire);
     }
 
     async function getNameRecord(tokenId: string, ctlr_opt?: any) {
-      let ctlr = ctlr_opt || controller;
-      let origin = await controller.origin(tokenId);
-      let expire = await controller.expire(tokenId);
+      let ctlr = ctlr_opt || pns;
+      let origin = await pns.origin(tokenId);
+      let expire = await pns.expire(tokenId);
       return { origin, expire };
     }
 
@@ -180,19 +180,13 @@ describe("PNS", async function () {
 
       it("should be able to burn subtoken", async () => {
         await pns.connect(one).mint(twoAddr, tokenId);
-        await pns.connect(one).mintSubdomain(threeAddr, tokenId, "sub0");
-        await pns.connect(one).burn(subTokenId);
+        await pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+        await pns.connect(two).burn(subTokenId);
         expect(await pns.exists(subTokenId)).to.eq(false);
+        await pns.connect(two).burn(tokenId)
+        expect(await pns.exists(tokenId)).to.eq(false);
       });
 
-      it("should not be able to mint or burn by non-root", async () => {
-        await expect(pns.connect(two).mint(twoAddr, tokenId)).revertedWith(revert`caller is not root`);
-
-        await pns.connect(one).mint(twoAddr, tokenId);
-        await expect(pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0")).revertedWith(revert`caller is not root or manager`);
-
-        await expect(pns.connect(two).burn(tokenId)).revertedWith(revert`caller is not root or manager`);
-      });
     });
 
     describe("PNSController#transferRootOwnership", async () => {
@@ -455,7 +449,7 @@ describe("PNS", async function () {
         let beforeRootBalance = await ethers.provider.getBalance(oneAddr);
         let beforeUserBalance = await ethers.provider.getBalance(twoAddr);
 
-        expire = await controller.expire(tokenId);
+        expire = await pns.expire(tokenId);
         fee = (await controller.renewPrice("gavinwood100", 86400)).toString();
         tx = await controller.connect(two).renew("gavinwood100", 86400, {
           value: fee,
@@ -490,11 +484,11 @@ describe("PNS", async function () {
       it("should renew an existing domain name by manager", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        expire = await controller.expire(tokenId);
+        expire = await pns.expire(tokenId);
 
         await controller.renewByManager("gavinwood100", 86400 * 100);
 
-        newExpire = await controller.expire(tokenId);
+        newExpire = await pns.expire(tokenId);
         expect(newExpire.sub(expire)).to.eq(86400 * 100);
       });
     });
@@ -503,29 +497,29 @@ describe("PNS", async function () {
       it("should be able to mint subdomains", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        await expect(controller.connect(three).mintSubdomain(threeAddr, tokenId, "sub0")).revertedWith(revert`not owner nor approved`);
+        await expect(pns.connect(three).mintSubdomain(threeAddr, tokenId, "sub0")).revertedWith(revert`not owner nor approved`);
 
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+        await pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
         expect(await pns.ownerOf(getNamehash("sub0.gavinwood100.dot"))).to.eq(threeAddr);
       });
 
       it("should not mint subdomains for an empty domain", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        await expect(controller.connect(two).mintSubdomain(emptyAddress, tokenId, "sub0")).revertedWith(revert`ERC721: mint to the zero address`);
+        await expect(pns.connect(two).mintSubdomain(emptyAddress, tokenId, "sub0")).revertedWith(revert`ERC721: mint to the zero address`);
       });
 
       it("should not mint subdomains to empty address", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        await expect(controller.connect(two).mintSubdomain(threeAddr, weirdNode, "sub0")).revertedWith(revert`ERC721: operator query for nonexistent token`);
+        await expect(pns.connect(two).mintSubdomain(threeAddr, weirdNode, "sub0")).revertedWith(revert`ERC721: operator query for nonexistent token`);
       });
 
       it("should not mint subdomains twice", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
-        await expect(controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0")).revertedWith(revert`ERC721: token already minted`);
+        await pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+        await expect(pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0")).revertedWith(revert`ERC721: token already minted`);
       });
     });
 
@@ -533,8 +527,8 @@ describe("PNS", async function () {
       it("should register a new domain name with metadata", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        expect(await controller.origin(tokenId)).to.eq(tokenId);
-        expect(await controller.available(tokenId)).to.eq(false);
+        expect(await pns.origin(tokenId)).to.eq(tokenId);
+        expect(await pns.available(tokenId)).to.eq(false);
       });
 
       it("should register a domain name and burn with expected metadata", async () => {
@@ -543,35 +537,35 @@ describe("PNS", async function () {
         let resp = await tx.wait();
         let ts = (await ethers.provider.getBlock(resp.blockNumber)).timestamp + 86400 * 365;
 
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
-        await controller.connect(three).mintSubdomain(threeAddr, subTokenId, "sub1");
+        await pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+        await pns.connect(three).mintSubdomain(threeAddr, subTokenId, "sub1");
 
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.ownerOf(subTokenId)).to.eq(threeAddr);
         expect(await pns.ownerOf(subSubTokenId)).to.eq(threeAddr);
 
-        expire = await controller.expire(tokenId);
+        expire = await pns.expire(tokenId);
 
         await checkNameRecord(tokenId, tokenId, ts);
-        expect(await controller.available(tokenId)).to.eq(false);
+        expect(await pns.available(tokenId)).to.eq(false);
 
         await checkNameRecord(subTokenId, tokenId, 0);
-        expect(await controller.nameExpired(subTokenId)).to.eq(false);
+        expect(await pns.nameExpired(subTokenId)).to.eq(false);
         expect(await pns.exists(subTokenId)).to.eq(true);
 
         // after subTokenId burn
-        await controller.connect(three).burn(subTokenId);
+        await pns.connect(three).burn(subTokenId);
         await checkNameRecord(tokenId, tokenId, ts);
         await checkNameRecord(subTokenId, 0, 0);
 
-        expect(await controller.nameExpired(subTokenId)).to.eq(true);
-        expect(await controller.available(subTokenId)).to.eq(true);
+        expect(await pns.nameExpired(subTokenId)).to.eq(true);
+        expect(await pns.available(subTokenId)).to.eq(true);
 
         await checkNameRecord(subSubTokenId, tokenId, 0);
-        expect(await controller.available(subSubTokenId)).to.eq(false);
+        expect(await pns.available(subSubTokenId)).to.eq(false);
 
-        await controller.connect(three).burn(subSubTokenId);
-        await controller.connect(two).burn(tokenId);
+        await pns.connect(three).burn(subSubTokenId);
+        await pns.connect(two).burn(tokenId);
 
         await checkNameRecord(subSubTokenId, 0, 0);
       });
@@ -581,17 +575,17 @@ describe("PNS", async function () {
       it("should expire after registration period", async () => {
         await registerName();
 
-        expire = await controller.expire(tokenId);
+        expire = await pns.expire(tokenId);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 360]);
         await ethers.provider.send("evm_mine", []);
 
-        expect(await controller.nameExpired(tokenId)).to.eq(false);
+        expect(await pns.nameExpired(tokenId)).to.eq(false);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 365 + 100]);
         await ethers.provider.send("evm_mine", []);
 
-        expect(await controller.nameExpired(tokenId)).to.eq(true);
+        expect(await pns.nameExpired(tokenId)).to.eq(true);
       });
     });
 
@@ -601,39 +595,39 @@ describe("PNS", async function () {
       });
 
       it("should be able to burn domains", async () => {
-        await controller.connect(two).burn(tokenId);
+        await pns.connect(two).burn(tokenId);
 
         expect(await pns.exists(tokenId)).to.eq(false);
       });
 
       it("should be able to burn subdomains", async () => {
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+        await pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
 
         expect(await pns.exists(subTokenId)).to.eq(true);
 
-        await controller.connect(three).burn(subTokenId);
+        await pns.connect(three).burn(subTokenId);
 
         expect(await pns.exists(subTokenId)).to.eq(false);
       });
 
       it("should be able to burn subdomains by parent owner", async () => {
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+        await pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
 
         expect(await pns.exists(subTokenId)).to.eq(true);
 
-        await controller.connect(two).burn(subTokenId);
+        await pns.connect(two).burn(subTokenId);
 
         expect(await pns.exists(subTokenId)).to.eq(false);
       });
 
       it("should not be able to burn by non-owner", async () => {
-        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
+        await expect(pns.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
 
         expect(await pns.exists(tokenId)).to.eq(true);
       });
 
       it("should be able to burn by root", async () => {
-        await controller.connect(one).burn(tokenId);
+        await pns.connect(one).burn(tokenId);
 
         expect(await pns.exists(tokenId)).to.eq(false);
       });
@@ -729,15 +723,15 @@ describe("PNS", async function () {
     describe("PNSController#setNameBatch", async () => {
       it("should register a new domain name", async () => {
         await pns.connect(one).mintSubdomain(twoAddr, baseNode, "gavinwood100");
-        await controller.connect(one).setMetadataBatch([tokenId], [{ origin: tokenId, expire: 1677200000 }]);
+        await pns.connect(one).setMetadataBatch([tokenId], [{ origin: tokenId, expire: 1677200000 }]);
 
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.exists(tokenId)).to.eq(true);
 
-        expect(await controller.origin(tokenId)).to.eq(tokenId);
-        expect(await controller.expire(tokenId)).to.eq(1677200000);
+        expect(await pns.origin(tokenId)).to.eq(tokenId);
+        expect(await pns.expire(tokenId)).to.eq(1677200000);
 
-        await controller.connect(one).burn(tokenId);
+        await pns.connect(one).burn(tokenId);
       });
     });
 
@@ -755,11 +749,8 @@ describe("PNS", async function () {
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.ownerOf(altTokenId)).to.eq(twoAddr);
 
-        await expect(controller.connect(one).burn(altTokenId)).revertedWith(revert`missing metadata`);
-        await expect(controller2.connect(one).burn(tokenId)).revertedWith(revert`missing metadata`);
-
-        await controller.connect(one).burn(tokenId);
-        await controller2.connect(one).burn(altTokenId);
+        await pns.connect(one).burn(tokenId);
+        await pns.connect(one).burn(altTokenId);
       });
     });
 
@@ -793,23 +784,8 @@ describe("PNS", async function () {
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.ownerOf(altTokenId)).to.eq(twoAddr);
 
-        await expect(controller.connect(one).burn(altTokenId)).revertedWith(revert`missing metadata`);
-        await expect(controller.connect(one).burn(tokenId)).revertedWith(revert`caller is not root or manager`);
-
-        // controller2 cannot burn tokenId without migrating metadata
-        await expect(controller2.connect(one).burn(tokenId)).revertedWith(revert`missing metadata`);
-        await controller2.connect(one).burn(altTokenId);
-
-        await controller2.setMetadataBatch(
-          [tokenId],
-          [
-            {
-              origin: await controller.origin(tokenId),
-              expire: await controller.expire(tokenId),
-            },
-          ]
-        );
-        await controller2.connect(one).burn(tokenId);
+        await pns.connect(one).burn(altTokenId);
+        await pns.connect(one).burn(tokenId);
       });
 
       it("should be able to migrate existing metadata", async () => {
@@ -817,7 +793,7 @@ describe("PNS", async function () {
           value: fee,
         });
 
-        await controller.connect(two).mintSubdomain(twoAddr, tokenId, "sub0");
+        await pns.connect(two).mintSubdomain(twoAddr, tokenId, "sub0");
 
         await pns.setManager(controller2.address, true);
         await pns.setManager(controller.address, false);
@@ -829,30 +805,10 @@ describe("PNS", async function () {
         expect(await pns.ownerOf(tokenId)).to.eq(twoAddr);
         expect(await pns.ownerOf(altTokenId)).to.eq(twoAddr);
 
-        let { origin, expire } = await getNameRecord(tokenId);
-
-        // migrate token metadata
-        await controller2.setMetadataBatch([tokenId], [{ origin: origin, expire: expire }]);
-
-        expect(await controller.origin(tokenId)).to.eq(await controller2.origin(tokenId));
-        expect(await controller.expire(tokenId)).to.eq(await controller2.expire(tokenId));
-
-        // migrate subtoken metadata
-
-        let subNameData = await getNameRecord(subTokenId);
-
-        await controller2.setMetadataBatch(
-          [subTokenId],
-          [{ origin: subNameData.origin, expire: subNameData.expire }]
-        );
-
-        expect(await controller.origin(subTokenId)).to.eq(await controller2.origin(subTokenId));
-        expect(await controller.expire(subTokenId)).to.eq(await controller2.expire(subTokenId));
-
         // controller2 can burn tokenId with metadata migrated
-        await controller2.connect(one).burn(subTokenId);
-        await controller2.connect(one).burn(tokenId);
-        await controller2.connect(one).burn(altTokenId);
+        await pns.connect(one).burn(subTokenId);
+        await pns.connect(one).burn(tokenId);
+        await pns.connect(one).burn(altTokenId);
       });
     });
 
@@ -1011,8 +967,9 @@ describe("PNS", async function () {
         expect(await pns.bounded(tokenId)).to.eq(false);
         await pns.connect(two).transferFrom(twoAddr, threeAddr, tokenId);
 
-        await expect(pns.connect(two).bound(tokenId)).revertedWith(revert`caller is not root or manager`);
-        await expect(pns.connect(three).bound(tokenId)).revertedWith(revert`caller is not root or manager`);
+        await expect(pns.connect(two).bound(tokenId)).revertedWith(revert`not owner nor approved`);
+        await pns.connect(three).bound(tokenId)
+        // await expect(pns.connect(three).bound(tokenId)).revertedWith(revert`caller is not root or manager`);
 
         await pns.connect(one).bound(tokenId);
         expect(await pns.bounded(tokenId)).to.eq(true);
@@ -1028,93 +985,93 @@ describe("PNS", async function () {
         expect(await pns.bounded(tokenId)).to.eq(false);
         await pns.connect(two).transferFrom(twoAddr, threeAddr, tokenId);
 
-        await expect(controller.connect(two).bound(tokenId)).revertedWith(revert`not owner nor approved`);
-        await controller.connect(three).bound(tokenId)
+        await expect(pns.connect(two).bound(tokenId)).revertedWith(revert`not owner nor approved`);
+        await pns.connect(three).bound(tokenId)
 
         expect(await pns.bounded(tokenId)).to.eq(true);
-        await controller.connect(three).burn(tokenId)
+        await pns.connect(three).burn(tokenId)
       });
 
       it("should not be burnable after registration period for bounded tokenId", async () => {
         await registerName("gavinwood100", twoAddr);
-        await controller.connect(two).bound(tokenId)
+        await pns.connect(two).bound(tokenId)
 
-        expire = await controller.expire(tokenId);
+        expire = await pns.expire(tokenId);
 
-        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
+        await expect(pns.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 365 + 100]);
         await ethers.provider.send("evm_mine", []);
 
-        expect(await controller.nameExpired(tokenId)).to.eq(true);
+        expect(await pns.nameExpired(tokenId)).to.eq(true);
 
-        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
-        await controller.connect(two).burn(tokenId)
+        await expect(pns.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
+        await pns.connect(two).burn(tokenId)
       });
 
       it("should be burnable after registration period for unbounded tokenId", async () => {
         await registerName("gavinwood100", twoAddr);
 
-        expire = await controller.expire(tokenId);
+        expire = await pns.expire(tokenId);
 
-        await expect(controller.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
+        await expect(pns.connect(three).burn(tokenId)).revertedWith(revert`not owner nor approved`);
 
         await ethers.provider.send("evm_setNextBlockTimestamp", [expire.toNumber() + 86400 * 365 + 100]);
         await ethers.provider.send("evm_mine", []);
 
-        expect(await controller.nameExpired(tokenId)).to.eq(true);
+        expect(await pns.nameExpired(tokenId)).to.eq(true);
 
-        await controller.connect(three).burn(tokenId)
+        await pns.connect(three).burn(tokenId)
       });
     });
 
-    describe("PNSController#multicall", async () => {
-      it("should be able to burn multiple domains", async () => {
-        await registerName("gavinwood100", twoAddr);
-        await controller.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
+    // describe("PNSController#multicall", async () => {
+    //   it("should be able to burn multiple domains", async () => {
+    //     await registerName("gavinwood100", twoAddr);
+    //     await pns.connect(two).mintSubdomain(threeAddr, tokenId, "sub0");
 
-        let ABI = ["function burn(uint256 tokenId)"];
-        let iface = new ethers.utils.Interface(ABI);
-        await controller.connect(two).multicall([iface.encodeFunctionData("burn", [subTokenId]), iface.encodeFunctionData("burn", [tokenId])]);
-        expect(await pns.exists(subTokenId)).to.eq(false);
-        expect(await pns.exists(tokenId)).to.eq(false);
-      });
+    //     let ABI = ["function burn(uint256 tokenId)"];
+    //     let iface = new ethers.utils.Interface(ABI);
+    //     await controller.connect(two).multicall([iface.encodeFunctionData("burn", [subTokenId]), iface.encodeFunctionData("burn", [tokenId])]);
+    //     expect(await pns.exists(subTokenId)).to.eq(false);
+    //     expect(await pns.exists(tokenId)).to.eq(false);
+    //   });
 
-      it("should be able to register multiple domains", async () => {
-        let ABI = [
-          "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
-        ];
-        let iface = new ethers.utils.Interface(ABI);
-        await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, 0, [], []])]);
-        expect(await pns.exists(tokenId)).to.eq(true);
-      });
+    //   it("should be able to register multiple domains", async () => {
+    //     let ABI = [
+    //       "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
+    //     ];
+    //     let iface = new ethers.utils.Interface(ABI);
+    //     await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, 0, [], []])]);
+    //     expect(await pns.exists(tokenId)).to.eq(true);
+    //   });
 
-      it("should be able to register multiple domains", async () => {
-        let ABI = [
-          "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
-        ];
-        let iface = new ethers.utils.Interface(ABI);
-        await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, 1, [], []])]);
-        expect(await pns.exists(tokenId)).to.eq(true);
-        expect(await pns.getName(twoAddr)).to.eq(tokenId)
-      });
+    //   it("should be able to register multiple domains", async () => {
+    //     let ABI = [
+    //       "function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public returns(uint256)",
+    //     ];
+    //     let iface = new ethers.utils.Interface(ABI);
+    //     await controller.connect(one).multicall([iface.encodeFunctionData("nameRegisterByManager", ["gavinwood100", twoAddr, 365 * 86400, 1, [], []])]);
+    //     expect(await pns.exists(tokenId)).to.eq(true);
+    //     expect(await pns.getName(twoAddr)).to.eq(tokenId)
+    //   });
 
-      it("should be able to setByHash and get record", async () => {
-        await registerName("gavinwood100", twoAddr);
+    //   it("should be able to setByHash and get record", async () => {
+    //     await registerName("gavinwood100", twoAddr);
 
-        let ABI = ["function mintSubdomain(address to, uint256 tokenId, string calldata name)"];
-        let iface = new ethers.utils.Interface(ABI);
-        await controller
-          .connect(two)
-          .multicall([
-            iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub0"]),
-            iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub1"]),
-            iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub2"]),
-          ]);
-        expect(await pns.exists(getNamehash("sub0.gavinwood100.dot"))).to.eq(true);
-        expect(await pns.exists(getNamehash("sub1.gavinwood100.dot"))).to.eq(true);
-        expect(await pns.exists(getNamehash("sub2.gavinwood100.dot"))).to.eq(true);
-      });
-    });
+    //     let ABI = ["function mintSubdomain(address to, uint256 tokenId, string calldata name)"];
+    //     let iface = new ethers.utils.Interface(ABI);
+    //     await controller
+    //       .connect(two)
+    //       .multicall([
+    //         iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub0"]),
+    //         iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub1"]),
+    //         iface.encodeFunctionData("mintSubdomain", [twoAddr, tokenId, "sub2"]),
+    //       ]);
+    //     expect(await pns.exists(getNamehash("sub0.gavinwood100.dot"))).to.eq(true);
+    //     expect(await pns.exists(getNamehash("sub1.gavinwood100.dot"))).to.eq(true);
+    //     expect(await pns.exists(getNamehash("sub2.gavinwood100.dot"))).to.eq(true);
+    //   });
+    // });
   });
 });
