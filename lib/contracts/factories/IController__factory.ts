@@ -387,6 +387,11 @@ const _abi = [
         type: "uint256",
       },
       {
+        internalType: "uint256",
+        name: "data",
+        type: "uint256",
+      },
+      {
         internalType: "uint256[]",
         name: "keyHashes",
         type: "uint256[]",
@@ -423,6 +428,11 @@ const _abi = [
       {
         internalType: "uint256",
         name: "duration",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "data",
         type: "uint256",
       },
       {
