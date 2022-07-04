@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 import "../utils/StringUtils.sol";
 import "../utils/SafeMath.sol";
@@ -17,7 +18,7 @@ import "./IPNS.sol";
 import "./IController.sol";
 import "./IResolver.sol";
 
-contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticallable {
+contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2771Context {
 
     AggregatorV3Interface public priceFeed;
 
@@ -32,7 +33,8 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
     uint256 public GRACE_PERIOD;
     uint256 public FLAGS;
 
-    constructor(IPNS pns, uint256 _baseNode, uint256[] memory _basePrices, uint256[] memory _rentPrices, address _priceFeed) {
+    // -------------- constructor
+    constructor(IPNS pns, uint256 _baseNode, uint256[] memory _basePrices, uint256[] memory _rentPrices, address _priceFeed, address forwarder) ERC2771Context(forwarder) {
         _pns = pns;
         BASE_NODE = _baseNode;
 
@@ -44,6 +46,20 @@ contract Controller is IController, Context, ManagerOwnable, ERC165, IMulticalla
         setPrices(_basePrices, _rentPrices);
         priceFeed = AggregatorV3Interface(_priceFeed);
     }
+
+    // ---------- override function for ERC2771
+        // override function
+    function _msgSender() internal view virtual
+        override(ERC2771Context, Context) returns (address) {
+        return super._msgSender();
+    }
+
+    function _msgData() internal view virtual
+        override(ERC2771Context, Context) returns (bytes calldata) {
+        return super._msgData();
+    }
+
+    // -------------- ERC165
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return

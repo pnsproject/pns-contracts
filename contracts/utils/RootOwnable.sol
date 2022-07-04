@@ -3,6 +3,8 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
 interface IOwnable {
     function transferRootOwnership(address newOwner) external;
@@ -15,14 +17,14 @@ interface IManagerOwnable {
     function isManager(address addr) external view returns(bool);
 }
 
-contract RootOwnable is IOwnable {
+contract RootOwnable is IOwnable, Context {
 
     address _root;
 
     event RootOwnershipTransferred(address indexed oldRoot, address indexed newRoot);
 
     modifier onlyRoot {
-        require(_root == msg.sender, "caller is not root");
+        require(_root == _msgSender(), "caller is not root");
         _;
     }
 
@@ -47,7 +49,7 @@ contract ManagerOwnable is RootOwnable {
     event ManagerChanged(address indexed manager, bool indexed role);
 
     modifier onlyManager {
-        require(isManager(msg.sender), "caller is not root or manager");
+        require(isManager(_msgSender()), "caller is not root or manager");
         _;
     }
 
@@ -63,13 +65,13 @@ contract ManagerOwnable is RootOwnable {
     }
 }
 
-contract ManagerOwnableUpgradeable is Initializable {
+contract ManagerOwnableUpgradeable is Initializable, ContextUpgradeable {
     address public _root;
 
     event RootOwnershipTransferred(address indexed oldRoot, address indexed newRoot);
 
     modifier onlyRoot {
-        require(_root == msg.sender, "caller is not root");
+        require(_root == _msgSender(), "caller is not root");
         _;
     }
 
@@ -87,13 +89,14 @@ contract ManagerOwnableUpgradeable is Initializable {
     event ManagerChanged(address indexed manager, bool indexed role);
 
     modifier onlyManager {
-        require(isManager(msg.sender), "caller is not root or manager");
+        require(isManager(_msgSender()), "caller is not root or manager");
         _;
     }
 
     function initialize() public virtual initializer {
-        _root = msg.sender;
-        _managers[msg.sender] = true;
+        __Context_init();
+        _root = _msgSender();
+        _managers[_msgSender()] = true;
     }
 
     function setManager(address manager, bool role) public onlyRoot {
@@ -107,4 +110,3 @@ contract ManagerOwnableUpgradeable is Initializable {
         return _managers[addr] || _root == addr;
     }
 }
-

@@ -7,14 +7,14 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
-
+import "@openzeppelin/contracts-upgradeable/metatx/ERC2771ContextUpgradeable.sol";
 
 import "./IPNS.sol";
 import "./IResolver.sol";
 
 import "../utils/RootOwnable.sol";
 
-contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
+contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, ERC2771ContextUpgradeable {
 
     event ConfigUpdated(uint256 flags);
 
@@ -31,6 +31,10 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
         emit ConfigUpdated(_writable);
     }
 
+    // ------------ initializer & constructor
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor(address forwarder) ERC2771ContextUpgradeable(forwarder) {}
+
     function initialize() initializer public override {
       __ERC721_init("PNS", "PNS");
       ManagerOwnableUpgradeable.initialize();
@@ -38,6 +42,19 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
       GRACE_PERIOD = 360 days;
     }
 
+    // ----------------- override function for ERC2771
+    // override function
+    function _msgSender() internal view virtual
+        override(ERC2771ContextUpgradeable, ContextUpgradeable) returns (address) {
+        return super._msgSender();
+    }
+
+    function _msgData() internal view virtual
+        override(ERC2771ContextUpgradeable, ContextUpgradeable) returns (bytes calldata) {
+        return super._msgData();
+    }
+
+    // --------------- ERC165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
         return
             interfaceId == type(IPNS).interfaceId || interfaceId == type(IResolver).interfaceId ||
@@ -51,7 +68,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
     function _baseURI() internal pure override returns (string memory) {
         return "https://meta.dot.site/";
     }
-    
+
     modifier authorised(uint256 tokenId) {
         require(isManager(_msgSender()) || _isApprovedOrOwner(_msgSender(), tokenId), "not owner nor approved");
         _;
@@ -111,7 +128,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable {
 
     function ownsContract(address addr) internal view returns (bool) {
         try OwnableUpgradeable(addr).owner() returns (address owner) {
-            return owner == msg.sender;
+            return owner == _msgSender();
         } catch {
             return false;
         }
