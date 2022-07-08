@@ -138,6 +138,33 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
         return _names[addr];
     }
 
+    // attack vector
+    // 1. 'trust-doamin-name' is owner by attacker
+    // 2. attacker.setName(attackerWallet, namehash('trust-domain-name'))
+    // 3. sell 'trust-domain-name' to victim
+    // 4. victim.setName(victimWallet, namehash('trust-domain-name'))
+    // 5. victim provide some service, using 'trust-domain-name' as view of victimWallet to receive payment
+    // 6. attacker do phishing on victim's service, can use attackerWallet to get payment, because
+    //    getName(attackerWallet) will still return namehash('trust-domain-name')
+    function getNameChecked(address addr) public view returns (uint256 tokenId) {
+        tokenId = getName(addr);
+
+        // return tokenId if any of below condition is valid
+        // 1. owner of tokenId is addr
+        // 2. tokenId is approved for addr
+        if (!_isApprovedOrOwner(addr, tokenId)) {
+            tokenId = 0;
+        }
+    }
+
+    // *USE WITH CAUTION*
+    // 1. resolve NFT token to PNS domain is different from resolve wallet/contract to PNS domain
+    // 2. NFT token is transferable, wallet is not.
+    // 3. when sell NFT token, which show as PNS domain name, *NON-UNIQUE* mapping of
+    //    NFT token to PNS domain will cause problem
+    // 4. for example, map 2 different value NFT token to same PNS domain
+    // 5. when sell NFT, only PNS domain is shown, buyer will not able to distinguish which NFT token
+    //    is on sale.
     function setNftName(
         address nftAddr,
         uint256 nftTokenId,
