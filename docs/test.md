@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org01a0a10)
-2.  [模糊测试](#orga8fba6b)
-    1.  [合约分析](#org6b180bd)
-        1.  [常数](#org041844b)
-        2.  [状态](#org886ba3d)
-        3.  [辅助状态和辅助合约](#orga5948ff)
-        4.  [操作与断言](#org75ad00d)
-        5.  [辅助操作与状态断言](#org4615681)
-    2.  [初始化](#orgf2c1dda)
+1.  [单元测试](#org583f57f)
+2.  [模糊测试](#org357b061)
+    1.  [合约分析](#org7a4ce47)
+        1.  [常数](#org1f0fba2)
+        2.  [状态](#org7469f4a)
+        3.  [辅助状态和辅助合约](#org2df0310)
+        4.  [操作与断言](#org81bdc07)
+        5.  [辅助操作与状态断言](#org289a507)
+    2.  [初始化](#org98be087)
 
 
 
-<a id="org01a0a10"></a>
+<a id="org583f57f"></a>
 
 # 单元测试
 
@@ -31,19 +31,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orga8fba6b"></a>
+<a id="org357b061"></a>
 
 # 模糊测试
 
 
-<a id="org6b180bd"></a>
+<a id="org7a4ce47"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org041844b"></a>
+<a id="org1f0fba2"></a>
 
 ### 常数
 
@@ -182,7 +182,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org886ba3d"></a>
+<a id="org7469f4a"></a>
 
 ### 状态
 
@@ -458,7 +458,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orga5948ff"></a>
+<a id="org2df0310"></a>
 
 ### 辅助状态和辅助合约
 
@@ -541,7 +541,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org75ad00d"></a>
+<a id="org81bdc07"></a>
 
 ### 操作与断言
 
@@ -770,28 +770,28 @@ Controller合约包括如下状态：
 
 权限管理操作包括PNS和Controller的transferRootOwnership和setManager的函数，两个合约同名的操作的功能是一样的。约束表示操作需要满足的条件（require），状态更新表示操作对状态的影响，断言则是状态更新后对状态判断，参数表示模糊测试时参数的取值，其中粗体的 **参数** 表示是该函数是受限调用的，随机参数应选取合理有效范围。
 
--   transferRootOwnership(r)，转移超级用户
+-   `transferRootOwnership(r)` ，转移超级用户
     -   约束
-        -   \_msgSender() == \_pns\_root（PNS合约）
-        -   \_msgSender() == \_c\*\_root（Controller合约）
+        -   `_msgSender() == _pns_root` （PNS合约）
+        -   `_msgSender() == _c*_root` （Controller合约）
     -   状态更新
-        -   \_pns\_root ← r（PNS合约）
-        -   \_c\*\_root  ← r（Controller合约）
+        -   `_pns_root ← r` （PNS合约）
+        -   `_c*_root  ← r` （Controller合约）
     -   断言
-        -   PNS.root() == r（PNS合约）
-        -   C\*.root() == r（Controller合约）
+        -   `PNS.root() == r` （PNS合约）
+        -   `C*.root() == r` （Controller合约）
     -   **参数**
         -   r：大概率从SENDER\_POOL选取
--   setManager(m, b)，设置或取消管理权限
+-   `setManager(m, b)` ，设置或取消管理权限
     -   约束
-        -   \_msgSender() == \_pns\_root（PNS合约）
-        -   \_msgSender() == \_c\*\_root（Controller合约）
+        -   `_msgSender() == _pns_root` （PNS合约）
+        -   `_msgSender() == _c*_root` （Controller合约）
     -   状态更新
-        -   \_pns\_manager\_set.insert(m) if b, \_pns\_manager\_set.remove(m) if !b（PNS合约）
-        -   \_c\*\_manager\_set.insert(m) if b, \_c\*\_manager\_set.remove(m) if !b（Controller合约）
+        -   `_pns_manager_set.insert(m) if b, _pns_manager_set.remove(m) if !b` （PNS合约）
+        -   `_c*_manager_set.insert(m) if b, _c*_manager_set.remove(m) if !b` （Controller合约）
     -   断言
-        -   PNS.isManager(m) == b（PNS合约）
-        -   C\*.isManager(m) == b（Controller合约）
+        -   `PNS.isManager(m) == b` （PNS合约）
+        -   `C*.isManager(m) == b` （Controller合约）
     -   **参数**
         -   b：平均随机
         -   m：从指定范围选取
@@ -800,178 +800,178 @@ Controller合约包括如下状态：
 
 **合约管理**
 
--   PNS.setContractConfig(w)，设置合约可修改属性
+-   `PNS.setContractConfig(w)` ，设置合约可修改属性
     -   约束
-        -   \_msgSender() == \_pns\_root
+        -   `_msgSender() == _pns_root`
     -   状态更新
-        -   \_pns\_mutable ← w & 1
+        -   `_pns_mutable ← w & 1`
     -   断言
-        PNS.FLAGS() = w ? 1 : 0
+        `PNS.FLAGS() = w ? 1 : 0`
     -   **参数**
         -   w：大概率为true，小概率为false
--   Controller.setContractConfig(fl, ml, md, gp, pf)，设置合约参数
+-   `Controller.setContractConfig(fl, ml, md, gp, pf)` ，设置合约参数
     
     -   约束
-        -   \_msgSender() == \_c\*\_root
+        -   `_msgSender() == _c*_root`
     -   状态更新
-        -   \_c\*\_is\_live ← fl & 1
-        -   \_c\*\_is\_open ← fl & 2
-        -   \_c\*\_can\_redeem ← fl & 4
-        -   \_c\*\_min\_reg\_len ← ml
-        -   \_c\*\_min\_reg\_dur ← md
-        -   \_c\*\_grace\_period ← gp
-        -   \_c\*\_price\_feed ← pf
+        -   `_c*_is_live ← fl & 1`
+        -   `_c*_is_open ← fl & 2`
+        -   `_c*_can_redeem ← fl & 4`
+        -   `_c*_min_reg_len ← ml`
+        -   `_c*_min_reg_dur ← md`
+        -   `_c*_grace_period ← gp`
+        -   `_c*_price_feed ← pf`
     
     -   断言
-        -   C\*.FLAGS() == (\_c\*\_is\_alive ? 1 : 0) | (\_c\*\_is\_open ? 2 : 0) | (\_c\*\_can\_redeem ? 4 : 0)
-        -   C\*.MIN\_REGISTRATION\_LENGTH() == \_c\*\_min\_reg\_len
-        -   C\*.MIN\_REGISTRATION\_DURATION() == \_c\*\_min\_reg\_dur
-        -   C\*.GRACE\_PERIOD == \_c\*\_grace\_period
-        -   address(C\*.priceFeed()) == address(\_c\*\_price\_feed)
+        -   `C*.FLAGS() == (_c*_is_alive ? 1 : 0) | (_c*_is_open ? 2 : 0) | (_c*_can_redeem ? 4 : 0)`
+        -   `C*.MIN_REGISTRATION_LENGTH() == _c*_min_reg_len`
+        -   `C*.MIN_REGISTRATION_DURATION() == _c*_min_reg_dur`
+        -   `C*.GRACE_PERIOD == _c*_grace_period`
+        -   `address(C*.priceFeed()) == address(_c*_price_feed)`
     -   **参数**
         -   fl：0～7，且bit0~bit2大概率为1
         -   ml：1～20
         -   md：1小时～1年
         -   gp：1天～2年
--   Controller.setPrices(bpl, rpl)，设置价格
+-   `Controller.setPrices(bpl, rpl)` ，设置价格
     -   约束
-        -   \_msgSender() == \_c\*\_root
+        -   `_msgSender() == _c*_root`
     -   状态更新
-        -   \_c\*\_base\_prices ← bpl
-        -   \_c\*\_rent\_prices ← rpl
+        -   `_c*_base_prices ← bpl`
+        -   `_c*_rent_prices ← rpl`
     -   断言
-        -   C\*.getPrices() == (bp, rpl)
+        -   `C*.getPrices() == (bp, rpl)`
     -   **参数**
         -   bpl，数组，长度从1到20，非零递减
         -   rpl，数组，和bpl等长，非零递减
 
 **域名管理**
 
--   PNS.mint(to, tok)，超级用户用于铸造顶级域名（基节点）
+-   `PNS.mint(to, tok)` ，超级用户用于铸造顶级域名（基节点）
     -   约束
-        -   \_msgSender() == \_pns\_root
-        -   to ≠ 0
-        -   tok ∉ \_pns\_owner\_tbl
+        -   `_msgSender() == _pns_root`
+        -   `to ≠ 0`
+        -   `tok ∉ _pns_owner_tbl`
     -   状态更新
-        -   \_pns\_owner\_tbl[to] = tok
-        -   \_pns\_token\_set.insert(tok)
+        -   `_pns_owner_tbl[to] = tok`
+        -   `_pns_token_set.insert(tok)`
     -   断言
-        -   PNS.exists(tok)
-        -   PNS.ownerOf(tok) == to
+        -   `PNS.exists(tok)`
+        -   `PNS.ownerOf(tok) == to`
     -   **参数**
         -   to：随机从SENDER\_POOL选
         -   tok：随机从WORD\_SET哈希后的值选
--   PNS.mintSubdomain(to, ptok, name)，用户铸造子域名
+-   `PNS.mintSubdomain(to, ptok, name)` ，用户铸造子域名
     -   约束
-        -   \_msgSender() ∈ {\_pns\_root, \_pns\_manager\_set, \_pns\_approve\_tbl[ptok], \_pns\_owner\_tbl[ptok]}
-        -   to ≠ 0
-        -   stok ∉ \_pns\_owner\_tbl
+        -   `_msgSender() ∈ {_pns_root, _pns_manager_set, _pns_approve_tbl[ptok], _pns_owner_tbl[ptok]}`
+        -   `to ≠ 0`
+        -   `stok ∉ _pns_owner_tbl`
     -   状态更新
-        -   \_pns\_owner\_tbl[stok] = to
-        -   \_pns\_sd\_parent\_tbl[stok] = ptok
-        -   \_pns\_sd\_origin\_tbl[stok] = (ptok ∈ \_pns\_sld\_expire\_tbl) ? ptok : \_pns\_sd\_origin\_tbl[ptok]
-        -   \_pns\_token\_set.insert(stok)
+        -   `_pns_owner_tbl[stok] = to`
+        -   `_pns_sd_parent_tbl[stok] = ptok`
+        -   `_pns_sd_origin_tbl[stok] = (ptok ∈ _pns_sld_expire_tbl) ? ptok : _pns_sd_origin_tbl[ptok]`
+        -   `_pns_token_set.insert(stok)`
     -   断言
-        -   ret == stok
-        -   PNS.exists(stok)
-        -   PNS.ownerOf(stok) == to
-        -   PNS.nameExpired() == \_pns\_sld\_expire\_tbl[\_pns\_sd\_origin\_tbl[stok]] + GRACE\_PERIOD < block.timestamp
-        -   !PNS.available(stok)
-        -   PNS.origin(stok) == \_pns\_sd\_origin\_tbl[stok]
-        -   PNS.parent(stok) == ptok
+        -   `ret == stok`
+        -   `PNS.exists(stok)`
+        -   `PNS.ownerOf(stok) == to`
+        -   `PNS.nameExpired() == _pns_sld_expire_tbl[_pns_sd_origin_tbl[stok]] + ~GRACE_PERIOD < block.timestamp`
+        -   `!PNS.available(stok)`
+        -   `PNS.origin(stok) == _pns_sd_origin_tbl[stok]`
+        -   `PNS.parent(stok) == ptok`
     -   参数
         -   to：大概率SENDER\_POOL，小概率随机
         -   ptok
-            -   若\_msgSender() ∈ {\_pns\_manager\_set, \_pns\_root}，则从 {\_pns\_sld\_expire\_tbl, \_pns\_sd\_parent\_tbl} 中随机选择
+            -   若 `_msgSender() ∈ {_pns_manager_set, _pns_root}` ，则从 `{_pns_sld_expire_tbl, _pns_sd_parent_tbl}` 中随机选择
             -   否则，大概率从 \_pns\_token\_set 中随机选择，小概率随机
         -   name：大概率从WORD\_SET中随机选，小概率随机
     -   说明
         -   stok为name和ptok组合后的哈希；
         -   考虑到approveForAll和approve对于测试不影响，因此仅考虑ERC721中的approve。
--   PNS.burn(tok)，销毁域名
+-   `PNS.burn(tok)` ，销毁域名
     -   约束
-        -   tok ∈ \_pns\_owner\_tbl
+        -   `tok ∈ _pns_owner_tbl`
         -   满足以下任意一项
-            -   PNS.nameExpired(tok) && tok ∉ \_pns\_bound\_set（域名过期且未冻结）
-            -   \_msgSender() == \_pns\_root（超级用户可销毁）
-            -   \_msgSender() ∈ { \_pns\_owner\_tbl[tok], \_pns\_approve\_tbl[tok] }（授权用户可以销毁）
-            -   \_msgSender() ∈ { \_pns\_owner\_tbl[\_pns\_sd\_origin\_tbl[tok]], \_pns\_approve\_tbl[\_pns\_sd\_origin\_tbl[tok]] }（若为子域名，对应二级域名授权用户可销毁）
+            -   `PNS.nameExpired(tok) && tok ∉ _pns_bound_set` （域名过期且未冻结）
+            -   `_msgSender() == _pns_root` （超级用户可销毁）
+            -   `_msgSender() ∈ { _pns_owner_tbl[tok], _pns_approve_tbl[tok] }` （授权用户可以销毁）
+            -   `_msgSender() ∈ { _pns_owner_tbl[_pns_sd_origin_tbl[tok]], _pns_approve_tbl[_pns_sd_origin_tbl[tok]] }` （若为子域名，对应二级域名授权用户可销毁）
     -   状态更新
-        -   \_pns\_owner\_tbl.remove(tok)
-        -   \_pns\_sld\_expire\_tbl.remove(tok) if exists
-        -   \_pns\_sd\_origin\_tbl.remove(tok) if exists
-        -   \_pns\_sd\_parent\_tbl[tok] ← 0
+        -   `_pns_owner_tbl.remove(tok)`
+        -   `_pns_sld_expire_tbl.remove(tok) if exists`
+        -   `_pns_sd_origin_tbl.remove(tok) if exists`
+        -   `_pns_sd_parent_tbl[tok] ← 0`
     -   断言
-        -   !PNS.exists(tok)
-        -   PNS.origin(tok) == 0
-        -   PNS.expire(tok) == 0
+        -   `!PNS.exists(tok)`
+        -   `PNS.origin(tok) == 0`
+        -   `PNS.expire(tok) == 0`
     -   参数
         -   tok：大概率从\_pns\_token\_set 随机选，小概率随机
     -   说明
         -   PNS.nameExpired需要进行状态断言测试
--   PNS.bound(tok)
+-   `PNS.bound(tok)`
     -   约束
-        -   \_msgSender() ∈ { \_pns\_root, \_pns\_manager\_set, \_pns\_owner\_tbl[tok], \_pns\_approve\_tbl[tok] }
+        -   `_msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }`
         -   以下条件任意一项
-            -   tok ∈ \_pns\_sld\_expire\_tbl
-            -   \_pns\_sd\_origin\_tbl[tok] ∈ \_pns\_bound\_set
+            -   `tok ∈ _pns_sld_expire_tbl`
+            -   `_pns_sd_origin_tbl[tok] ∈ _pns_bound_set`
     -   状态更新
-        -   \_pns\_bound\_set.insert(tok)
+        -   `_pns_bound_set.insert(tok)`
     -   断言
-        -   PNS.bounded(tok)
+        -   `PNS.bounded(tok)`
     -   参数
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
--   PNS.setMetadataBatch(toks, recs)
+-   `PNS.setMetadataBatch(toks, recs)`
     -   约束
-        -   \_msgSender() ∈ { \_pns\_root, \_pns\_manager\_set }
+        -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
     -   状态更新
         对于toks和recs的每一对值(tok, rec)：
-        -   若rec.origin == tok，\_pns\_sld\_expire\_tbl[tok] ← rec.expire
+        -   若 `rec.origin == tok` ， `_pns_sld_expire_tbl[tok] ← rec.expire`
         -   否则，
-            -   \_pns\_sd\_origin\_tbl[tok] ← rec.origin
-            -   \_pns\_sd\_parent\_tbl[tok] ← rec.parent
+            -   `_pns_sd_origin_tbl[tok] ← rec.origin`
+            -   `_pns_sd_parent_tbl[tok] ← rec.parent`
     -   断言
         对于toks和recs的每一对值(tok, rec)：
-        -   !PNS.available(tok)
-        -   PNS.expire(tok) == rec.expire
-        -   PNS.origin(tok) == rec.origin
-        -   PNS.parent(tok) == rec.parent
+        -   `!PNS.available(tok)`
+        -   `PNS.expire(tok) == rec.expire`
+        -   `PNS.origin(tok) == rec.origin`
+        -   `PNS.parent(tok) == rec.parent`
     -   **参数**
         -   toks：长度随机，从 \_pns\_owner\_tbl 随机选
         -   recs：和toks等长
             -   origin：一半概率是对应的tok，一半概率从 \_pns\_owner\_tbl 随机选
             -   expire：若origin是自身，则随机1天到5年，否则是0
             -   parent：若origin是自身，则也是自身，否则随机从 \_pns\_owner\_tbl 选
--   PNS.register
+-   `PNS.register` ，受限，被合约调用
     -   约束
-        -   \_msgSender() ∈ { \_pns\_root, \_pns\_manager\_set }
--   PNS.renew
+        -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
+-   `PNS.renew` ，受限，被合约调用
     -   约束
-        -   \_msgSender() ∈ { \_pns\_root, \_pns\_manager\_set }
--   Controller.nameRegisterByManager(name, to, dur, set\_name, khs, vls)
+        -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
+-   `Controller.nameRegisterByManager(name, to, dur, set_name, khs, vls)`
     -   约束
-        -   \_c\*\_is\_live
-        -   \_msgSender() ∈ { \_c\*\_root, \_c\*\_manager\_set }
-        -   stok ∉ \_pns\_owner\_tbl
-        -   to ≠ 0
-        -   \_pns\_mutable
-        -   C\* ∈ { \_pns\_root, \_pns\_manager\_set }
+        -   `_c*_is_live`
+        -   `_msgSender() ∈ { _c*_root, _c*_manager_set }`
+        -   `stok ∉ _pns_owner_tbl`
+        -   `to ≠ 0`
+        -   `_pns_mutable`
+        -   `C* ∈ { _pns_root, _pns_manager_set }`
     -   状态更新
-        -   \_pns\_owner\_tbl[stok] ← to
-        -   \_pns\_token\_set.insert(stok)
-        -   \_pns\_sld\_expire\_tbl[stok] ← dur
-        -   \_pns\_info\_name\_tbl[to] ← stok if set\_name
-        -   对于khs和vls的每组值(kh, vl)，\_pns\_info\_record[stok][kh] ← vl
+        -   `_pns_owner_tbl[stok] ← to`
+        -   `_pns_token_set.insert(stok)`
+        -   `_pns_sld_expire_tbl[stok] ← dur`
+        -   `_pns_info_name_tbl[to] ← stok if set_name`
+        -   对于khs和vls的每组值(kh, vl)， `_pns_info_record[stok][kh] ← vl`
     -   断言
-        -   ret == stok
-        -   PNS.ownerOf(stok) == to
-        -   PNS.getName(to) == stok if set\_name
-        -   PNS.getManyByHash(khs, stok) == vls
-        -   对于khs和vls的每组值(kh, vl)，PNS.getByHash(kh) == vl
-        -   PNS.expire(stok) == dur
-        -   PNS.origin(stok) == stok
-        -   PNS.parent(stok) == stok
-        -   !PNS.available(stok)
+        -   `ret == stok`
+        -   `PNS.ownerOf(stok) == to`
+        -   `PNS.getName(to) == stok if set_name`
+        -   `PNS.getManyByHash(khs, stok) == vls`
+        -   对于khs和vls的每组值(kh, vl)， `PNS.getByHash(kh) == vl`
+        -   `PNS.expire(stok) == dur`
+        -   `PNS.origin(stok) == stok`
+        -   `PNS.parent(stok) == stok`
+        -   `!PNS.available(stok)`
     -   **参数**
         -   name：一半概率1到20个字符随机，一般概率从WORD\_SET随机取；
         -   to：大概率从SENDER\_POOL取，小概率随机；
@@ -982,28 +982,28 @@ Controller合约包括如下状态：
     -   说明
         -   stok：name和C\*\_BASE\_NODE组合的哈希
         -   不对dur时间长度和name的字符长度限制
--   Controller.nameRegister(name, to, dur)
+-   `Controller.nameRegister(name, to, dur)`
     -   约束
-        -   \_c\*\_is\_open
-        -   msg.value >= C\*.totalRegisterPrice(name, dur)
-        -   length(name) >= \_c\*\_min\_reg\_len
-        -   dur >= \_c\*\_min\_reg\_dur
-        -   block.timestamp + dur + \_c\*\_grace\_period > block.timestamp + \_c\*\_grace\_period
-        -   stok ∉ \_pns\_owner\_tbl
-        -   to ≠ 0
+        -   `_c*_is_open`
+        -   `msg.value >= C*.totalRegisterPrice(name, dur)`
+        -   `length(name) >= _c*_min_reg_len`
+        -   `dur >= _c*_min_reg_dur`
+        -   `block.timestamp + ~dur + ~_c*_grace_period > block.timestamp + ~_c*_grace_period`
+        -   `stok ∉ _pns_owner_tbl`
+        -   `to ≠ 0`
     -   状态更新
-        -   \_pns\_owner\_tbl[stok] ← to
-        -   \_pns\_token\_set.insert(stok)
-        -   \_pns\_sld\_expire\_tbl[stok] ← dur
+        -   `_pns_owner_tbl[stok] ← to`
+        -   `_pns_token_set.insert(stok)`
+        -   `_pns_sld_expire_tbl[stok] ← dur`
     -   断言
-        -   ret == stok
-        -   PNS.ownerOf(stok) == to
-        -   PNS.expire(stok) == dur
-        -   PNS.origin(stok) == stok
-        -   PNS.parent(stok) == stok
-        -   !PNS.available(stok)
-        -   balanceOf(\_c\*\_root) == balanceOf~(\_c\*\_root) + C\*.totalRegisterPrice(name, dur)
-        -   balanceOf(\_msgSender()) == balanceOf~(\_msgSender()) + msg.value - C\*.totalRegisterPrice(name, dur)
+        -   `ret == stok`
+        -   `PNS.ownerOf(stok) == to`
+        -   `PNS.expire(stok) == dur`
+        -   `PNS.origin(stok) == stok`
+        -   `PNS.parent(stok) == stok`
+        -   `!PNS.available(stok)`
+        -   `balanceOf(_c*_root) == balanceOf~(_c*_root) + ~C*.totalRegisterPrice(name, dur)`
+        -   `balanceOf(_msgSender()) == balanceOf~(_msgSender()) + ~msg.value - C*.totalRegisterPrice(name, dur)`
     -   参数
         -   name：一半概率随机，一半概率从WORD\_SET随机
         -   to：大概率随机从SENDER\_POOL选，小概率随机
@@ -1013,36 +1013,36 @@ Controller合约包括如下状态：
         -   totalRegisterPrice需要进行状态断言测试
         -   stok：name和C\*\_BASE\_NODE组合的哈希
         -   balanceOf~表示调用操作前的资产
--   Controller.nameRegisterWithConfig(name, to, dur, set\_name, khs, vls)
+-   `Controller.nameRegisterWithConfig(name, to, dur, set_name, khs, vls)`
     -   约束
         -   包含Controller.nameRegister约束
-        -   \_pns\_mutable
-        -   C\* ∈ { \_pns\_root, \_pns\_manager\_set }
-        -   length(khs) == length(vls)
+        -   `_pns_mutable`
+        -   `C* ∈ { _pns_root, _pns_manager_set }`
+        -   `length(khs) == length(vls)`
     -   状态更新
         -   包含Controller.nameRegister状态更新
-        -   \_pns\_info\_name\_tbl[to] ← stok if set\_name
-        -   对于khs和vls的每组值(kh, vl)，\_pns\_info\_record[stok][kh] ← vl
+        -   `_pns_info_name_tbl[to] ← stok if set_name`
+        -   对于khs和vls的每组值(kh, vl)， `_pns_info_record[stok][kh] ← vl`
     -   断言
         -   包含Controller.nameRegister断言
-        -   PNS.getName(to) == stok if set\_name
-        -   PNS.getManyByHash(khs, stok) == vls
-        -   对于khs和vls的每组值(kh, vl)，PNS.getByHash(kh) == vl
+        -   `PNS.getName(to) == stok if set_name`
+        -   `PNS.getManyByHash(khs, stok) == vls`
+        -   对于khs和vls的每组值(kh, vl)， `PNS.getByHash(kh) == vl`
     -   参数
         -   除khs，vls外参数见Controller.nameRegister
         -   khs：随机；
         -   vls：大概率和khs等长，值随机；
--   Controller.nameRedeem
+-   `Controller.nameRedeem`
     -   约束
     -   状态更新
     -   断言
     -   参数
--   Controller.renew
+-   `Controller.renew`
     -   约束
     -   状态更新
     -   断言
     -   参数
--   Controller.renewByManager
+-   `Controller.renewByManager`
     -   约束
     -   状态更新
     -   断言
@@ -1050,36 +1050,36 @@ Controller合约包括如下状态：
 
 **域名修改**
 
--   PNS.setName
--   PNS.setNftName
--   PNS.addKeys
--   PNS.setByHash
--   PNS.setManyByHash
--   PNS.setlink
--   PNS.setlinks
+-   `PNS.setName`
+-   `PNS.setNftName`
+-   `PNS.addKeys`
+-   `PNS.setByHash`
+-   `PNS.setManyByHash`
+-   `PNS.setlink`
+-   `PNS.setlinks`
 
 
-<a id="org4615681"></a>
+<a id="org289a507"></a>
 
 ### 辅助操作与状态断言
 
 辅助操作为了能覆盖一些仅依靠待测函数无法测试到的场景，而额外的增加的操作。辅助操作过程中不进行断言，也可能会因为不满足操作条件而revert，随机的参数也一般是合理有效的。PNS、Controller以及辅助合约需要的辅助操作如下：
 
--   PNS.safeTransferFrom()
+-   `PNS.safeTransferFrom()`
     -   状态更新
     -   **参数**
--   PNS.approve()
+-   `PNS.approve()`
     -   状态更新
     -   **参数**
--   aop\_nft\_set\_owner(idx, owner)
+-   `aop_nft_set_owner(idx, owner)`
     -   状态更新
-        -   NFT<idx>.transferRootOwnership(owner)
+        -   `NFT<idx>.transferRootOwnership(owner)`
     -   **参数**
         -   idx：0或1
         -   owner：SENDER\_POOL随机选
--   aop\_set\_price(idx, price)
+-   `aop_set_price(idx, price)`
     -   状态更新
-        -   PRICE<idx>.updateAnswer(price)
+        -   `PRICE<idx>.updateAnswer(price)`
     -   **参数**
         -   idx：0或1
         -   price：非0的数
@@ -1339,17 +1339,17 @@ Controller合约包括如下状态：
 
 注意，表中的V的有效性，是建立在P的前提下的，因为操作断言中直接或间接测试均测试有效状态。下面对表中Y类型的函数进行说明：
 
--   PNS.getNameChecked
--   PNS.bounded
--   PNS.nameExpired
--   PNS.available
--   Controller.totalRegisterPrice
--   Controller.renewPrice
--   Controller.basePrice
--   Controller.renewPrice
+-   `PNS.getNameChecked`
+-   `PNS.bounded`
+-   `PNS.nameExpired`
+-   `PNS.available`
+-   `Controller.totalRegisterPrice`
+-   `Controller.renewPrice`
+-   `Controller.basePrice`
+-   `Controller.renewPrice`
 
 
-<a id="orgf2c1dda"></a>
+<a id="org98be087"></a>
 
 ## 初始化
 
