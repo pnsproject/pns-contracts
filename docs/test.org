@@ -41,6 +41,12 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 | C0   | 构建时设置 | 第一个Controller |
 | C1   | 构建时设置 | 第二个Controller |
 #+caption: 合约常数
+
+测试过程中，涉及到以下常数：
+| 名称        | 说明                                                                |
+|-------------+---------------------------------------------------------------------|
+| SENDER_POOL | 所有可能的调用者地址                                                |
+| WORD_SET    | 少量的词汇表，包括"dot", "org", "com", "net", "www", "hello", "pns" |
 *** 状态
 PNS合约包括如下状态，其中“预置”表示合约在部署的时候会设定一个预置值：
 | 名称                   | 类型                            | 初值 | 说明                           |
@@ -48,12 +54,14 @@ PNS合约包括如下状态，其中“预置”表示合约在部署的时候�
 | _pns_mutable           | bool                            | true | PNS域名系统是否可变更          |
 |------------------------+---------------------------------+------+--------------------------------|
 | _pns_root              | address                         | 预置 | PNS合约的超级用户              |
-| _pns_manager           | ES(address)                     | 预置 | PNS合约的管理员表              |
+| _pns_manager_set       | ES(address)                     | 预置 | PNS合约的管理员表              |
 |------------------------+---------------------------------+------+--------------------------------|
-| _owner_tbl             | EM(uint256, address)            | 预置 | ERC721的所有者表               |
+| _pns_owner_tbl         | EM(uint256, address)            | 预置 | ERC721的所有者表               |
+| _pns_approve_tbl       | M(uint256, address)             | 空   | ERC721授权表                   |
 |------------------------+---------------------------------+------+--------------------------------|
-| _pns_record_key        | ES(uint256)                     | 预置 | 域名条目键                     |
-| _pns_record_tbl        | M(uint256, Record)              | 预置 | 域名条目表                     |
+| _pns_sld_expire_tbl    | EM(uint256, uint256)            | 空   | 二级域名有效期表               |
+| _pns_sd_origin_tbl     | EM(uint256, uint256)            | 空   | 子域名（三级或以上）源域名表   |
+| _pns_sd_parent_tbl     | M(uint256, uint256)             | 空   | 父域名表                       |
 | _pns_bound_set         | ES(uint256)                     | 空   | 域名冻结集合                   |
 |------------------------+---------------------------------+------+--------------------------------|
 | _pns_info_link_tbl     | M(uint256, M(uint256, uint256)) | 空   | 域名链接表                     |
@@ -77,34 +85,42 @@ PNS合约包括如下状态，其中“预置”表示合约在部署的时候�
 + 字符串哈希表，用于通过哈希反查字符串
 
 Controller合约包括如下状态：
-| 名称            | 类型        | 初值  | 说明                                 |
-|-----------------+-------------+-------+--------------------------------------|
-| c*_root         | address     | 预置  | Controller合约超级用户               |
-| c*_manager      | ES(address) | 预置  | Controller合约管理员                 |
-|-----------------+-------------+-------+--------------------------------------|
-| c*_min_reg_dur  | uint256     | 28天  | 最小的注册时间                       |
-| c*_min_reg_len  | uint256     | 10    | 最短的可注册长度                     |
-| c*_grace_period | uint256     | 360天 | 宽限期                               |
-|-----------------+-------------+-------+--------------------------------------|
-| c*_is_live      | bool        | true  | Controller是否活跃                   |
-| c*_is_open      | bool        | true  | Controller是否开放注册               |
-| c*_can_redeem   | bool        | true  | Controller是否允许兑换码             |
-|-----------------+-------------+-------+--------------------------------------|
-| c*_base_price   | uint256[]   | 预置  | 基础价格，只和域名长度有关           |
-| c*_rent_price   | uint256[]   | 预置  | 一年的租赁时间的价格，和域名长度有关 |
+| 名称             | 类型                  | 初值  | 说明                                 |
+|------------------+-----------------------+-------+--------------------------------------|
+| _c*_root         | address               | 预置  | Controller合约超级用户               |
+| _c*_manager_set  | ES(address)           | 预置  | Controller合约管理员                 |
+|------------------+-----------------------+-------+--------------------------------------|
+| _c*_min_reg_dur  | uint256               | 28天  | 最小的注册时间                       |
+| _c*_min_reg_len  | uint256               | 10    | 最短的可注册长度                     |
+| _c*_grace_period | uint256               | 360天 | 宽限期                               |
+| _c*_price_feed   | AggregatorV3Interface | 预置  | 价格查询合约                         |
+|------------------+-----------------------+-------+--------------------------------------|
+| _c*_is_live      | bool                  | true  | Controller是否活跃                   |
+| _c*_is_open      | bool                  | true  | Controller是否开放注册               |
+| _c*_can_redeem   | bool                  | true  | Controller是否允许兑换码             |
+|------------------+-----------------------+-------+--------------------------------------|
+| _c*_base_prices  | uint256[]             | 预置  | 基础价格，只和域名长度有关           |
+| _c*_rent_prices  | uint256[]             | 预置  | 一年的租赁时间的价格，和域名长度有关 |
 #+caption: Controller状态
 
-*** 测试辅助合约
-PNS和Controller需要以下额外的辅助合约配合测试：
-| 合约（实例）                             | 功能                   | 测试说明                                |
-|------------------------------------------+------------------------+-----------------------------------------|
-| PriceOracle(PRICE_ORACLE0/PRICE_ORACLE1) | 供Controller询价用     | 价格慢速随机变化                        |
-| MacroNFT(MACRO_NFT0/MACRO_NFT1)          | 配合测试PNS.setName    | 慢速随机切换owner（SENDER_POOL）        |
-| MacroNFT(MACRO_NFT0/MACRO_NFT1)          | 配合测试PNS.setNftName | 慢速随机调整token的owner（SENDER_POOL） |
+*** 辅助状态和辅助合约
+为了便于测试，还需要以下辅助状态：
+| 名称           | 类型         | 初值 | 说明             |
+|----------------+--------------+------+------------------|
+| _pns_token_set | ES(uint256)  | 预置 | 曾经出现过的域名 |
+#+caption: 辅助状态
+
+此外，还需要以下额外的辅助合约配合测试，辅助合约也可以认为是一种辅助状态：
+| 合约（实例名）             | 功能                   | 测试说明                                |
+|----------------------------+------------------------+-----------------------------------------|
+| PriceOracle(PRICE0/PRICE1) | 供Controller询价用     | 价格慢速随机变化                        |
+| MacroNFT(NFT0/NFT1)        | 配合测试PNS.setName    | 慢速随机切换owner（SENDER_POOL）        |
+| MacroNFT(NFT0/NFT1)        | 配合测试PNS.setNftName | 慢速随机调整token的owner（SENDER_POOL） |
 #+caption: 辅助合约
 
+具体可参见下面的辅助操作与状态断言小节的内容。
 *** 操作与断言
-从调用者来看，PNS与Controller合约的操作可分为受限和开放两种。受限操作需要管理员或超级用户权限，供维护人员或信任的合约（Controller）使用，可以认为操作是无恶意的；开放操作则供普通用户使用的。下表是各操作的具体分类：
+从调用者来看，PNS与Controller合约的操作可分为受限和开放两种。受限操作需要管理员或超级用户权限，供维护人员或信任的合约（Controller）使用，可以认为操作是无恶意的；开放操作则供普通用户使用的。下表是各操作的具体分类（不包含Controller.multicall）：
 | 函数                             | 类型 | 调用者   |
 |----------------------------------+------+----------|
 | PNS.transferRootOwnership        | 受限 | 维护人员 |
@@ -140,7 +156,7 @@ PNS和Controller需要以下额外的辅助合约配合测试：
 
 + 受限、运营者调用
 
-  测试权限检查以及功能，但是随机调用参数应该是有效的，即假定维护人员不会恶意调用。
+  测试权限检查以及功能，但是随机调用参数应该是合理有效的，即假定维护人员不会恶意调用。
 
 + 受限、信任的合约调用
 
@@ -154,7 +170,7 @@ PNS和Controller需要以下额外的辅助合约配合测试：
 
 *权限管理*
 
-权限管理操作包括PNS和Controller的transferRootOwnership和setManager的函数，两个合约同名的操作的功能是一样的。
+权限管理操作包括PNS和Controller的transferRootOwnership和setManager的函数，两个合约同名的操作的功能是一样的。约束表示操作需要满足的条件（require），状态更新表示操作对状态的影响，断言则是状态更新后对状态判断，参数表示模糊测试时参数的取值，其中粗体的 *参数* 表示是该函数是受限调用的，随机参数应选取合理有效范围。
 
 + transferRootOwnership(r)，转移超级用户
   - 约束
@@ -164,39 +180,272 @@ PNS和Controller需要以下额外的辅助合约配合测试：
     + _pns_root ← r（PNS合约）
     + _c*_root  ← r（Controller合约）
   - 断言
-    + PNS.root'() == r（PNS合约）
-    + C*.root'() == r（Controller合约）
+    + PNS.root() == r（PNS合约）
+    + C*.root() == r（Controller合约）
+  - *参数*
+    + r：大概率从SENDER_POOL选取
 + setManager(m, b)，设置或取消管理权限
   - 约束
     + _msgSender() == _pns_root（PNS合约）
     + _msgSender() == _c*_root（Controller合约）
   - 状态更新
-    + _pns_manager.insert(m) if b, _pns_manager.remove(m) if !b（PNS合约）
-    + _c*_manager.insert(m) if b, _c*_manager.remove(m) if !b（Controller合约）
+    + _pns_manager_set.insert(m) if b, _pns_manager_set.remove(m) if !b（PNS合约）
+    + _c*_manager_set.insert(m) if b, _c*_manager_set.remove(m) if !b（Controller合约）
   - 断言
     + PNS.isManager(m) == b（PNS合约）
     + C*.isManager(m) == b（Controller合约）
-
+  - *参数*
+    + b：平均随机
+    + m：从指定范围选取
+      - 对于PNS合约，选取范围为SENDER_POOL、C0和C1
+      - 对于Controller，选取范围为SENDER_POOL
 *合约管理*
 
-+ PNS.setContractConfig
-+ Controller.setContractConfig
-+ Controller.setPrices
++ PNS.setContractConfig(w)，设置合约可修改属性
+  - 约束
+    + _msgSender() == _pns_root
+  - 状态更新
+    + _pns_mutable ← w & 1
+  - 断言
+    PNS.FLAGS() = w ? 1 : 0
+  - *参数*
+    + w：大概率为true，小概率为false
++ Controller.setContractConfig(fl, ml, md, gp, pf)，设置合约参数
+  - 约束
+    + _msgSender() == _c*_root
+  - 状态更新
+    + _c*_is_live ← fl & 1
+    + _c*_is_open ← fl & 2
+    + _c*_can_redeem ← fl & 4
+    + _c*_min_reg_len ← ml
+    + _c*_min_reg_dur ← md
+    + _c*_grace_period ← gp
+    + _c*_price_feed ← pf
+ - 断言
+   + C*.FLAGS() == (_c*_is_alive ? 1 : 0) | (_c*_is_open ? 2 : 0) | (_c*_can_redeem ? 4 : 0)
+   + C*.MIN_REGISTRATION_LENGTH() == _c*_min_reg_len
+   + C*.MIN_REGISTRATION_DURATION() == _c*_min_reg_dur
+   + C*.GRACE_PERIOD == _c*_grace_period
+   + address(C*.priceFeed()) == address(_c*_price_feed)
+ - *参数*
+   + fl：0～7，且bit0~bit2大概率为1
+   + ml：1～20
+   + md：1小时～1年
+   + gp：1天～2年
++ Controller.setPrices(bpl, rpl)，设置价格
+  - 约束
+    + _msgSender() == _c*_root
+  - 状态更新
+    + _c*_base_prices ← bpl
+    + _c*_rent_prices ← rpl
+  - 断言
+    + C*.getPrices() == (bp, rpl)
+  - *参数*
+    + bpl，数组，长度从1到20，非零递减
+    + rpl，数组，和bpl等长，非零递减
 
 *域名管理*
 
-+ PNS.mint
-+ PNS.mintSubdomain
-+ PNS.burn
-+ PNS.bound
-+ PNS.setMetadataBatch
++ PNS.mint(to, tok)，超级用户用于铸造顶级域名（基节点）
+  - 约束
+    * _msgSender() == _pns_root
+    * to ≠ 0
+    * tok ∉ _pns_owner_tbl
+  - 状态更新
+    + _pns_owner_tbl[to] = tok
+    + _pns_token_set.insert(tok)
+  - 断言
+    + PNS.exists(tok)
+    + PNS.ownerOf(tok) == to
+  - *参数*
+    + to：随机从SENDER_POOL选
+    + tok：随机从WORD_SET哈希后的值选
++ PNS.mintSubdomain(to, ptok, name)，用户铸造子域名
+  - 约束
+    + _msgSender() ∈ {_pns_root, _pns_manager_set, _pns_approve_tbl[ptok], _pns_owner_tbl[ptok]}
+    + to ≠ 0
+    + stok ∉ _pns_owner_tbl
+  - 状态更新
+    + _pns_owner_tbl[stok] = to
+    + _pns_sd_parent_tbl[stok] = ptok
+    + _pns_sd_origin_tbl[stok] = (ptok ∈ _pns_sld_expire_tbl) ? ptok : _pns_sd_origin_tbl[ptok]
+    + _pns_token_set.insert(stok)
+  - 断言
+    + ret == stok
+    + PNS.exists(stok)
+    + PNS.ownerOf(stok) == to
+    + PNS.nameExpired() == _pns_sld_expire_tbl[_pns_sd_origin_tbl[stok]] + GRACE_PERIOD < block.timestamp
+    + !PNS.available(stok)
+    + PNS.origin(stok) == _pns_sd_origin_tbl[stok]
+    + PNS.parent(stok) == ptok
+  - 参数
+    + to：大概率SENDER_POOL，小概率随机
+    + ptok
+      - 若_msgSender() ∈ {_pns_manager_set, _pns_root}，则从 {_pns_sld_expire_tbl, _pns_sd_parent_tbl} 中随机选择
+      - 否则，大概率从 _pns_token_set 中随机选择，小概率随机
+    + name：大概率从WORD_SET中随机选，小概率随机
+  - 说明
+    + stok为name和ptok组合后的哈希；
+    + 考虑到approveForAll和approve对于测试不影响，因此仅考虑ERC721中的approve。
++ PNS.burn(tok)，销毁域名
+  - 约束
+    + tok ∈ _pns_owner_tbl
+    + 满足以下任意一项
+      - PNS.nameExpired(tok) && tok ∉ _pns_bound_set（域名过期且未冻结）
+      - _msgSender() == _pns_root（超级用户可销毁）
+      - _msgSender() ∈ { _pns_owner_tbl[tok], _pns_approve_tbl[tok] }（授权用户可以销毁）
+      - _msgSender() ∈ { _pns_owner_tbl[_pns_sd_origin_tbl[tok]], _pns_approve_tbl[_pns_sd_origin_tbl[tok]] }（若为子域名，对应二级域名授权用户可销毁）
+  - 状态更新
+    + _pns_owner_tbl.remove(tok)
+    + _pns_sld_expire_tbl.remove(tok) if exists
+    + _pns_sd_origin_tbl.remove(tok) if exists
+    + _pns_sd_parent_tbl[tok] ← 0
+  - 断言
+    + !PNS.exists(tok)
+    + PNS.origin(tok) == 0
+    + PNS.expire(tok) == 0
+  - 参数
+    + tok：大概率从_pns_token_set 随机选，小概率随机
+  - 说明
+    + PNS.nameExpired需要进行状态断言测试
++ PNS.bound(tok)
+  - 约束
+    + _msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }
+    + 以下条件任意一项
+      - tok ∈ _pns_sld_expire_tbl
+      - _pns_sd_origin_tbl[tok] ∈ _pns_bound_set
+  - 状态更新
+    + _pns_bound_set.insert(tok)
+  - 断言
+    + PNS.bounded(tok)
+  - 参数
+    + tok：大概率从_pns_token_set随机选，小概率随机
++ PNS.setMetadataBatch(toks, recs)
+  - 约束
+    + _msgSender() ∈ { _pns_root, _pns_manager_set }
+  - 状态更新
+    对于toks和recs的每一对值(tok, rec)：
+    + 若rec.origin == tok，_pns_sld_expire_tbl[tok] ← rec.expire
+    + 否则，
+      - _pns_sd_origin_tbl[tok] ← rec.origin
+      - _pns_sd_parent_tbl[tok] ← rec.parent
+  - 断言
+    对于toks和recs的每一对值(tok, rec)：
+    + !PNS.available(tok)
+    + PNS.expire(tok) == rec.expire
+    + PNS.origin(tok) == rec.origin
+    + PNS.parent(tok) == rec.parent
+  - *参数*
+    + toks：长度随机，从 _pns_owner_tbl 随机选
+    + recs：和toks等长
+      - origin：一半概率是对应的tok，一半概率从 _pns_owner_tbl 随机选
+      - expire：若origin是自身，则随机1天到5年，否则是0
+      - parent：若origin是自身，则也是自身，否则随机从 _pns_owner_tbl 选
 + PNS.register
+  - 约束
+    + _msgSender() ∈ { _pns_root, _pns_manager_set }
 + PNS.renew
-+ Controller.nameRegisterByManager
-+ Controller.nameRegister
+  - 约束
+    + _msgSender() ∈ { _pns_root, _pns_manager_set }
++ Controller.nameRegisterByManager(name, to, dur, set_name, khs, vls)
+  - 约束
+    + _c*_is_live
+    + _msgSender() ∈ { _c*_root, _c*_manager_set }
+    + stok ∉ _pns_owner_tbl
+    + to ≠ 0
+    + _pns_mutable
+    + C* ∈ { _pns_root, _pns_manager_set }
+  - 状态更新
+    + _pns_owner_tbl[stok] ← to
+    + _pns_token_set.insert(stok)
+    + _pns_sld_expire_tbl[stok] ← dur
+    + _pns_info_name_tbl[to] ← stok if set_name
+    + 对于khs和vls的每组值(kh, vl)，_pns_info_record[stok][kh] ← vl
+  - 断言
+    + ret == stok
+    + PNS.ownerOf(stok) == to
+    + PNS.getName(to) == stok if set_name
+    + PNS.getManyByHash(khs, stok) == vls
+    + 对于khs和vls的每组值(kh, vl)，PNS.getByHash(kh) == vl
+    + PNS.expire(stok) == dur
+    + PNS.origin(stok) == stok
+    + PNS.parent(stok) == stok
+    + !PNS.available(stok)
+  - *参数*
+    + name：一半概率1到20个字符随机，一般概率从WORD_SET随机取；
+    + to：大概率从SENDER_POOL取，小概率随机；
+    + dur：1天到5年，随机；
+    + set_name：true或false
+    + khs：随机；
+    + vls：khs等长，值随机；
+  - 说明
+    + stok：name和C*_BASE_NODE组合的哈希
+    + 不对dur时间长度和name的字符长度限制
++ Controller.nameRegister(name, to, dur)
+  - 约束
+    + _c*_is_open
+    + msg.value >= C*.totalRegisterPrice(name, dur)
+    + length(name) >= _c*_min_reg_len
+    + dur >= _c*_min_reg_dur
+    + block.timestamp + dur + _c*_grace_period > block.timestamp + _c*_grace_period
+    + stok ∉ _pns_owner_tbl
+    + to ≠ 0
+  - 状态更新
+    + _pns_owner_tbl[stok] ← to
+    + _pns_token_set.insert(stok)
+    + _pns_sld_expire_tbl[stok] ← dur
+  - 断言
+    + ret == stok
+    + PNS.ownerOf(stok) == to
+    + PNS.expire(stok) == dur
+    + PNS.origin(stok) == stok
+    + PNS.parent(stok) == stok
+    + !PNS.available(stok)
+    + balanceOf(_c*_root) == balanceOf~(_c*_root) + C*.totalRegisterPrice(name, dur)
+    + balanceOf(_msgSender()) == balanceOf~(_msgSender()) + msg.value - C*.totalRegisterPrice(name, dur)
+  - 参数
+    + name：一半概率随机，一半概率从WORD_SET随机
+    + to：大概率随机从SENDER_POOL选，小概率随机
+    + dur：基本等概率的小于、等于和大于_c*_min_reg_dur
+    + msg.value：基本等概率的小于、等于和大于C*.totalRegisterPrice(name, dur)
+  - 说明
+    + totalRegisterPrice需要进行状态断言测试
+    + stok：name和C*_BASE_NODE组合的哈希
+    + balanceOf~表示调用操作前的资产
++ Controller.nameRegisterWithConfig(name, to, dur, set_name, khs, vls)
+  - 约束
+    + 包含Controller.nameRegister约束
+    + _pns_mutable
+    + C* ∈ { _pns_root, _pns_manager_set }
+    + length(khs) == length(vls)
+  - 状态更新
+    + 包含Controller.nameRegister状态更新
+    + _pns_info_name_tbl[to] ← stok if set_name
+    + 对于khs和vls的每组值(kh, vl)，_pns_info_record[stok][kh] ← vl
+  - 断言
+    + 包含Controller.nameRegister断言
+    + PNS.getName(to) == stok if set_name
+    + PNS.getManyByHash(khs, stok) == vls
+    + 对于khs和vls的每组值(kh, vl)，PNS.getByHash(kh) == vl
+  - 参数
+    + 除khs，vls外参数见Controller.nameRegister
+    + khs：随机；
+    + vls：大概率和khs等长，值随机；
 + Controller.nameRedeem
+  - 约束
+  - 状态更新
+  - 断言
+  - 参数
 + Controller.renew
+  - 约束
+  - 状态更新
+  - 断言
+  - 参数
 + Controller.renewByManager
+  - 约束
+  - 状态更新
+  - 断言
+  - *参数*
 
 *域名修改*
 
@@ -208,4 +457,86 @@ PNS和Controller需要以下额外的辅助合约配合测试：
 + PNS.setlink
 + PNS.setlinks
 
+*** 辅助操作与状态断言
+辅助操作为了能覆盖一些仅依靠待测函数无法测试到的场景，而额外的增加的操作。辅助操作过程中不进行断言，也可能会因为不满足操作条件而revert，随机的参数也一般是合理有效的。PNS、Controller以及辅助合约需要的辅助操作如下：
++ PNS.safeTransferFrom()
+  - 状态更新
+  - *参数*
++ PNS.approve()
+  - 状态更新
+  - *参数*
++ aop_nft_set_owner(idx, owner)
+  - 状态更新
+    + NFT<idx>.transferRootOwnership(owner)
+  - *参数*
+    + idx：0或1
+    + owner：SENDER_POOL随机选
++ aop_set_price(idx, price)
+  - 状态更新
+    + PRICE<idx>.updateAnswer(price)
+  - *参数*
+    + idx：0或1
+    + price：非0的数
+
+状态断言用于一些状态函数的功能测试，这些状态函数在操作断言中未覆盖或覆盖不全面（Y）。还有一些状态函数虽然未完全覆盖，或者是足够简单（S），或者是在操作函数断言测试中进行了部分间接或直接的测试（P），或者是不会用来查询无效状态并用于判断（V），因此不进行状态断言。具体如下表：
+| 函数                                 | 类型 |
+|--------------------------------------+------|
+| PNS.root                             | SP   |
+| PNS.isManager                        | SP   |
+| PNS.FLAGS                            | SV   |
+| PNS.GRACE_PERIOD                     | SV   |
+| PNS.supportsInterface                | S    |
+| PNS.exists                           | SP   |
+| PNS.isApprovedOrOwner                | SP   |
+| PNS.getName                          | SP   |
+| PNS.getNameChecked                   | Y    |
+| PNS.getNftName                       | SV   |
+| PNS.getKey                           | SV   |
+| PNS.get                              | SV   |
+| PNS.getMany                          | V    |
+| PNS.getByHash                        | SV   |
+| PNS.getManyByHash                    | V    |
+| PNS.getlink                          | SV   |
+| PNS.getlinks                         | V    |
+| PNS.bounded                          | Y    |
+| PNS.nameExpired                      | Y    |
+| PNS.available                        | Y    |
+| PNS.expire                           | SP   |
+| PNS.origin                           | SP   |
+| PNS.parent                           | SP   |
+| Controller.root                      | SP   |
+| Controller.isManager                 | SP   |
+| Controller.priceFeed                 | SV   |
+| Controller._pns                      | SV   |
+| Controller.BASE_NODE                 | SV   |
+| Controller.MIN_REGISTRATION_DURATION | SV   |
+| Controller.MIN_REGISTRATION_LENGTH   | SV   |
+| Controller.GRACE_PERIOD              | SV   |
+| Controller.FLAGS                     | SV   |
+| Controller.supportsInterface         | S    |
+| Controller.getTokenPrice             | SV   |
+| Controller.getPrices                 | SV   |
+| Controller.totalRegisterPrice        | Y    |
+| Controller.renewPrice                | Y    |
+| Controller.basePrice                 | Y    |
+| Controller.rentPrice                 | Y    |
+#+caption: 状态函数测试方式
+
+注意，表中的V的有效性，是建立在P的前提下的，因为操作断言中直接或间接测试均测试有效状态。下面对表中Y类型的函数进行说明：
+
++ PNS.getNameChecked
++ PNS.bounded
++ PNS.nameExpired
++ PNS.available
++ Controller.totalRegisterPrice
++ Controller.renewPrice
++ Controller.basePrice
++ Controller.renewPrice
 ** 初始化
+合约的初始化通过typescript脚本实现，初始化的过程的事务会保存在 ~echidna-init.json~ 文件中，预置的一些数据会更新到 ~contracts/fuzzing/EchinaInit.sol~ 文件，具体包括以下内容。
+
+TODO
+
+具体运行的方式如下，若不修改初始化的内容，以下操作只需要运行一次：
++ TODO
++ TODO
