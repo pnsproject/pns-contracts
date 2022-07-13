@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org187a077)
-2.  [模糊测试](#org5e88be4)
-    1.  [合约分析](#org9d53cfc)
-        1.  [常数](#org716b0b4)
-        2.  [状态](#orgc55fb32)
-        3.  [辅助状态和辅助合约](#org9c1d129)
-        4.  [操作与断言](#org7458922)
-        5.  [辅助操作与状态断言](#orge819af9)
-    2.  [初始化](#org1ca75d9)
+1.  [单元测试](#orgf21e3fb)
+2.  [模糊测试](#orgfd17d44)
+    1.  [合约分析](#org0ab6813)
+        1.  [常数](#org38ff9b7)
+        2.  [状态](#orgae2f9f5)
+        3.  [辅助状态和辅助合约](#org91f8819)
+        4.  [操作与断言](#org88ad536)
+        5.  [辅助操作与状态断言](#org3b91e91)
+    2.  [初始化](#orgb31e9da)
 
 
 
-<a id="org187a077"></a>
+<a id="orgf21e3fb"></a>
 
 # 单元测试
 
@@ -31,19 +31,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org5e88be4"></a>
+<a id="orgfd17d44"></a>
 
 # 模糊测试
 
 
-<a id="org9d53cfc"></a>
+<a id="org0ab6813"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org716b0b4"></a>
+<a id="org38ff9b7"></a>
 
 ### 常数
 
@@ -182,7 +182,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgc55fb32"></a>
+<a id="orgae2f9f5"></a>
 
 ### 状态
 
@@ -458,7 +458,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org9c1d129"></a>
+<a id="org91f8819"></a>
 
 ### 辅助状态和辅助合约
 
@@ -541,7 +541,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org7458922"></a>
+<a id="org88ad536"></a>
 
 ### 操作与断言
 
@@ -1196,7 +1196,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="orge819af9"></a>
+<a id="org3b91e91"></a>
 
 ### 辅助操作与状态断言
 
@@ -1517,37 +1517,37 @@ Controller合约包括如下状态：
     -   参数：随机
 
 
-<a id="org1ca75d9"></a>
+<a id="orgb31e9da"></a>
 
 ## 初始化
 
 合约的初始化通过typescript脚本实现，初始化的过程的事务会保存在 `echidna-init.json` 文件中，预置的一些数据会更新到 `contracts/fuzzing/EchinaInit.sol` 文件，具体包括以下内容：
 
--   SENER\_POOL，测试者表
--   SENER\_PK，测试者私钥
--   WORD\_SET，词汇表
--   PNS，待测PNS合约实例
-    -   PNS\_GRACE\_PERIOD，360天
-    -   \_pns\_root，PNS的超级用户
-    -   \_pns\_manager\_set，初始化为C0和C1
-    -   \_pns\_owner\_tbl，初始化为C0\_BASE\_NODE和C1\_BASE\_NODE
-    -   \_pns\_token\_set，内容同\_pns\_owner\_tbl
--   C[0]、C[1]，待测Controller合约实例
-    -   C\_BASE\_NODE[0]、C\_BASE\_NODE[1]，分别为WORD\_SET的前两个
-    -   \_c\_root[0]、\_c\_root[1]，C[0]和C[1]的超级用户
-    -   \_c\_manager\_set[0]、\_c\_manager\_set[1]，分别添加SENDER\_POOL的部分值
-    -   \_c\_price\_feed[0]、\_c\_price\_feed[1]，分别设置为PRICE0和PRICE1
-    -   \_c\_base\_prices[0]、\_c\_base\_prices[1]，设置有效的初值
-    -   \_c\_rent\_prices[0]、\_c\_rent\_prices[1]，设置有效的初值
--   NFT[0]、NFT[1]：MacroNFT的实例
+-   `SENER_POOL` ，测试者表
+-   `SENER_PK` ，测试者私钥
+-   `WORD_SET` ，词汇表
+-   `PNS` ，待测PNS合约实例
+    -   `PNS_GRACE_PERIOD` ，360天
+    -   `_pns_root` ，PNS的超级用户
+    -   `_pns_manager_set` ，初始化为C0和C1
+    -   `_pns_owner_tbl` ，初始化为C0\_BASE\_NODE和C1\_BASE\_NODE
+    -   `_pns_token_set` ，内容同\_pns\_owner\_tbl
+-   `C[0]` 、 `C[1]` ，待测Controller合约实例
+    -   `C_BASE_NODE[0]` 、 `C_BASE_NODE[1]` ，分别为WORD\_SET的前两个
+    -   `_c_root[0]` 、 `_c_root[1]` ，C[0]和C[1]的超级用户
+    -   `_c_manager_set[0]` 、 `_c_manager_set[1]` ，分别添加SENDER\_POOL的部分值
+    -   `_c_price_feed[0]` 、 `_c_price_feed[1]` ，分别设置为PRICE0和PRICE1
+    -   `_c_base_prices[0]` 、 `_c_base_prices[1]` ，设置有效的初值
+    -   `_c_rent_prices[0]` 、 `_c_rent_prices[1]` ，设置有效的初值
+-   `NFT[0]` 、 `NFT[1]` ：MacroNFT的实例
     -   每个实例代币ID为0～9已铸造给SENDER\_POOL的地址
--   PRICE[0]、PRICE[1]：PriceOracle的实例
+-   `PRICE[0]` 、 `PRICE[1]` ：PriceOracle的实例
 
 方便起见，实际代码把文档中所有大于一个实例的变量改用mapping来表示，例如：
 
--   \_c0\_root     → \_c\_root[0]
--   C1\_BASE\_NODE → C\_BASE\_NODE[1]
--   PRICE0       → PRICE[0]
+-   `_c0_root`     → `_c_root[0]`
+-   `C1_BASE_NODE` → `C_BASE_NODE[1]`
+-   `PRICE0`       → `PRICE[0]`
 
 具体运行的方式如下，若不修改初始化的内容，以下操作只需要运行一次（在项目根目录）：
 
