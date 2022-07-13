@@ -160,7 +160,7 @@ Controller合约包括如下状态：
 
 + 受限、信任的合约调用
 
-  仅对权限检查进行测试，功能通过测试受信任合约（即Controller）的相应函数间接测试。
+  仅对调用身份检查进行测试，功能通过测试受信任合约（即Controller）的相应函数间接测试。
 
 + 开放
 
@@ -266,9 +266,9 @@ Controller合约包括如下状态：
     + ~to ≠ 0~
     + ~stok ∉ _pns_owner_tbl~
   - 状态更新
-    + ~_pns_owner_tbl[stok] = to~
-    + ~_pns_sd_parent_tbl[stok] = ptok~
-    + ~_pns_sd_origin_tbl[stok] = (ptok ∈ _pns_sld_expire_tbl) ? ptok : _pns_sd_origin_tbl[ptok]~
+    + ~_pns_owner_tbl[stok] ← to~
+    + ~_pns_sd_parent_tbl[stok] ← ptok~
+    + ~_pns_sd_origin_tbl[stok] ← (ptok ∈ _pns_sld_expire_tbl) ? ptok : _pns_sd_origin_tbl[ptok]~
     + ~_pns_token_set.insert(stok)~
   - 断言
     + ~ret == stok~
@@ -342,10 +342,10 @@ Controller合约包括如下状态：
       - expire：若origin是自身，则随机1天到5年，否则是0
       - parent：若origin是自身，则也是自身，否则随机从 _pns_owner_tbl 选
 + ~PNS.register~ ，受限，被合约调用
-  - 约束
+  - 约束（必要条件）
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~
 + ~PNS.renew~ ，受限，被合约调用
-  - 约束
+  - 约束（必要条件）
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~
 + ~Controller.nameRegisterByManager(name, to, dur, set_name, khs, vls)~
   - 约束
