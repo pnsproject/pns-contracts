@@ -134,7 +134,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
         }
     }
 
-    function getName(address addr) public view override returns (uint256) {
+    function getNameUnchecked(address addr) public view returns (uint256) {
         return _names[addr];
     }
 
@@ -146,8 +146,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     // 5. victim provide some service, using 'trust-domain-name' as view of victimWallet to receive payment
     // 6. attacker do phishing on victim's service, can use attackerWallet to get payment, because
     //    getName(attackerWallet) will still return namehash('trust-domain-name')
-    function getNameChecked(address addr) public view returns (uint256 tokenId) {
-        tokenId = getName(addr);
+    function getName(address addr) public view override returns (uint256 tokenId) {
+        tokenId = _names[addr];
 
         // return tokenId if any of below condition is valid
         // 1. owner of tokenId is addr
