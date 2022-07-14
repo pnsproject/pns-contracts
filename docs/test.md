@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orgbfd3b7b)
-2.  [模糊测试](#org5b90c7d)
-    1.  [合约分析](#orgea1af35)
-        1.  [常数](#orgaea21f4)
-        2.  [状态](#org0386ce0)
-        3.  [辅助状态和辅助合约](#org35f6eb6)
-        4.  [操作与断言](#org6d62613)
-        5.  [辅助操作与状态断言](#orgf1394f0)
-    2.  [初始化](#org3852082)
+1.  [单元测试](#orgb24c1cd)
+2.  [模糊测试](#org8c192d3)
+    1.  [合约分析](#org6fc66dc)
+        1.  [常数](#orga7fb789)
+        2.  [状态](#orgd8ea97f)
+        3.  [辅助状态和辅助合约](#orgb66554a)
+        4.  [操作与断言](#org1c4dda8)
+        5.  [辅助操作与状态断言](#org588a314)
+    2.  [初始化](#orgb4edf5f)
 
 
 
-<a id="orgbfd3b7b"></a>
+<a id="orgb24c1cd"></a>
 
 # 单元测试
 
@@ -31,19 +31,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org5b90c7d"></a>
+<a id="org8c192d3"></a>
 
 # 模糊测试
 
 
-<a id="orgea1af35"></a>
+<a id="org6fc66dc"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orgaea21f4"></a>
+<a id="orga7fb789"></a>
 
 ### 常数
 
@@ -182,7 +182,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org0386ce0"></a>
+<a id="orgd8ea97f"></a>
 
 ### 状态
 
@@ -254,18 +254,34 @@ PNS合约包括如下状态，其中“预置”表示合约在部署的时候�
 
 <tbody>
 <tr>
+<td class="org-left">_pns_sld_set</td>
+<td class="org-left">ES(uint256)</td>
+<td class="org-left">空</td>
+<td class="org-left">二级域名表</td>
+</tr>
+
+
+<tr>
 <td class="org-left">_pns_sld_expire_tbl</td>
-<td class="org-left">EM(uint256, uint256)</td>
+<td class="org-left">M(uint256, uint256)</td>
 <td class="org-left">空</td>
 <td class="org-left">二级域名有效期表</td>
 </tr>
 
 
 <tr>
-<td class="org-left">_pns_sd_origin_tbl</td>
-<td class="org-left">EM(uint256, uint256)</td>
+<td class="org-left">_pns_sd_set</td>
+<td class="org-left">ES(uint256)</td>
 <td class="org-left">空</td>
-<td class="org-left">子域名（三级或以上）源域名表</td>
+<td class="org-left">子域名（三级或以上）表</td>
+</tr>
+
+
+<tr>
+<td class="org-left">_pns_sd_origin_tbl</td>
+<td class="org-left">M(uint256, uint256)</td>
+<td class="org-left">空</td>
+<td class="org-left">子域名源域名表</td>
 </tr>
 
 
@@ -450,7 +466,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org35f6eb6"></a>
+<a id="orgb66554a"></a>
 
 ### 辅助状态和辅助合约
 
@@ -533,7 +549,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org6d62613"></a>
+<a id="org1c4dda8"></a>
 
 ### 操作与断言
 
@@ -858,8 +874,9 @@ Controller合约包括如下状态：
         -   `stok ∉ _pns_owner_tbl`
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
+        -   `_pns_sd_set.insert(stok)`
         -   `_pns_sd_parent_tbl[stok] ← ptok`
-        -   `_pns_sd_origin_tbl[stok] ← (ptok ∈ _pns_sld_expire_tbl) ? ptok : _pns_sd_origin_tbl[ptok]`
+        -   `_pns_sd_origin_tbl[stok] ← (ptok ∈ _pns_sld_set) ? ptok : _pns_sd_origin_tbl[ptok]`
         -   `_pns_token_set.insert(stok)`
     -   断言
         -   `ret == stok`
@@ -872,7 +889,7 @@ Controller合约包括如下状态：
     -   参数
         -   to：大概率SENDER\_POOL，小概率随机
         -   ptok
-            -   若 `_msgSender() ∈ {_pns_manager_set, _pns_root}` ，则从 `{_pns_sld_expire_tbl, _pns_sd_parent_tbl}` 中随机选择
+            -   若 `_msgSender() ∈ {_pns_manager_set, _pns_root}` ，则从 `{_pns_sld_set, _pns_sd_set}` 中随机选择
             -   否则，大概率从 \_pns\_token\_set 中随机选择，小概率随机
         -   name：大概率从WORD\_SET中随机选，小概率随机
     -   说明
@@ -888,8 +905,8 @@ Controller合约包括如下状态：
             -   `_msgSender() ∈ { _pns_owner_tbl[_pns_sd_origin_tbl[tok]], _pns_approve_tbl[_pns_sd_origin_tbl[tok]] }` （若为子域名，对应二级域名授权用户可销毁）
     -   状态更新
         -   `_pns_owner_tbl.remove(tok)`
-        -   `_pns_sld_expire_tbl.remove(tok) if exists`
-        -   `_pns_sd_origin_tbl.remove(tok) if exists`
+        -   `_pns_sld_set.remove(tok) if exists`
+        -   `_pns_sd_set.remove(tok) if exists`
         -   `_pns_sd_parent_tbl[tok] ← 0`
     -   断言
         -   `!P.exists(tok)`
@@ -903,7 +920,7 @@ Controller合约包括如下状态：
     -   约束
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }`
         -   以下条件任意一项
-            -   `tok ∈ _pns_sld_expire_tbl`
+            -   `tok ∈ _pns_sld_set`
             -   `_pns_sd_origin_tbl[tok] ∈ _pns_bound_set`
     -   状态更新
         -   `_pns_bound_set.insert(tok)`
@@ -916,7 +933,8 @@ Controller合约包括如下状态：
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
     -   状态更新
         对于toks和recs的每一对值(tok, rec)：
-        -   若 `rec.origin == tok` ， `_pns_sld_expire_tbl[tok] ← rec.expire`
+        -   若 `rec.origin == tok`
+            -   `_pns_sld_expire_tbl[tok] ← rec.expire`
         -   否则，
             -   `_pns_sd_origin_tbl[tok] ← rec.origin`
             -   `_pns_sd_parent_tbl[tok] ← rec.parent`
@@ -952,6 +970,7 @@ Controller合约包括如下状态：
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.insert(stok)`
+        -   `_pns_sld_set.insert(stok)`
         -   `_pns_sld_expire_tbl[stok] ← dur`
         -   `_pns_info_name_tbl[to] ← stok if set_name`
         -   `∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl`
@@ -990,6 +1009,7 @@ Controller合约包括如下状态：
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.insert(stok)`
+        -   `_pns_sld_set.insert(stok)`
         -   `_pns_sld_expire_tbl[stok] ← dur`
     -   断言
         -   `ret == stok`
@@ -1040,6 +1060,7 @@ Controller合约包括如下状态：
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.insert(stok)`
+        -   `_pns_sld_set.insert(stok)`
         -   `_pns_sld_expire_tbl[stok] ← dur`
     -   断言
         -   `ret == stok`
@@ -1059,7 +1080,7 @@ Controller合约包括如下状态：
         -   `_c*_is_open`
         -   PNS权限约束
             -   `C* ∈ { _pns_root, _pns_manager_set }`
-        -   `stok ∈ _pns_sld_expire_tbl` ，必须是二级域名
+        -   `stok ∈ _pns_sld_set` ，必须是二级域名
         -   `msg.value >= price` ，续费要求
         -   `_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD > _pns_sld_expire_tbl[stok] + GRACE_PERIOD` ，不溢出
     -   状态更新
@@ -1080,7 +1101,7 @@ Controller合约包括如下状态：
         -   `_c*_is_live`
         -   PNS权限约束
             -   `C* ∈ { _pns_root, _pns_manager_set }`
-        -   `stok ∈ _pns_sld_expire_tbl`
+        -   `stok ∈ _pns_sld_set`
         -   `_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD > _pns_sld_expire_tbl[stok] + GRACE_PERIOD`
     -   状态更新
         -   `_pns_sld_expire_tbl[stok] += dur`
@@ -1186,7 +1207,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="orgf1394f0"></a>
+<a id="org588a314"></a>
 
 ### 辅助操作与状态断言
 
@@ -1490,9 +1511,9 @@ Controller合约包括如下状态：
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
 -   `PNS.nameExpired(tok)`
     -   断言
-        -   若 `tok ∈ _pns_sld_expire_tbl`
+        -   若 `tok ∈ _pns_sld_set`
             -   `P.nameExpired(tok) == (_pns_sld_expire_tbl[tok] + GRACE_PERIOD < block.timestamp)`
-        -   若 `tok ∈ _pns_sd_origin_tbl` ，
+        -   若 `tok ∈ _pns_sd_set` ，
             -   `P.nameExpired(tok) == (_pns_sld_expire_tbl[_pns_sd_origin_tbl[tok]] + GRACE_PERIOD < block.timestamp)`
         -   否则，
             -   `P.nameExpired(tok) == (GRACE_PERIOD < block.timestamp)`
@@ -1500,7 +1521,7 @@ Controller合约包括如下状态：
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
 -   `PNS.available(tok)`
     -   断言
-        -   `P.available(tok) == (tok ∈ {_pns_sld_expire_tbl, _pns_sd_origin_tbl})`
+        -   `P.available(tok) == (tok ∈ {_pns_sld_set, _pns_sd_set})`
     -   参数
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
     -   说明
@@ -1526,7 +1547,7 @@ Controller合约包括如下状态：
     -   说明： `cost_wei` 的计算需要注意保留精度，先做乘法
 
 
-<a id="org3852082"></a>
+<a id="orgb4edf5f"></a>
 
 ## 初始化
 

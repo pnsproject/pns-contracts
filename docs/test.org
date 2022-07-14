@@ -59,8 +59,10 @@ PNS合约包括如下状态，其中“预置”表示合约在部署的时候�
 | _pns_owner_tbl         | EM(uint256, address)            | 预置 | ERC721的所有者表               |
 | _pns_approve_tbl       | M(uint256, address)             | 空   | ERC721授权表                   |
 |------------------------+---------------------------------+------+--------------------------------|
-| _pns_sld_expire_tbl    | EM(uint256, uint256)            | 空   | 二级域名有效期表               |
-| _pns_sd_origin_tbl     | EM(uint256, uint256)            | 空   | 子域名（三级或以上）源域名表   |
+| _pns_sld_set           | ES(uint256)                     | 空   | 二级域名表                     |
+| _pns_sld_expire_tbl    | M(uint256, uint256)             | 空   | 二级域名有效期表               |
+| _pns_sd_set            | ES(uint256)                     | 空   | 子域名（三级或以上）表         |
+| _pns_sd_origin_tbl     | M(uint256, uint256)             | 空   | 子域名源域名表                 |
 | _pns_sd_parent_tbl     | M(uint256, uint256)             | 空   | 父域名表                       |
 | _pns_bound_set         | ES(uint256)                     | 空   | 域名冻结集合                   |
 |------------------------+---------------------------------+------+--------------------------------|
@@ -264,8 +266,9 @@ Controller合约包括如下状态：
     + ~stok ∉ _pns_owner_tbl~
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
+    + ~_pns_sd_set.insert(stok)~
     + ~_pns_sd_parent_tbl[stok] ← ptok~
-    + ~_pns_sd_origin_tbl[stok] ← (ptok ∈ _pns_sld_expire_tbl) ? ptok : _pns_sd_origin_tbl[ptok]~
+    + ~_pns_sd_origin_tbl[stok] ← (ptok ∈ _pns_sld_set) ? ptok : _pns_sd_origin_tbl[ptok]~
     + ~_pns_token_set.insert(stok)~
   - 断言
     + ~ret == stok~
@@ -278,7 +281,7 @@ Controller合约包括如下状态：
   - 参数
     + to：大概率SENDER_POOL，小概率随机
     + ptok
-      - 若 ~_msgSender() ∈ {_pns_manager_set, _pns_root}~ ，则从 ~{_pns_sld_expire_tbl, _pns_sd_parent_tbl}~ 中随机选择
+      - 若 ~_msgSender() ∈ {_pns_manager_set, _pns_root}~ ，则从 ~{_pns_sld_set, _pns_sd_set}~ 中随机选择
       - 否则，大概率从 _pns_token_set 中随机选择，小概率随机
     + name：大概率从WORD_SET中随机选，小概率随机
   - 说明
@@ -294,8 +297,8 @@ Controller合约包括如下状态：
       - ~_msgSender() ∈ { _pns_owner_tbl[_pns_sd_origin_tbl[tok]], _pns_approve_tbl[_pns_sd_origin_tbl[tok]] }~ （若为子域名，对应二级域名授权用户可销毁）
   - 状态更新
     + ~_pns_owner_tbl.remove(tok)~
-    + ~_pns_sld_expire_tbl.remove(tok) if exists~
-    + ~_pns_sd_origin_tbl.remove(tok) if exists~
+    + ~_pns_sld_set.remove(tok) if exists~
+    + ~_pns_sd_set.remove(tok) if exists~
     + ~_pns_sd_parent_tbl[tok] ← 0~
   - 断言
     + ~!P.exists(tok)~
@@ -309,7 +312,7 @@ Controller合约包括如下状态：
   - 约束
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }~
     + 以下条件任意一项
-      - ~tok ∈ _pns_sld_expire_tbl~
+      - ~tok ∈ _pns_sld_set~
       - ~_pns_sd_origin_tbl[tok] ∈ _pns_bound_set~
   - 状态更新
     + ~_pns_bound_set.insert(tok)~
@@ -322,7 +325,8 @@ Controller合约包括如下状态：
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~
   - 状态更新
     对于toks和recs的每一对值(tok, rec)：
-    + 若 ~rec.origin == tok~ ， ~_pns_sld_expire_tbl[tok] ← rec.expire~
+    + 若 ~rec.origin == tok~
+      - ~_pns_sld_expire_tbl[tok] ← rec.expire~
     + 否则，
       - ~_pns_sd_origin_tbl[tok] ← rec.origin~
       - ~_pns_sd_parent_tbl[tok] ← rec.parent~
@@ -358,6 +362,7 @@ Controller合约包括如下状态：
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.insert(stok)~
+    + ~_pns_sld_set.insert(stok)~
     + ~_pns_sld_expire_tbl[stok] ← dur~
     + ~_pns_info_name_tbl[to] ← stok if set_name~
     + ~∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl~
@@ -396,6 +401,7 @@ Controller合约包括如下状态：
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.insert(stok)~
+    + ~_pns_sld_set.insert(stok)~
     + ~_pns_sld_expire_tbl[stok] ← dur~
   - 断言
     + ~ret == stok~
@@ -446,6 +452,7 @@ Controller合约包括如下状态：
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.insert(stok)~
+    + ~_pns_sld_set.insert(stok)~
     + ~_pns_sld_expire_tbl[stok] ← dur~
   - 断言
     - ~ret == stok~
@@ -465,7 +472,7 @@ Controller合约包括如下状态：
     + ~_c*_is_open~
     + PNS权限约束
       - ~C* ∈ { _pns_root, _pns_manager_set }~
-    + ~stok ∈ _pns_sld_expire_tbl~ ，必须是二级域名
+    + ~stok ∈ _pns_sld_set~ ，必须是二级域名
     + ~msg.value >= price~ ，续费要求
     + ~_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD > _pns_sld_expire_tbl[stok] + GRACE_PERIOD~ ，不溢出
   - 状态更新
@@ -486,7 +493,7 @@ Controller合约包括如下状态：
     + ~_c*_is_live~
     + PNS权限约束
       - ~C* ∈ { _pns_root, _pns_manager_set }~
-    + ~stok ∈ _pns_sld_expire_tbl~
+    + ~stok ∈ _pns_sld_set~
     + ~_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD > _pns_sld_expire_tbl[stok] + GRACE_PERIOD~
   - 状态更新
     + ~_pns_sld_expire_tbl[stok] += dur~
@@ -685,9 +692,9 @@ Controller合约包括如下状态：
     + tok：大概率从_pns_token_set随机选，小概率随机
 + ~PNS.nameExpired(tok)~
   - 断言
-    + 若 ~tok ∈ _pns_sld_expire_tbl~
+    + 若 ~tok ∈ _pns_sld_set~
       - ~P.nameExpired(tok) == (_pns_sld_expire_tbl[tok] + GRACE_PERIOD < block.timestamp)~
-    + 若 ~tok ∈ _pns_sd_origin_tbl~ ，
+    + 若 ~tok ∈ _pns_sd_set~ ，
       - ~P.nameExpired(tok) == (_pns_sld_expire_tbl[_pns_sd_origin_tbl[tok]] + GRACE_PERIOD < block.timestamp)~
     + 否则，
       - ~P.nameExpired(tok) == (GRACE_PERIOD < block.timestamp)~
@@ -695,7 +702,7 @@ Controller合约包括如下状态：
     + tok：大概率从_pns_token_set随机选，小概率随机
 + ~PNS.available(tok)~
   - 断言
-    + ~P.available(tok) == (tok ∈ {_pns_sld_expire_tbl, _pns_sd_origin_tbl})~
+    + ~P.available(tok) == (tok ∈ {_pns_sld_set, _pns_sd_set})~
   - 参数
     + tok：大概率从_pns_token_set随机选，小概率随机
   - 说明
