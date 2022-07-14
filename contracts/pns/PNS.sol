@@ -147,12 +147,15 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     // 6. attacker do phishing on victim's service, can use attackerWallet to get payment, because
     //    getName(attackerWallet) will still return namehash('trust-domain-name')
     function getName(address addr) public view override returns (uint256 tokenId) {
-        tokenId = _names[addr];
+        tokenId = getNameUnchecked(addr);
 
         // return tokenId if any of below condition is valid
         // 1. owner of tokenId is addr
         // 2. tokenId is approved for addr
-        if (!_isApprovedOrOwner(addr, tokenId)) {
+        if (!_exists(tokenId)) {
+            tokenId = 0;
+        }
+        else if (!_isApprovedOrOwner(addr, tokenId)) {
             tokenId = 0;
         }
     }
