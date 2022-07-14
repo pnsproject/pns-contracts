@@ -134,7 +134,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
         }
     }
 
-    function getName(address addr) public view override returns (uint256) {
+    function getNameUnchecked(address addr) public view returns (uint256) {
         return _names[addr];
     }
 
@@ -146,13 +146,16 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     // 5. victim provide some service, using 'trust-domain-name' as view of victimWallet to receive payment
     // 6. attacker do phishing on victim's service, can use attackerWallet to get payment, because
     //    getName(attackerWallet) will still return namehash('trust-domain-name')
-    function getNameChecked(address addr) public view returns (uint256 tokenId) {
-        tokenId = getName(addr);
+    function getName(address addr) public view override returns (uint256 tokenId) {
+        tokenId = getNameUnchecked(addr);
 
         // return tokenId if any of below condition is valid
         // 1. owner of tokenId is addr
         // 2. tokenId is approved for addr
-        if (!_isApprovedOrOwner(addr, tokenId)) {
+        if (!_exists(tokenId)) {
+            tokenId = 0;
+        }
+        else if (!_isApprovedOrOwner(addr, tokenId)) {
             tokenId = 0;
         }
     }
@@ -171,7 +174,9 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         address tokenOwner = IERC721Upgradeable(nftAddr).ownerOf(nftTokenId);
-        require(tokenOwner == _msgSender() || IERC721Upgradeable(nftAddr).isApprovedForAll(tokenOwner, _msgSender()) , 'not owner nor approved');
+        require(tokenOwner == _msgSender() ||
+                IERC721Upgradeable(nftAddr).getApproved(nftTokenId) == _msgSender() ||
+                IERC721Upgradeable(nftAddr).isApprovedForAll(tokenOwner, _msgSender()) , 'not owner nor approved');
         _nft_names[nftAddr][nftTokenId] = tokenId;
         emit SetNftName(nftAddr, nftTokenId, tokenId);
     }

@@ -10,6 +10,8 @@ interface IPNS is IERC721MetadataUpgradeable {
 
     event NewSubdomain(address to, uint256 tokenId, uint256 subtokenId, string name);
 
+    function GRACE_PERIOD() external returns(uint256);
+
     function mintSubdomain(address to, uint256 tokenId, string calldata name) external returns (uint256);
 
     function burn(uint256 tokenId) external;
