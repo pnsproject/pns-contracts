@@ -335,7 +335,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     }
 
     function _beforeTokenTransfer(
-        address _from,
+        address /* _from */,
         address to,
         uint256 tokenId
     ) internal view override {
