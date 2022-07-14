@@ -140,7 +140,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
 
     function nameRedeem(string calldata name, address to, uint256 duration, uint256 deadline, bytes calldata code) public override redeemable returns(uint256) {
         bytes32 label = keccak256(bytes(name));
-        bytes memory combined = abi.encodePacked(label, to, duration, deadline);
+        bytes memory combined = abi.encodePacked(label, to, duration, deadline, block.chainid, address(this));
         require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
         require(block.timestamp < deadline, "deadline mismatched");
 
