@@ -181,7 +181,7 @@ Controller合约包括如下状态：
     + ~_pns_root ← r~ （PNS合约）
     + ~_c*_root  ← r~ （Controller合约）
   - 断言
-    + ~PNS.root() == r~ （PNS合约）
+    + ~P.root() == r~ （PNS合约）
     + ~C*.root() == r~ （Controller合约）
   - *参数*
     + r：大概率从SENDER_POOL选取
