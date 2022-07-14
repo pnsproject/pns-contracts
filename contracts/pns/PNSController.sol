@@ -30,7 +30,6 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     uint256 public BASE_NODE;
     uint256 public MIN_REGISTRATION_DURATION;
     uint256 public MIN_REGISTRATION_LENGTH;
-    uint256 public GRACE_PERIOD;
     uint256 public FLAGS;
 
     // -------------- constructor
@@ -40,7 +39,6 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
 
         MIN_REGISTRATION_LENGTH = 10;
         MIN_REGISTRATION_DURATION = 28 days;
-        GRACE_PERIOD = 360 days;
         FLAGS = 7;
 
         setPrices(_basePrices, _rentPrices);
@@ -84,11 +82,10 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         _;
     }
 
-    function setContractConfig(uint256 _flags, uint256 _min_length, uint256 _min_duration, uint256 _grace_period, address _price_feed) public onlyRoot {
+    function setContractConfig(uint256 _flags, uint256 _min_length, uint256 _min_duration, address _price_feed) public onlyRoot {
         FLAGS = _flags;
         MIN_REGISTRATION_LENGTH = _min_length;
         MIN_REGISTRATION_DURATION = _min_duration;
-        GRACE_PERIOD = _grace_period;
         priceFeed = AggregatorV3Interface(_price_feed);
         emit ConfigUpdated(_flags);
     }
@@ -110,6 +107,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     function nameRegister(string calldata name, address to, uint256 duration) public override payable open returns(uint256) {
         uint256 len = name.strlen();
         require(len >= MIN_REGISTRATION_LENGTH, "name too short");
+        uint256 GRACE_PERIOD = _pns.GRACE_PERIOD();
         require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "overflow");
         require(duration >= MIN_REGISTRATION_DURATION, "duration too small");
 
