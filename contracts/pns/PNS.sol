@@ -171,7 +171,9 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
         uint256 tokenId
     ) external override writable authorised(tokenId) {
         address tokenOwner = IERC721Upgradeable(nftAddr).ownerOf(nftTokenId);
-        require(tokenOwner == _msgSender() || IERC721Upgradeable(nftAddr).isApprovedForAll(tokenOwner, _msgSender()) , 'not owner nor approved');
+        require(tokenOwner == _msgSender() ||
+                IERC721Upgradeable(nftAddr).getApproved(nftTokenId) == _msgSender() ||
+                IERC721Upgradeable(nftAddr).isApprovedForAll(tokenOwner, _msgSender()) , 'not owner nor approved');
         _nft_names[nftAddr][nftTokenId] = tokenId;
         emit SetNftName(nftAddr, nftTokenId, tokenId);
     }
