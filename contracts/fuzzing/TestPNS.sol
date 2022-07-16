@@ -15,7 +15,7 @@ import "./EchidnaInit.sol";
 import "./IHEVM.sol";
 import "./OpenForwarder.sol";
 
-contract TestPNS is EchidnaInit, OpenForwarder {
+contract TestPNS is EchidnaInit {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
@@ -76,7 +76,8 @@ contract TestPNS is EchidnaInit, OpenForwarder {
     }
 
     function h_call(address c, bytes memory d) internal returns(bool, bytes memory) {
-        return execute(msg.sender, c, d);
+        (bool success, bytes memory returndata) = c.call(abi.encodePacked(d, msg.sender));
+        return (success, returndata);
     }
 
     function h_call_assert(bool ok, address c, bytes memory d) internal returns(bytes memory) {
@@ -135,7 +136,7 @@ contract TestPNS is EchidnaInit, OpenForwarder {
         assert(P.root() == p_r);
     }
 
-    function op_c_transferRootOwnership(uint8 idx, uint8 fix_r, address p_r) public {
+    function op_c_transferRootOwnership(bool idx, uint8 fix_r, address p_r) public {
         // requirements
 
         // param generation
@@ -146,7 +147,7 @@ contract TestPNS is EchidnaInit, OpenForwarder {
             fix_r = 0;
         }
 
-        uint8 p_idx = idx % 2;
+        uint8 p_idx = idx ? 1 : 0;
 
         // update state
         bool ok = false;
@@ -203,11 +204,11 @@ contract TestPNS is EchidnaInit, OpenForwarder {
         assert(P.isManager(p_m) == p_b);
     }
 
-    function op_c_setManager(uint8 idx, uint8 fix_m, bool p_b) public {
+    function op_c_setManager(bool idx, uint8 fix_m, bool p_b) public {
         // requirements
 
         // param generation
-        uint8 p_idx = idx % 2;
+        uint8 p_idx = idx ? 1 : 0;
         address p_m = h_sender(fix_m);
 
         // update state
