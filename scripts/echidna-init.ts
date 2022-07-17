@@ -213,7 +213,7 @@ constructor() {
 
     // controller
     for (var i = 0; i < 2; i++) {
-        data += `// Controller ${i}`
+        data += `// Controller ${i}\n`
         data += `_c_root[${i}] = ${_c_root[i]};\n`
         for (const m of _c_manager_set[i]) {
             data += `_c_manager_set[${i}].add(${m});\n`

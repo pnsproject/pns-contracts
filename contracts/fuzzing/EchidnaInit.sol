@@ -61,7 +61,8 @@ _pns_owner_tbl.set(0xac2c11ea5d4a4826f418d3befbf0537de7f13572d2a433edfe4a7314ea5
 _pns_token_set.add(0x3fce7d1364a893e213bc4212792b517ffc88f5b13b86c8ef9c8d390c3a1370ce);
 _pns_token_set.add(0xac2c11ea5d4a4826f418d3befbf0537de7f13572d2a433edfe4a7314ea5dc896);
 
-// Controller 0_c_root[0] = 0x6Ecbe1DB9EF729CBe972C83Fb886247691Fb6beb;
+// Controller 0
+_c_root[0] = 0x6Ecbe1DB9EF729CBe972C83Fb886247691Fb6beb;
 _c_manager_set[0].add(0x6Ecbe1DB9EF729CBe972C83Fb886247691Fb6beb);
 _c_price_feed[0] = AggregatorV3Interface(0x7e3f4E1deB8D3A05d9d2DA87d9521268D0Ec3239);
 
@@ -80,7 +81,8 @@ _c_rent_prices[0][2] = 300;
 _c_rent_prices[0][3] = 100;
 _c_rent_prices[0][4] = 5;
 
-// Controller 1_c_root[1] = 0xE36Ea790bc9d7AB70C55260C66D52b1eca985f84;
+// Controller 1
+_c_root[1] = 0xE36Ea790bc9d7AB70C55260C66D52b1eca985f84;
 _c_manager_set[1].add(0xE36Ea790bc9d7AB70C55260C66D52b1eca985f84);
 _c_price_feed[1] = AggregatorV3Interface(0x04B5dAdd2c0D6a261bfafBc964E0cAc48585dEF3);
 
