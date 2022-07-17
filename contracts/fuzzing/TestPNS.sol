@@ -269,6 +269,131 @@ contract TestPNS is EchidnaInit {
         }
     }
 
+    function op_p_setContractConfig(uint8 w) public {
+        // requirements
+
+        // param generation
+        uint256 p_w = (w < 250) ? 1 : 0;
+
+        // update state
+        bool ok = msg.sender == _pns_root;
+
+        if (ok) {
+            _pns_mutable = (p_w != 0) ? true : false;
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setContractConfig.selector, p_w));
+
+        // assertion
+        assert(P.FLAGS() == ((p_w != 0) ? 1 : 0));
+    }
+
+    function op_c_setContractConfig(bool idx,
+                                    uint8 fl_b0, uint8 fl_b1, uint8 fl_b2,
+                                    uint8 ml, uint32 md, bool pf) public {
+        // -------- requirements
+        // -------- param generation
+        // 0 or 1
+        uint p_idx = idx ? 1 : 0;
+
+        // 0~7
+        bool fl_is_live    = fl_b0 < 250;
+        bool fl_is_open    = fl_b1 < 250;
+        bool fl_can_redeem = fl_b2 < 205;
+
+        uint256 p_fl =
+            (fl_is_live    ? 1 : 0) |
+            (fl_is_open    ? 2 : 0) |
+            (fl_can_redeem ? 4 : 0);
+
+        // 1~20
+        uint256 p_ml = ml % 20 + 1;
+
+        // 1hr ~ 1yr
+        uint256 p_md = md % (365 days  - 1 hours + 1) + 1 hours;
+
+        // PRICE0, PRICE1
+        address p_pf = address(PRICE[pf ? 1 : 0]);
+
+        // update state
+        bool ok = false;
+
+        if (msg.sender == _c_root[p_idx]) {
+            ok = true;
+        }
+
+        if (ok) {
+            _c_is_live[p_idx]     = fl_is_live;
+            _c_is_open[p_idx]     = fl_is_open;
+            _c_can_redeem[p_idx]  = fl_can_redeem;
+            _c_min_reg_len[p_idx] = p_ml;
+            _c_min_reg_dur[p_idx] = p_md;
+            _c_price_feed[p_idx]  = AggregatorV3Interface(p_pf);
+        }
+
+        // call op
+        h_c_call_assert(ok, p_idx, abi.encodeWithSelector(C[p_idx].setContractConfig.selector,
+                                                          p_fl, p_ml, p_md, p_pf));
+
+        // assertion
+        assert(C[p_idx].FLAGS() ==
+               (_c_is_live[p_idx]    ? 1 : 0) |
+               (_c_is_open[p_idx]    ? 2 : 0) |
+               (_c_can_redeem[p_idx] ? 4 : 0));
+
+        assert(C[p_idx].MIN_REGISTRATION_LENGTH()   == _c_min_reg_len[p_idx]);
+        assert(C[p_idx].MIN_REGISTRATION_DURATION() == _c_min_reg_dur[p_idx]);
+        assert(address(C[p_idx].priceFeed())        == address(_c_price_feed[p_idx]));
+    }
+
+    function op_c_setPrice(bool idx, uint16[] memory bpl, uint16[] memory rpl, uint8 bpl_min, uint8 rpl_min) public {
+        // requirements
+        require(bpl.length > 0);
+        require(rpl.length > 0);
+
+        // param generation
+        uint p_idx = idx ? 1 : 0;
+        uint len = (bpl.length < rpl.length) ? bpl.length : rpl.length;
+
+        if (len > 20) len = 20;
+
+        uint256[] memory p_bpl = new uint256[](len);
+        uint256[] memory p_rpl = new uint256[](len);
+
+        p_bpl[len-1] = bpl_min + 1;
+        p_rpl[len-1] = rpl_min + 1;
+
+        for (uint i = len - 2; i >= 0; i--) {
+            p_bpl[i] = p_bpl[i+1] + bpl[i];
+            p_rpl[i] = p_rpl[i+1] + rpl[i];
+        }
+
+        // update state
+        bool ok = false;
+
+        if (msg.sender == _c_root[p_idx]) {
+            ok = true;
+        }
+
+        if (ok) {
+            _c_base_prices[p_idx] = new uint256[](len);
+            _c_rent_prices[p_idx] = new uint256[](len);
+
+            for (uint i = 0; i < len; i++) {
+                _c_base_prices[p_idx][i] = p_bpl[i];
+                _c_rent_prices[p_idx][i] = p_rpl[i];
+            }
+        }
+
+        // call op
+        h_c_call_assert(ok, p_idx, abi.encodeWithSelector(C[p_idx].setPrices.selector, p_bpl, p_rpl));
+
+        // assertion
+        (uint256[] memory bpl_, uint256[] memory rpl_) = C[p_idx].getPrices();
+        assert(keccak256(abi.encodePacked(bpl_)) == keccak256(abi.encodePacked(p_bpl)));
+        assert(keccak256(abi.encodePacked(rpl_)) == keccak256(abi.encodePacked(p_rpl)));
+    }
 
     // requirements
     // param generation
