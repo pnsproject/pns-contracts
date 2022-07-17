@@ -58,12 +58,12 @@ async function nft_init() {
     NFT[1] = await MacroNFT.deploy()
 
     for (var i = 0; i < 10; i++) {
-        await NFT[0].mint(SENDER_POOL[i % 3])
-        await NFT[1].mint(SENDER_POOL[(i + 1) % 3])
+        await (await NFT[0].mint(SENDER_POOL[i % 3])).wait()
+        await (await NFT[1].mint(SENDER_POOL[(i + 1) % 3])).wait()
     }
 
-    await NFT[0].transferOwnership(SENDER_POOL[1])
-    await NFT[1].transferOwnership(SENDER_POOL[2])
+    await (await NFT[0].transferOwnership(SENDER_POOL[1])).wait()
+    await (await NFT[1].transferOwnership(SENDER_POOL[2])).wait()
 }
 
 async function price_init() {
@@ -92,27 +92,27 @@ async function pns_and_controller_setup() {
     // setup pns
     for (var i = 0; i < 2; i++) {
         // set manager
-        await P.setManager(C[i].address, true)
+        await (await P.setManager(C[i].address, true)).wait()
         _pns_manager_set.push(C[i].address)
 
         // mint base node
-        await P.mint(C[i].address, C_BASE_NODE[i])
+        await (await P.mint(C[i].address, C_BASE_NODE[i])).wait()
         _pns_owner_tbl[C_BASE_NODE[i]] = C[i].address
         _pns_token_set.push(C_BASE_NODE[i])
     }
 
     // setup controller
     for (var i = 0; i < 2; i++) {
-        await C[i].setManager(SENDER_POOL[i+1], true)
+        await (await C[i].setManager(SENDER_POOL[i+1], true)).wait()
         _c_manager_set[i].push( SENDER_POOL[i+1])
     }
 
     // finally, transfer ownership
-    await P.transferRootOwnership(SENDER_POOL[0])
+    await (await P.transferRootOwnership(SENDER_POOL[0])).wait()
     _pns_root = SENDER_POOL[0]
 
     for (var i = 0; i < 2; i++) {
-        await C[i].transferRootOwnership(SENDER_POOL[i+1])
+        await (await C[i].transferRootOwnership(SENDER_POOL[i+1])).wait()
         _c_root[i] = SENDER_POOL[i+1]
     }
 }
