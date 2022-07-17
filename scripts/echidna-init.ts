@@ -43,9 +43,12 @@ let PRICE: Contract[] = []
 const TEST_CONTRACT_ADDR = "0x00a329c0648769A73afAc7F9381E08FB43dBEA72"
 
 let _signers: SignerWithAddress[]
+let _deployer: SignerWithAddress
 
 async function signer_init() {
     _signers = await ethers.getSigners()
+
+    _deployer = _signers[0]
 
     expect(_signers[0].address).to.equal(SENDER_POOL[0])
     expect(_signers[1].address).to.equal(SENDER_POOL[1])
@@ -76,6 +79,9 @@ async function pns_and_controller_init() {
     // pns
     const PNS = await ethers.getContractFactory("PNS")
     P = await upgrades.deployProxy(PNS, [], { constructorArgs: [TEST_CONTRACT_ADDR] })
+
+    // NOTE, ManagerOwnableUpgradeable will add deployer to manager set
+    _pns_manager_set.push(_deployer.address)
 
     // controller
     const Controller = await ethers.getContractFactory("Controller")
