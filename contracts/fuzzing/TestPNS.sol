@@ -13,7 +13,6 @@ import "../pns/PNSController.sol";
 
 import "./EchidnaInit.sol";
 import "./IHEVM.sol";
-import "./OpenForwarder.sol";
 
 contract TestPNS is EchidnaInit {
     using EnumerableSet for EnumerableSet.AddressSet;
