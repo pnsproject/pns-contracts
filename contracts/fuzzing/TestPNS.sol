@@ -177,11 +177,22 @@ contract TestPNS is EchidnaInit {
         address p_m = h_sender_with_c(fix_m);
 
         // update state
-        bool ok = false;
+        bool ok1 = false;
+        bool ok2 = false;
 
         if (msg.sender == _pns_root) {
-            ok = true;
+            ok1 = true;
         }
+
+        if (_pns_manager_set.contains(p_m) && !p_b) {
+            ok2 = true;
+        }
+
+        if (!_pns_manager_set.contains(p_m) && p_b) {
+            ok2 = true;
+        }
+
+        bool ok = ok1 && ok2;
 
         if (ok) {
             if (p_b) {
@@ -200,7 +211,12 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
-        assert(P.isManager(p_m) == p_b);
+        if (p_m == _pns_root) {
+            assert(P.isManager(p_m) == true);
+        }
+        else {
+            assert(P.isManager(p_m) == p_b);
+        }
     }
 
     function op_c_setManager(bool idx, uint8 fix_m, bool p_b) public {
@@ -211,11 +227,22 @@ contract TestPNS is EchidnaInit {
         address p_m = h_sender(fix_m);
 
         // update state
-        bool ok = false;
+        bool ok1 = false;
+        bool ok2 = false;
 
         if (msg.sender == _c_root[p_idx]) {
-            ok = true;
+            ok1 = true;
         }
+
+        if (_c_manager_set[p_idx].contains(p_m) && !p_b) {
+            ok2 = true;
+        }
+
+        if (!_c_manager_set[p_idx].contains(p_m) && p_b) {
+            ok2 = true;
+        }
+
+        bool ok = ok1 && ok2;
 
         if (ok) {
             if (p_b) {
@@ -234,8 +261,14 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
-        assert(C[p_idx].isManager(p_m) == p_b);
+        if (p_m == _c_root[p_idx]) {
+            assert(C[p_idx].isManager(p_m) == true);
+        }
+        else {
+            assert(C[p_idx].isManager(p_m) == p_b);
+        }
     }
+
 
     // requirements
     // param generation
