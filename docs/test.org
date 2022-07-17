@@ -187,14 +187,20 @@ Controller合约包括如下状态：
     + r：大概率从SENDER_POOL选取
 + ~setManager(m, b)~ ，设置或取消管理权限
   - 约束
-    + ~_msgSender() == _pns_root~ （PNS合约）
-    + ~_msgSender() == _c*_root~ （Controller合约）
+    + 权限
+      + ~_msgSender() == _pns_root~ （PNS合约）
+      + ~_msgSender() == _c*_root~ （Controller合约）
+    + 防重复设置
+      + ~m ∈ {_pns_manager_set, _pns_root} != b~ （PNS合约）
+      + ~m ∈ {_c*_manager_set, _c*_root} != b~ （Controller合约）
   - 状态更新
     + ~_pns_manager_set.insert(m) if b, _pns_manager_set.remove(m) if !b~ （PNS合约）
     + ~_c*_manager_set.insert(m) if b, _c*_manager_set.remove(m) if !b~ （Controller合约）
   - 断言
-    + ~P.isManager(m) == b~ （PNS合约）
-    + ~C*.isManager(m) == b~ （Controller合约）
+    + 若 ~m != _pns_root~ ， ~P.isManager(m) == b~ （PNS合约）
+    + 若 ~m == _pns_root~ ，~P.isManager(m) == true~ （PNS合约）
+    + 若 ~m != _c*_root~ ， ~C*.isManager(m) == b~ （Controller合约）
+    + 若 ~m == _c*_root~ ， ~C*.isManager(m) == true~ （Controller合约）
   - *参数*
     + b：平均随机
     + m：从指定范围选取
