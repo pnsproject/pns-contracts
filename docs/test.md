@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org422aa72)
-2.  [模糊测试](#orgd2368ad)
-    1.  [合约分析](#org7564336)
-        1.  [常数](#org0c6a093)
-        2.  [状态](#orgea509e0)
-        3.  [辅助状态和辅助合约](#org265da01)
-        4.  [操作与断言](#orgba6539b)
-        5.  [辅助操作与状态断言](#org39cad5a)
-    2.  [初始化](#orgd56379c)
+1.  [单元测试](#orge6e9d01)
+2.  [模糊测试](#orgd02070e)
+    1.  [合约分析](#org67d61d6)
+        1.  [常数](#orge2f6a9d)
+        2.  [状态](#orga87b69b)
+        3.  [辅助状态和辅助合约](#orgcda6ab2)
+        4.  [操作与断言](#org026c693)
+        5.  [辅助操作与状态断言](#org340f802)
+    2.  [初始化](#org45d6a13)
 
 
 
-<a id="org422aa72"></a>
+<a id="orge6e9d01"></a>
 
 # 单元测试
 
@@ -31,19 +31,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgd2368ad"></a>
+<a id="orgd02070e"></a>
 
 # 模糊测试
 
 
-<a id="org7564336"></a>
+<a id="org67d61d6"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org0c6a093"></a>
+<a id="orge2f6a9d"></a>
 
 ### 常数
 
@@ -182,7 +182,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgea509e0"></a>
+<a id="orga87b69b"></a>
 
 ### 状态
 
@@ -466,7 +466,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org265da01"></a>
+<a id="orgcda6ab2"></a>
 
 ### 辅助状态和辅助合约
 
@@ -549,7 +549,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="orgba6539b"></a>
+<a id="org026c693"></a>
 
 ### 操作与断言
 
@@ -956,12 +956,14 @@ Controller合约包括如下状态：
             -   origin：一半概率是对应的tok，一半概率从 \_pns\_owner\_tbl 随机选
             -   expire：若origin是自身，则随机1天到5年，否则是0
             -   parent：若origin是自身，则也是自身，否则随机从 \_pns\_owner\_tbl 选
--   `PNS.register` ，受限，被合约调用
+-   `PNS.register(name, to, dur, base)` ，受限，被合约调用
     -   约束（必要条件）
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
--   `PNS.renew` ，受限，被合约调用
+-   `PNS.renew(id)` ，受限，被合约调用
     -   约束（必要条件）
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
+    -   参数
+        -   id：一半从\_pns\_token\_set随机选，一般随机
 -   `Controller.nameRegisterByManager(name, to, dur, set_name, khs, vls)`
     -   约束
         -   `_c*_is_live`
@@ -1213,7 +1215,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org39cad5a"></a>
+<a id="org340f802"></a>
 
 ### 辅助操作与状态断言
 
@@ -1553,7 +1555,7 @@ Controller合约包括如下状态：
     -   说明： `cost_wei` 的计算需要注意保留精度，先做乘法
 
 
-<a id="orgd56379c"></a>
+<a id="org45d6a13"></a>
 
 ## 初始化
 

@@ -348,12 +348,14 @@ Controller合约包括如下状态：
       - origin：一半概率是对应的tok，一半概率从 _pns_owner_tbl 随机选
       - expire：若origin是自身，则随机1天到5年，否则是0
       - parent：若origin是自身，则也是自身，否则随机从 _pns_owner_tbl 选
-+ ~PNS.register~ ，受限，被合约调用
++ ~PNS.register(name, to, dur, base)~ ，受限，被合约调用
   - 约束（必要条件）
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~
-+ ~PNS.renew~ ，受限，被合约调用
++ ~PNS.renew(id)~ ，受限，被合约调用
   - 约束（必要条件）
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~
+  - 参数
+    + id：一半从_pns_token_set随机选，一般随机
 + ~Controller.nameRegisterByManager(name, to, dur, set_name, khs, vls)~
   - 约束
     + ~_c*_is_live~
