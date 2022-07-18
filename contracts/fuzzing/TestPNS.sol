@@ -26,6 +26,9 @@ contract TestPNS is EchidnaInit {
     event AssertionFailed(string message);
 
     // ------------------------ state ----------------------
+    // -------- const
+    uint WORD_SET_SIZE = 0;
+    mapping(uint => string) WORD_SET;
 
     // -------- pns
     bool _pns_mutable = true;
@@ -57,12 +60,28 @@ contract TestPNS is EchidnaInit {
     bool[2] _c_is_open    = [true, true];
     bool[2] _c_can_redeem = [true, true];
 
+    // ------------------------- init ------------------------------
+    constructor() {
+        WORD_SET[WORD_SET_SIZE++] = "dot";
+        WORD_SET[WORD_SET_SIZE++] = "org";
+        WORD_SET[WORD_SET_SIZE++] = "com";
+        WORD_SET[WORD_SET_SIZE++] = "net";
+        WORD_SET[WORD_SET_SIZE++] = "www";
+        WORD_SET[WORD_SET_SIZE++] = "hello";
+        WORD_SET[WORD_SET_SIZE++] = "pns";
+    }
+
     // ------------------------- helper function -------------------
-    function h_sender(uint8 idx) internal view returns(address) {
+    function h_sel_sender(uint8 idx) internal view returns(address) {
         return SENDER_POOL.at(idx % SENDER_POOL.length());
     }
 
-    function h_sender_with_c(uint8 idx) internal view returns(address) {
+    function h_sel_sender_alt(uint8 idx, uint8 thres, address alt) internal view returns(address) {
+        if (idx < thres) return h_sel_sender(idx);
+        return alt;
+    }
+
+    function h_sel_sender_with_c(uint8 idx) internal view returns(address) {
         uint len = SENDER_POOL.length();
         idx = uint8(idx % (2 + len));
 
@@ -72,6 +91,37 @@ contract TestPNS is EchidnaInit {
         else {
             return SENDER_POOL.at(idx);
         }
+    }
+
+    function h_sel_word(uint8 idx) internal view returns(string memory) {
+        return WORD_SET[idx % WORD_SET_SIZE];
+    }
+
+    function h_sel_word_alt(uint8 idx, uint8 thres, string memory alt) internal view returns(string memory) {
+        if (idx < thres) return h_sel_word(idx);
+        return alt;
+    }
+
+    function h_sel_token(uint8 idx) internal view returns(uint256) {
+        return _pns_token_set.at(idx % _pns_token_set.length());
+    }
+
+    function h_sel_token_alt(uint8 idx, uint8 thres, uint256 alt) internal view returns(uint256) {
+        if (idx < thres) return h_sel_token(idx);
+        return alt;
+    }
+
+    function h_sel_owned_token(uint8 idx) internal view returns(uint256 tok) {
+        (tok, ) = _pns_owner_tbl.at(idx % _pns_owner_tbl.length());
+    }
+
+    function h_namehash(string memory prefix, uint256 base) internal pure returns(uint256) {
+        return uint256(keccak256(abi.encodePacked(base, keccak256(bytes(prefix)))));
+    }
+
+    function h_pns_owner_is(uint256 tok, address owner) internal view returns(bool) {
+        if (!_pns_owner_tbl.contains(tok)) return false;
+        return _pns_owner_tbl.get(tok) == owner;
     }
 
     function h_call(address c, bytes memory d) internal returns(bool, bytes memory) {
@@ -107,7 +157,7 @@ contract TestPNS is EchidnaInit {
 
         // param generation
         if (fix_r < 250) {
-            p_r = h_sender(fix_r);
+            p_r = h_sel_sender(fix_r);
         }
         else {
             fix_r = 0; // dummy
@@ -140,7 +190,7 @@ contract TestPNS is EchidnaInit {
 
         // param generation
         if (fix_r < 250) {
-            p_r = h_sender(fix_r);
+            p_r = h_sel_sender(fix_r);
         }
         else {
             fix_r = 0;
@@ -174,7 +224,7 @@ contract TestPNS is EchidnaInit {
         // requirements
 
         // param generation
-        address p_m = h_sender_with_c(fix_m);
+        address p_m = h_sel_sender_with_c(fix_m);
 
         // update state
         bool ok1 = false;
@@ -224,7 +274,7 @@ contract TestPNS is EchidnaInit {
 
         // param generation
         uint8 p_idx = idx ? 1 : 0;
-        address p_m = h_sender(fix_m);
+        address p_m = h_sel_sender(fix_m);
 
         // update state
         bool ok1 = false;
@@ -395,14 +445,360 @@ contract TestPNS is EchidnaInit {
         assert(keccak256(abi.encodePacked(rpl_)) == keccak256(abi.encodePacked(p_rpl)));
     }
 
+    function op_p_mint(uint8 to, uint8 tok) public {
+        // requirements
+        // param generation
+        address p_to = h_sel_sender(to);
+        uint256 p_tok = h_namehash(h_sel_word(tok), 0);
+
+        // update state
+        bool ok = false;
+
+        bool ok1 = false;
+        if (msg.sender == _pns_root) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (p_to != address(0)) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (!_pns_owner_tbl.contains(p_tok)) {
+            ok3 = true;
+        }
+
+        ok = ok1 && ok2 && ok3;
+
+        if (ok) {
+            _pns_owner_tbl.set(p_tok, p_to);
+            _pns_token_set.add(p_tok);
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.mint.selector, p_to, p_tok));
+
+        // assertion
+        assert(P.exists(p_tok));
+        assert(P.ownerOf(p_tok) == p_to);
+    }
+
+    // NOTE: variable naming style change:
+    // for above ops, p_* is actual parameter, and * is index
+    // for below ops, *_idx is index, and * is parameter
+
+    function op_p_mintSubdomain
+        (uint8 to_idx, address to1,
+         uint8 ptok_idx, uint256 ptok1,
+         uint8 name_idx, string memory name1)
+        public
+    {
+        // requirements
+        uint len_sld = _pns_sld_set.length();
+        uint len_sd  = _pns_sd_set.length();
+
+        if ((msg.sender == _pns_root) || (_pns_manager_set.contains(msg.sender))) {
+            require(len_sld + len_sd > 0, "2nd level domain or more level domain should not empty");
+        }
+
+        // param generation
+        address to = h_sel_sender_alt(to_idx, 250, to1);
+        string memory name = h_sel_word_alt(name_idx, 250, name1);
+
+        uint256 ptok;
+
+        if ((msg.sender == _pns_root) || (_pns_manager_set.contains(msg.sender))) {
+            ptok_idx = uint8(ptok_idx % (len_sld + len_sd));
+            if (ptok_idx >= len_sld) {
+                ptok = _pns_sd_set.at(ptok_idx - len_sld);
+            }
+            else {
+                ptok = _pns_sld_set.at(ptok_idx);
+            }
+        }
+        else {
+            ptok = h_sel_token_alt(ptok_idx, 250, ptok1);
+        }
+
+        uint256 stok = h_namehash(name, ptok);
+
+        // update state
+        bool ok = false;
+
+        bool ok1 = false;
+        if (msg.sender == _pns_root) {
+            ok1 = true;
+        }
+        if (_pns_manager_set.contains(msg.sender)) {
+            ok1 = true;
+        }
+        if (_pns_approve_tbl[ptok] == msg.sender) {
+            ok1 = true;
+        }
+        if (h_pns_owner_is(ptok, msg.sender)) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (to != address(0)) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (!_pns_owner_tbl.contains(stok)) {
+            ok3 = true;
+        }
+
+        ok = ok1 && ok2 && ok3;
+
+        if (ok) {
+            _pns_owner_tbl.set(stok, to);
+
+            _pns_sd_set.add(stok);
+            _pns_sd_parent_tbl[stok] = ptok;
+
+            if (_pns_sld_set.contains(ptok)) {
+                _pns_sd_origin_tbl[stok] = ptok;
+            }
+            else {
+                _pns_sd_origin_tbl[stok] = _pns_sd_origin_tbl[ptok];
+            }
+
+            _pns_token_set.add(stok);
+        }
+
+        // call op
+        uint256 ret = abi.decode(h_p_call_assert(ok, abi.encodeWithSelector(P.mintSubdomain.selector,
+                                                                            to, ptok, name)),
+                                 (uint256));
+
+        // assertion
+        assert(ret == stok);
+        assert(P.exists(stok));
+        assert(P.ownerOf(stok) == to);
+        assert(P.nameExpired(stok) == (_pns_sld_expire_tbl[_pns_sd_origin_tbl[stok]] + GRACE_PERIOD < block.timestamp));
+        assert(!P.available(stok));
+        assert(P.origin(stok) == _pns_sd_origin_tbl[stok]);
+        assert(P.parent(stok) == ptok);
+    }
+
+    function op_p_burn(uint8 tok_idx, uint256 tok1) public {
+        // requirements
+        // param generation
+        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+
+        // update state
+        bool ok;
+
+        bool ok1 = false;
+        if (_pns_owner_tbl.contains(tok)) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (P.nameExpired(tok) && !_pns_bound_set.contains(tok)) {
+            ok2 = true;
+        }
+        if (msg.sender == _pns_root) {
+            ok2 = true;
+        }
+        if (h_pns_owner_is(tok, msg.sender)) {
+            ok2 = true;
+        }
+        if (msg.sender == _pns_approve_tbl[tok]) {
+            ok2 = true;
+        }
+        if (h_pns_owner_is(_pns_sd_origin_tbl[tok], msg.sender)) {
+            ok2 = true;
+        }
+        if (_pns_approve_tbl[_pns_sd_origin_tbl[tok]] == msg.sender) {
+            ok2 = true;
+        }
+
+        ok = ok1 && ok2;
+
+        if (ok) {
+            _pns_owner_tbl.remove(tok);
+            _pns_sld_set.remove(tok);
+            _pns_sd_set.remove(tok);
+            _pns_sd_parent_tbl[tok] = 0;
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.burn.selector, tok));
+
+        // assertion
+        assert(!P.exists(tok));
+        assert(P.origin(tok) == 0);
+        assert(P.expire(tok) == 0);
+    }
+
+    function op_p_bound(uint8 tok_idx, uint256 tok1) public {
+        // requirements
+        // param generation
+        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+
+        // update state
+        bool ok = false;
+
+        bool ok1 = false;
+        if (msg.sender == _pns_root) {
+            ok1 = true;
+        }
+        if (_pns_manager_set.contains(msg.sender)) {
+            ok1 = true;
+        }
+        if (h_pns_owner_is(tok, msg.sender)) {
+            ok1 = true;
+        }
+        if (_pns_approve_tbl[tok] == msg.sender) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (_pns_sld_set.contains(tok)) {
+            ok2 = true;
+        }
+        if (_pns_bound_set.contains(_pns_sd_origin_tbl[tok])) {
+            ok2 = true;
+        }
+
+        ok = ok1 && ok2;
+
+        if (ok) {
+            _pns_bound_set.add(tok);
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.bound.selector, tok));
+
+        // assertion
+        assert(P.bounded(tok));
+    }
+
+    struct SetMetadataBatchArg {
+        uint8 tok_idx;
+        uint8 origin_idx;
+        uint32 expire1;
+        uint8 parent_idx;
+    }
+
+    function op_p_setMetadataBatch(SetMetadataBatchArg[] memory args) public {
+        // requirements
+        // param generation
+        uint len = args.length;
+
+        uint256[] memory toks = new uint256[](len);
+        PNS.Record[] memory recs = new PNS.Record[](len);
+
+        for (uint i = 0; i < len; i++) {
+            bool is_sld = args[i].origin_idx > 128;
+
+            toks[i] = h_sel_owned_token(args[i].tok_idx);
+            recs[i].origin = is_sld ? toks[i] : h_sel_owned_token(args[i].origin_idx);
+            recs[i].expire = is_sld ? (args[i].expire1 % (5 * 365 days - 1 days + 1) + 1 days) : 0;
+            recs[i].parent = is_sld ? toks[i] : h_sel_owned_token(args[i].parent_idx);
+        }
+
+        // update state
+        bool ok = false;
+
+        if (msg.sender == _pns_root) {
+            ok = true;
+        }
+
+        if (_pns_manager_set.contains(msg.sender)) {
+            ok = true;
+        }
+
+        if (ok) {
+            for (uint i = 0; i < len; i++) {
+                uint256 tok = toks[i];
+                PNS.Record memory rec = recs[i];
+
+                if (rec.origin == tok) {
+                    _pns_sld_expire_tbl[tok] = rec.expire;
+                }
+                else {
+                    _pns_sd_origin_tbl[tok] = rec.origin;
+                    _pns_sd_parent_tbl[tok] = rec.parent;
+                }
+            }
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setMetadataBatch.selector, toks, recs));
+
+        // assertion
+        for (uint i = 0; i < len; i++) {
+            uint256 tok = toks[i];
+            PNS.Record memory rec = recs[i];
+
+            assert(!P.available(tok));
+            assert(P.expire(tok) == rec.expire);
+            assert(P.origin(tok) == rec.origin);
+            assert(P.parent(tok) == rec.parent);
+        }
+    }
+
     // requirements
     // param generation
     // update state
     // call op
     // assertion
 
-    // ----------------------- partial operation --------------------
+    // ----------------------- permission check --------------------
+    function chk_p_register(string memory name, address to, uint256 dur, uint256 base) public {
+        // requirements
+        // param generation
+        // update state
+        bool fail = true;
+
+        if (msg.sender == _pns_root) {
+            fail = false;
+        }
+        if (_pns_manager_set.contains(msg.sender)) {
+            fail = false;
+        }
+
+        // call op
+        (bool ok, ) = h_p_call(abi.encodeWithSelector(P.register.selector, name, to, dur, base));
+
+        if (fail) {
+            assert(!ok);
+        }
+
+        revert();
+    }
+
+    function chk_p_renew(uint8 id_idx, uint256 id1, uint256 dur) public {
+        // requirements
+        // param generation
+        uint256 id = h_sel_token_alt(id_idx, 128, id1);
+
+        // update state
+        bool fail = true;
+
+        if (msg.sender == _pns_root) {
+            fail = false;
+        }
+        if (_pns_manager_set.contains(msg.sender)) {
+            fail = false;
+        }
+
+        // call op
+        (bool ok, ) = h_p_call(abi.encodeWithSelector(P.renew.selector, id, dur));
+
+        if (fail) {
+            assert(!ok);
+        }
+
+        revert();
+    }
 
     // ----------------------- aux operation ------------------------
+
+    // ------------------------ state check ------------------------
 
 }
