@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org853f26a)
-2.  [模糊测试](#orge867460)
-    1.  [合约分析](#org4806b65)
-        1.  [常数](#org3ef7d63)
-        2.  [状态](#orgba14904)
-        3.  [辅助状态和辅助合约](#org9fa398e)
-        4.  [操作与断言](#org0cc1645)
-        5.  [辅助操作与状态断言](#orgfd4793b)
-    2.  [初始化](#orgcf79a25)
+1.  [单元测试](#org422aa72)
+2.  [模糊测试](#orgd2368ad)
+    1.  [合约分析](#org7564336)
+        1.  [常数](#org0c6a093)
+        2.  [状态](#orgea509e0)
+        3.  [辅助状态和辅助合约](#org265da01)
+        4.  [操作与断言](#orgba6539b)
+        5.  [辅助操作与状态断言](#org39cad5a)
+    2.  [初始化](#orgd56379c)
 
 
 
-<a id="org853f26a"></a>
+<a id="org422aa72"></a>
 
 # 单元测试
 
@@ -31,19 +31,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orge867460"></a>
+<a id="orgd2368ad"></a>
 
 # 模糊测试
 
 
-<a id="org4806b65"></a>
+<a id="org7564336"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org3ef7d63"></a>
+<a id="org0c6a093"></a>
 
 ### 常数
 
@@ -182,7 +182,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgba14904"></a>
+<a id="orgea509e0"></a>
 
 ### 状态
 
@@ -466,7 +466,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org9fa398e"></a>
+<a id="org265da01"></a>
 
 ### 辅助状态和辅助合约
 
@@ -549,7 +549,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org0cc1645"></a>
+<a id="orgba6539b"></a>
 
 ### 操作与断言
 
@@ -799,8 +799,8 @@ Controller合约包括如下状态：
             -   `m ∈ {_pns_manager_set, _pns_root} != b` （PNS合约）
             -   `m ∈ {_c*_manager_set, _c*_root} != b` （Controller合约）
     -   状态更新
-        -   `_pns_manager_set.insert(m) if b, _pns_manager_set.remove(m) if !b` （PNS合约）
-        -   `_c*_manager_set.insert(m) if b, _c*_manager_set.remove(m) if !b` （Controller合约）
+        -   `_pns_manager_set.add(m) if b, _pns_manager_set.remove(m) if !b` （PNS合约）
+        -   `_c*_manager_set.add(m) if b, _c*_manager_set.remove(m) if !b` （Controller合约）
     -   断言
         -   若 `m != _pns_root` ， `P.isManager(m) == b` （PNS合约）
         -   若 `m == _pns_root` ，~P.isManager(m) == true~ （PNS合约）
@@ -866,7 +866,7 @@ Controller合约包括如下状态：
         -   `tok ∉ _pns_owner_tbl`
     -   状态更新
         -   `_pns_owner_tbl[to] = tok`
-        -   `_pns_token_set.insert(tok)`
+        -   `_pns_token_set.add(tok)`
     -   断言
         -   `P.exists(tok)`
         -   `P.ownerOf(tok) == to`
@@ -880,10 +880,10 @@ Controller合约包括如下状态：
         -   `stok ∉ _pns_owner_tbl`
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
-        -   `_pns_sd_set.insert(stok)`
+        -   `_pns_sd_set.add(stok)`
         -   `_pns_sd_parent_tbl[stok] ← ptok`
         -   `_pns_sd_origin_tbl[stok] ← (ptok ∈ _pns_sld_set) ? ptok : _pns_sd_origin_tbl[ptok]`
-        -   `_pns_token_set.insert(stok)`
+        -   `_pns_token_set.add(stok)`
     -   断言
         -   `ret == stok`
         -   `P.exists(stok)`
@@ -929,7 +929,7 @@ Controller合约包括如下状态：
             -   `tok ∈ _pns_sld_set`
             -   `_pns_sd_origin_tbl[tok] ∈ _pns_bound_set`
     -   状态更新
-        -   `_pns_bound_set.insert(tok)`
+        -   `_pns_bound_set.add(tok)`
     -   断言
         -   `P.bounded(tok)`
     -   参数
@@ -975,8 +975,8 @@ Controller合约包括如下状态：
             -   `C* ∈ { _pns_root, _pns_manager_set }`
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
-        -   `_pns_token_set.insert(stok)`
-        -   `_pns_sld_set.insert(stok)`
+        -   `_pns_token_set.add(stok)`
+        -   `_pns_sld_set.add(stok)`
         -   `_pns_sld_expire_tbl[stok] ← dur`
         -   `_pns_info_name_tbl[to] ← stok if set_name`
         -   `∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl`
@@ -1014,8 +1014,8 @@ Controller合约包括如下状态：
             -   `C* ∈ { _pns_root, _pns_manager_set }`
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
-        -   `_pns_token_set.insert(stok)`
-        -   `_pns_sld_set.insert(stok)`
+        -   `_pns_token_set.add(stok)`
+        -   `_pns_sld_set.add(stok)`
         -   `_pns_sld_expire_tbl[stok] ← dur`
     -   断言
         -   `ret == stok`
@@ -1065,8 +1065,8 @@ Controller合约包括如下状态：
             -   `C* ∈ { _pns_root, _pns_manager_set }`
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
-        -   `_pns_token_set.insert(stok)`
-        -   `_pns_sld_set.insert(stok)`
+        -   `_pns_token_set.add(stok)`
+        -   `_pns_sld_set.add(stok)`
         -   `_pns_sld_expire_tbl[stok] ← dur`
     -   断言
         -   `ret == stok`
@@ -1213,7 +1213,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="orgfd4793b"></a>
+<a id="org39cad5a"></a>
 
 ### 辅助操作与状态断言
 
@@ -1553,7 +1553,7 @@ Controller合约包括如下状态：
     -   说明： `cost_wei` 的计算需要注意保留精度，先做乘法
 
 
-<a id="orgcf79a25"></a>
+<a id="orgd56379c"></a>
 
 ## 初始化
 

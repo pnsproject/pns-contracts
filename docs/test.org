@@ -194,8 +194,8 @@ Controller合约包括如下状态：
       + ~m ∈ {_pns_manager_set, _pns_root} != b~ （PNS合约）
       + ~m ∈ {_c*_manager_set, _c*_root} != b~ （Controller合约）
   - 状态更新
-    + ~_pns_manager_set.insert(m) if b, _pns_manager_set.remove(m) if !b~ （PNS合约）
-    + ~_c*_manager_set.insert(m) if b, _c*_manager_set.remove(m) if !b~ （Controller合约）
+    + ~_pns_manager_set.add(m) if b, _pns_manager_set.remove(m) if !b~ （PNS合约）
+    + ~_c*_manager_set.add(m) if b, _c*_manager_set.remove(m) if !b~ （Controller合约）
   - 断言
     + 若 ~m != _pns_root~ ， ~P.isManager(m) == b~ （PNS合约）
     + 若 ~m == _pns_root~ ，~P.isManager(m) == true~ （PNS合约）
@@ -258,7 +258,7 @@ Controller合约包括如下状态：
     + ~tok ∉ _pns_owner_tbl~
   - 状态更新
     + ~_pns_owner_tbl[to] = tok~
-    + ~_pns_token_set.insert(tok)~
+    + ~_pns_token_set.add(tok)~
   - 断言
     + ~P.exists(tok)~
     + ~P.ownerOf(tok) == to~
@@ -272,10 +272,10 @@ Controller合约包括如下状态：
     + ~stok ∉ _pns_owner_tbl~
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
-    + ~_pns_sd_set.insert(stok)~
+    + ~_pns_sd_set.add(stok)~
     + ~_pns_sd_parent_tbl[stok] ← ptok~
     + ~_pns_sd_origin_tbl[stok] ← (ptok ∈ _pns_sld_set) ? ptok : _pns_sd_origin_tbl[ptok]~
-    + ~_pns_token_set.insert(stok)~
+    + ~_pns_token_set.add(stok)~
   - 断言
     + ~ret == stok~
     + ~P.exists(stok)~
@@ -321,7 +321,7 @@ Controller合约包括如下状态：
       - ~tok ∈ _pns_sld_set~
       - ~_pns_sd_origin_tbl[tok] ∈ _pns_bound_set~
   - 状态更新
-    + ~_pns_bound_set.insert(tok)~
+    + ~_pns_bound_set.add(tok)~
   - 断言
     + ~P.bounded(tok)~
   - 参数
@@ -367,8 +367,8 @@ Controller合约包括如下状态：
       - ~C* ∈ { _pns_root, _pns_manager_set }~
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
-    + ~_pns_token_set.insert(stok)~
-    + ~_pns_sld_set.insert(stok)~
+    + ~_pns_token_set.add(stok)~
+    + ~_pns_sld_set.add(stok)~
     + ~_pns_sld_expire_tbl[stok] ← dur~
     + ~_pns_info_name_tbl[to] ← stok if set_name~
     + ~∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl~
@@ -406,8 +406,8 @@ Controller合约包括如下状态：
       - ~C* ∈ { _pns_root, _pns_manager_set }~
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
-    + ~_pns_token_set.insert(stok)~
-    + ~_pns_sld_set.insert(stok)~
+    + ~_pns_token_set.add(stok)~
+    + ~_pns_sld_set.add(stok)~
     + ~_pns_sld_expire_tbl[stok] ← dur~
   - 断言
     + ~ret == stok~
@@ -457,8 +457,8 @@ Controller合约包括如下状态：
       - ~C* ∈ { _pns_root, _pns_manager_set }~
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
-    + ~_pns_token_set.insert(stok)~
-    + ~_pns_sld_set.insert(stok)~
+    + ~_pns_token_set.add(stok)~
+    + ~_pns_sld_set.add(stok)~
     + ~_pns_sld_expire_tbl[stok] ← dur~
   - 断言
     - ~ret == stok~
