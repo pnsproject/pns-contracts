@@ -27,8 +27,7 @@ contract TestPNS is EchidnaInit {
 
     // ------------------------ state ----------------------
     // -------- const
-    uint WORD_SET_SIZE = 0;
-    mapping(uint => string) WORD_SET;
+    string[] WORD_SET = ["dot", "org", "com", "net", "www", "hello", "pns"];
 
     // -------- pns
     bool _pns_mutable = true;
@@ -61,15 +60,6 @@ contract TestPNS is EchidnaInit {
     bool[2] _c_can_redeem = [true, true];
 
     // ------------------------- init ------------------------------
-    constructor() {
-        WORD_SET[WORD_SET_SIZE++] = "dot";
-        WORD_SET[WORD_SET_SIZE++] = "org";
-        WORD_SET[WORD_SET_SIZE++] = "com";
-        WORD_SET[WORD_SET_SIZE++] = "net";
-        WORD_SET[WORD_SET_SIZE++] = "www";
-        WORD_SET[WORD_SET_SIZE++] = "hello";
-        WORD_SET[WORD_SET_SIZE++] = "pns";
-    }
 
     // ------------------------- helper function -------------------
     function h_sel_sender(uint8 idx) internal view returns(address) {
@@ -94,7 +84,7 @@ contract TestPNS is EchidnaInit {
     }
 
     function h_sel_word(uint8 idx) internal view returns(string memory) {
-        return WORD_SET[idx % WORD_SET_SIZE];
+        return WORD_SET[idx % WORD_SET.length];
     }
 
     function h_sel_word_alt(uint8 idx, uint8 thres, string memory alt) internal view returns(string memory) {
