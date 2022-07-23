@@ -1,19 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orga631b8d)
-2.  [模糊测试](#orgef8a184)
-    1.  [合约分析](#orgc9e484c)
-        1.  [常数](#org834c00b)
-        2.  [状态](#orgcd43069)
-        3.  [辅助状态和辅助合约](#org18f7057)
-        4.  [操作与断言](#org2e01a7f)
-        5.  [辅助操作与状态断言](#org72416f7)
-    2.  [初始化](#orge801416)
+1.  [单元测试](#org77a0098)
+2.  [模糊测试](#org4d88f80)
+    1.  [合约分析](#orgd29b456)
+        1.  [常数](#orgc658afb)
+        2.  [状态](#orgfee2545)
+        3.  [辅助状态和辅助合约](#orgad14b94)
+        4.  [操作与断言](#orga093b42)
+        5.  [辅助操作与状态断言](#orgd6885ee)
+    2.  [初始化](#orgb7d1301)
+    3.  [测试代码风格](#orge889ba6)
 
 
 
-<a id="orga631b8d"></a>
+<a id="org77a0098"></a>
 
 # 单元测试
 
@@ -31,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgef8a184"></a>
+<a id="org4d88f80"></a>
 
 # 模糊测试
 
 
-<a id="orgc9e484c"></a>
+<a id="orgd29b456"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org834c00b"></a>
+<a id="orgc658afb"></a>
 
 ### 常数
 
@@ -182,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgcd43069"></a>
+<a id="orgfee2545"></a>
 
 ### 状态
 
@@ -466,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org18f7057"></a>
+<a id="orgad14b94"></a>
 
 ### 辅助状态和辅助合约
 
@@ -549,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org2e01a7f"></a>
+<a id="orga093b42"></a>
 
 ### 操作与断言
 
@@ -1215,7 +1216,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org72416f7"></a>
+<a id="orgd6885ee"></a>
 
 ### 辅助操作与状态断言
 
@@ -1507,7 +1508,7 @@ Controller合约包括如下状态：
 -   `PNS.getName(addr)`
     -   断言
         -   `tok ← _pns_info_name_tbl[addr]`
-        -   若 `tok ∈ _pns_owner_tbl` 且 `_msgSender() ∈ { _pns_owner_tbl[tok], _pns_approve_tbl[tok] }`
+        -   若 `tok ∈ _pns_owner_tbl` 且 `addr ∈ { _pns_owner_tbl[tok], _pns_approve_tbl[tok] }`
             -   `P.getName(addr) == tok`
         -   否则 `P.getName(addr) == 0`
     -   参数
@@ -1543,7 +1544,11 @@ Controller合约包括如下状态：
         -   `cost_wei ← cost_doller(l1, l2) * 10^18 * 10^8 / dollar_per_eth`
         -   `Controller.totalRegisterPrice(name, dur) == cost_wei`
     -   参数：随机
-    -   说明： `cost_wei` 的计算需要注意保留精度，先做乘法
+    -   说明：
+        -   `cost_wei` 的计算需要注意保留精度，先做乘法
+        -   需要验证目标函数， ****若不抛出异常，则总是正确****
+            -   因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
+            -   cost\_doller的运算使用一对uint256表示，等价uint512。
 -   `Controller.renewPrice(name, dur)`
     -   断言
         -   `l ← min(length(_c*_rent_prices), length(name))`
@@ -1552,10 +1557,14 @@ Controller合约包括如下状态：
         -   `cost_wei ← cost_doller(l) * 10^18 * 10^8 / dollar_per_eth`
         -   `Controller.renewPrice(name, dur) == cost_wei`
     -   参数：随机
-    -   说明： `cost_wei` 的计算需要注意保留精度，先做乘法
+    -   说明：
+        -   `cost_wei` 的计算需要注意保留精度，先做乘法
+        -   需要验证目标函数， ****若不抛出异常，则总是正确****
+            -   因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
+            -   cost\_doller的运算使用一对uint256表示，等价uint512。
 
 
-<a id="orge801416"></a>
+<a id="orgb7d1301"></a>
 
 ## 初始化
 
@@ -1595,4 +1604,15 @@ Controller合约包括如下状态：
     -   再次Ctrl-C，退出
 -   `npx hardhat run --network localhost  ./scripts/echidna-init.ts`
     -   第一条命令启动后，再执行
+
+
+<a id="orge889ba6"></a>
+
+## 测试代码风格
+
+-   辅助（helper）函数以“h\_”为前缀，访问范围为internal；
+-   操作测试以“op\_”为前缀；
+-   辅助（auxiliary）操作以“aop\_”为前缀；
+-   操作权限检查以“chk\_”为前缀；
+-   状态测试以“st\_”为前缀；
 
