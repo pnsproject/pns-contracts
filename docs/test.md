@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orge6e9d01)
-2.  [模糊测试](#orgd02070e)
-    1.  [合约分析](#org67d61d6)
-        1.  [常数](#orge2f6a9d)
-        2.  [状态](#orga87b69b)
-        3.  [辅助状态和辅助合约](#orgcda6ab2)
-        4.  [操作与断言](#org026c693)
-        5.  [辅助操作与状态断言](#org340f802)
-    2.  [初始化](#org45d6a13)
+1.  [单元测试](#orga631b8d)
+2.  [模糊测试](#orgef8a184)
+    1.  [合约分析](#orgc9e484c)
+        1.  [常数](#org834c00b)
+        2.  [状态](#orgcd43069)
+        3.  [辅助状态和辅助合约](#org18f7057)
+        4.  [操作与断言](#org2e01a7f)
+        5.  [辅助操作与状态断言](#org72416f7)
+    2.  [初始化](#orge801416)
 
 
 
-<a id="orge6e9d01"></a>
+<a id="orga631b8d"></a>
 
 # 单元测试
 
@@ -31,19 +31,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgd02070e"></a>
+<a id="orgef8a184"></a>
 
 # 模糊测试
 
 
-<a id="org67d61d6"></a>
+<a id="orgc9e484c"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orge2f6a9d"></a>
+<a id="org834c00b"></a>
 
 ### 常数
 
@@ -182,7 +182,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orga87b69b"></a>
+<a id="orgcd43069"></a>
 
 ### 状态
 
@@ -466,7 +466,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgcda6ab2"></a>
+<a id="org18f7057"></a>
 
 ### 辅助状态和辅助合约
 
@@ -549,7 +549,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org026c693"></a>
+<a id="org2e01a7f"></a>
 
 ### 操作与断言
 
@@ -1215,7 +1215,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org340f802"></a>
+<a id="org72416f7"></a>
 
 ### 辅助操作与状态断言
 
@@ -1236,7 +1236,7 @@ Controller合约包括如下状态：
         -   tok：\_pns\_owner\_tbl随机选
 -   `aop_nft_set_owner(idx, owner)`
     -   状态更新
-        -   `NFT<idx>.transferRootOwnership(owner)`
+        -   `NFT<idx>.transferOwnership(owner)`
     -   **参数**
         -   idx：0或1
         -   owner：SENDER\_POOL随机选
@@ -1555,7 +1555,7 @@ Controller合约包括如下状态：
     -   说明： `cost_wei` 的计算需要注意保留精度，先做乘法
 
 
-<a id="org45d6a13"></a>
+<a id="orge801416"></a>
 
 ## 初始化
 

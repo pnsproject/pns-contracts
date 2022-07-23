@@ -622,7 +622,7 @@ Controller合约包括如下状态：
     + tok：_pns_owner_tbl随机选
 + ~aop_nft_set_owner(idx, owner)~
   - 状态更新
-    + ~NFT<idx>.transferRootOwnership(owner)~
+    + ~NFT<idx>.transferOwnership(owner)~
   - *参数*
     + idx：0或1
     + owner：SENDER_POOL随机选
