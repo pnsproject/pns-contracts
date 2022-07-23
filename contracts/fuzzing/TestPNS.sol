@@ -52,7 +52,7 @@ contract TestPNS is EchidnaInit {
     mapping(address => uint256)                     _pns_info_name_tbl;
     mapping(address => mapping(uint256 => uint256)) _pns_info_nft_name_tbl;
 
-    mapping(uint256 => address) _pns_key_tbl;
+    mapping(uint256 => string) _pns_key_tbl;
 
 
     // --------- controller
@@ -777,6 +777,471 @@ contract TestPNS is EchidnaInit {
             assert(P.expire(tok) == rec.expire);
             assert(P.origin(tok) == rec.origin);
             assert(P.parent(tok) == rec.parent);
+        }
+    }
+
+    struct CNameRegisterByManagerArgs {
+        uint idx;
+        string name;
+        address to;
+        uint256 dur;
+        uint data;
+        uint256[] khs;
+        string[] vls;
+        uint256 stok;
+    }
+
+    function gen_c_nameRegisterByManager(bool idx_idx,
+                                        uint8 name_idx, string memory name1,
+                                        uint8 to_idx, address to1,
+                                        uint32 dur1,
+                                        bool set_name,
+                                        uint256[] memory khs1, uint8[] memory khs_idx,
+                                        string[] memory vls1)
+        internal
+        view
+        returns(CNameRegisterByManagerArgs memory a)
+    {
+        a.idx = idx_idx ? 1 : 0;
+        a.name = h_sel_word_alt(name_idx, 125, name1);
+        a.to = h_sel_sender_alt(to_idx, 200, to1);
+        a.dur = uint256(dur1) % (5 * 365 days - 1 days + 1) + 1 days;
+
+        a.data = set_name ? 1 : 0;
+
+        uint len = (khs1.length < vls1.length) ? khs1.length : vls1.length;
+        if (khs_idx.length < len) { len = khs_idx.length; }
+
+        a.khs = new uint256[](len);
+        a.vls = new string[](len);
+
+        for (uint i = 0; i < len; i++) {
+            if (khs_idx[i] < 240) {
+                a.khs[i] = uint256(keccak256(abi.encodePacked(h_sel_word(khs_idx[i]))));
+            }
+            else {
+                a.khs[i] = khs1[i];
+            }
+
+            a.vls[i] = vls1[i];
+        }
+
+        a.stok = h_namehash(a.name, C_BASE_NODE[a.idx]);
+    }
+
+    function cons_c_nameRegisterByManager(CNameRegisterByManagerArgs memory a)
+        internal
+        view
+        returns(bool ok)
+    {
+        uint idx = a.idx;
+
+        bool ok1 = false;
+        if (_c_is_live[idx]) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (msg.sender == _c_root[idx]) {
+            ok2 = true;
+        }
+        if (_c_manager_set[idx].contains(msg.sender)) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
+            ok3 = true;
+        }
+
+        bool ok4 = false;
+        if (_pns_mutable) {
+            ok4 = true;
+        }
+
+        bool ok5 = false;
+        if (address(C[idx]) == _pns_root) {
+            ok5 = true;
+        }
+        if (_pns_manager_set.contains(address(C[idx]))) {
+            ok5 = true;
+        }
+
+        bool ok6 = true;
+        for (uint i = 0; i < a.khs.length; i++) {
+            if (bytes(_pns_key_tbl[a.khs[i]]).length == 0) {
+                ok6 = false;
+            }
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6;
+    }
+
+    function op_c_nameRegisterByManager(bool idx_idx,
+                                        uint8 name_idx, string memory name1,
+                                        uint8 to_idx, address to1,
+                                        uint32 dur1,
+                                        bool set_name,
+                                        uint256[] memory khs1, uint8[] memory khs_idx,
+                                        string[] memory vls1)
+        public
+    {
+        // requirements
+        require((1 <= bytes(name1).length) && (bytes(name1).length <= 20));
+
+        // param generation
+        CNameRegisterByManagerArgs memory a =
+            gen_c_nameRegisterByManager(idx_idx, name_idx, name1, to_idx, to1,
+                                        dur1, set_name, khs1, khs_idx, vls1);
+
+        // update state
+        bool ok = cons_c_nameRegisterByManager(a);
+
+        if (ok) {
+            _pns_owner_tbl.set(a.stok, a.to);
+            _pns_token_set.add(a.stok);
+            _pns_sld_set.add(a.stok);
+            _pns_sld_expire_tbl[a.stok] = a.dur;
+            if (set_name) {
+                _pns_info_name_tbl[a.to] = a.stok;
+            }
+
+            for (uint i = 0; i < a.khs.length; i++) {
+                _pns_info_record_tbl[a.stok][a.khs[i]] = a.vls[i];
+            }
+        }
+
+        // call op
+        uint256 ret =
+            abi.decode(h_c_call_assert(ok, a.idx,
+                                       abi.encodeWithSelector(C[a.idx].nameRegisterByManager.selector,
+                                                              a.name, a.to, a.dur, a.data, a.khs, a.vls)),
+                       (uint256));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        assert(ret == a.stok);
+        assert(P.ownerOf(a.stok) == a.to);
+        if (set_name) {
+            assert(P.getName(a.to) == a.stok);
+        }
+        assert(keccak256(abi.encode(P.getManyByHash(a.khs, a.stok))) ==
+               keccak256(abi.encode(a.vls)));
+        for (uint i = 0; i < a.khs.length; i++) {
+            assert(keccak256(abi.encodePacked(P.getByHash(a.khs[i], a.stok))) ==
+                   keccak256(abi.encodePacked(a.vls[i])));
+        }
+
+        assert(P.expire(a.stok) == a.dur);
+        assert(P.origin(a.stok) == a.stok);
+        assert(P.parent(a.stok) == a.stok);
+        assert(!P.available(a.stok));
+    }
+
+    struct CNameRegisterArgs {
+        uint idx;
+        string name;
+        address to;
+        uint256 dur;
+        uint256 value;
+        uint256 stok;
+        uint256 price;
+    }
+
+    function gen_c_nameRegister(bool idx_idx,
+                                uint8 name_idx, string memory name1,
+                                uint8 to_idx, address to1,
+                                uint8 dur_idx, uint256 dur1,
+                                uint8 value_idx, uint256 value1)
+        internal
+        view
+        returns(CNameRegisterArgs memory a)
+    {
+        a.idx = idx_idx ? 1 : 0;
+        a.name = h_sel_word_alt(name_idx, 125, name1);
+        a.to = h_sel_sender_alt(to_idx, 200, to1);
+
+        if (dur_idx < 80) {
+            // < c_min_reg_dur
+            a.dur = dur1 % _c_min_reg_dur[a.idx];
+        }
+        else if (dur_idx < 160) {
+            a.dur = _c_min_reg_dur[a.idx];
+        }
+        else {
+            a.dur = dur1 + _c_min_reg_dur[a.idx];
+        }
+
+        string memory name_fixed = a.name;
+        if (bytes(name_fixed).length == 0) { name_fixed = "1"; }
+
+        a.price = C[a.idx].totalRegisterPrice(name_fixed, a.dur);
+
+        if (value_idx < 80) {
+            a.value = value1 % a.price;
+        }
+        else if (value_idx < 160) {
+            a.value = a.price;
+        }
+        else {
+            // if > balance, use remainder
+            // final value may <= price
+            a.value = (a.price + value1) % address(this).balance;
+        }
+
+       a.stok = h_namehash(a.name, C_BASE_NODE[a.idx]);
+    }
+
+    function cons_c_nameRegister(CNameRegisterArgs memory a)
+        internal
+        view
+        returns(bool ok)
+    {
+        bool ok1 = false;
+        if (_c_is_open[a.idx]) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (a.value >= a.price) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (bytes(a.name).length >= _c_min_reg_len[a.idx]) {
+            ok3 = true;
+        }
+
+        bool ok4 = false;
+        if (a.dur >= _c_min_reg_dur[a.idx]) {
+            ok4 = true;
+        }
+
+        bool ok5 = false;
+        unchecked {
+            if (block.timestamp + a.dur + GRACE_PERIOD > block.timestamp + GRACE_PERIOD) {
+                ok5 = true;
+            }
+        }
+
+        bool ok6 = false;
+        if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
+            ok6 = true;
+        }
+
+        bool ok7 = false;
+        if (address(C[a.idx]) == _pns_root) {
+            ok7 = true;
+        }
+        if (_pns_manager_set.contains(address(C[a.idx]))) {
+            ok7 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7;
+    }
+
+
+    function up_c_nameRegister(CNameRegisterArgs memory a) internal {
+        _pns_owner_tbl.set(a.stok, a.to);
+        _pns_token_set.add(a.stok);
+        _pns_sld_set.add(a.stok);
+        _pns_sld_expire_tbl[a.stok] = a.dur;
+    }
+
+    function ast_c_nameRegister(CNameRegisterArgs memory a,
+                                uint256 balance_root, uint256 balance_sender, uint256 ret)
+        internal view
+    {
+        uint256 balance_root_new = _c_root[a.idx].balance;
+        uint256 balance_sender_new = msg.sender.balance;
+
+        assert(ret == a.stok);
+        assert(P.ownerOf(a.stok) == a.to);
+        assert(P.expire(a.stok) == a.dur);
+        assert(P.origin(a.stok) == a.stok);
+        assert(P.parent(a.stok) == a.stok);
+        assert(!P.available(a.stok));
+
+        assert(balance_root_new == balance_root + a.price);
+        assert(balance_sender_new == balance_sender + a.value - a.price);
+    }
+
+    function op_c_nameRegister(bool idx_idx,
+                               uint8 name_idx, string memory name1,
+                               uint8 to_idx, address to1,
+                               uint8 dur_idx, uint256 dur1,
+                               uint8 value_idx, uint256 value1)
+        public
+    {
+        // requirements
+        // param generation
+        CNameRegisterArgs memory a = gen_c_nameRegister(idx_idx, name_idx, name1,
+                                                        to_idx, to1,
+                                                        dur_idx, dur1,
+                                                        value_idx, value1);
+
+
+        // update state
+        bool ok = cons_c_nameRegister(a);
+
+        if (ok) {
+            up_c_nameRegister(a);
+        }
+
+        // call op
+        uint256 balance_root   = _c_root[a.idx].balance;
+        uint256 balance_sender = msg.sender.balance;
+
+        uint256 ret =
+            abi.decode(h_c_call_with_value_assert(ok, a.idx, a.value,
+                                                  abi.encodeWithSelector(C[a.idx].nameRegister.selector,
+                                                                         a.name, a.to, a.dur)),
+                       (uint256));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        ast_c_nameRegister(a, balance_root, balance_sender, ret);
+    }
+
+    struct CNameRegisterWithConfigFuzzingArgs {
+        bool idx_idx;
+        uint8 name_idx; string name1;
+        uint8 to_idx; address to1;
+        uint8 dur_idx; uint256 dur1;
+        uint8 value_idx; uint256 value1;
+        bool set_name;
+        uint256[] khs1; uint8[] khs_idx;
+        uint8 vls_idx; string[] vls1;
+    }
+
+    struct CNameRegisterWithConfigArgs {
+        uint data;
+        uint256[] khs;
+        string[] vls;
+    }
+
+    function gen_c_nameRegisterWithConfig(CNameRegisterWithConfigFuzzingArgs memory fa)
+        internal view
+        returns(CNameRegisterWithConfigArgs memory ca)
+    {
+        ca.data = fa.set_name ? 1 : 0;
+
+        uint len = (fa.khs1.length < fa.vls1.length) ? fa.khs1.length : fa.vls1.length;
+        if (fa.khs_idx.length < len) { len = fa.khs_idx.length; }
+
+        ca.khs = new uint256[](len);
+        string[] memory vls2 = new string[](len);
+
+        for (uint i = 0; i < len; i++) {
+            if (fa.khs_idx[i] < 240) {
+                ca.khs[i] = uint256(keccak256(abi.encodePacked(h_sel_word(fa.khs_idx[i]))));
+            }
+            else {
+                ca.khs[i] = fa.khs1[i];
+            }
+
+            vls2[i] = fa.vls1[i];
+        }
+
+        if (fa.vls_idx < 200) {
+            ca.vls = vls2;
+        }
+        else {
+            ca.vls = fa.vls1;
+        }
+    }
+
+    function cons_c_nameRegisterWithConfig(CNameRegisterArgs memory a,
+                                           CNameRegisterWithConfigArgs memory ca)
+        internal view
+        returns(bool ok)
+    {
+        bool ok1 = false;
+        if (cons_c_nameRegister(a)) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (_pns_mutable) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (ca.vls.length == ca.khs.length) {
+            ok3 = true;
+        }
+
+        bool ok4 = true;
+        for (uint i = 0; i < ca.khs.length; i++) {
+            if (bytes(_pns_key_tbl[ca.khs[i]]).length == 0) {
+                ok4 = false;
+            }
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4;
+    }
+
+    function op_c_nameRegisterWithConfig(CNameRegisterWithConfigFuzzingArgs memory fa)
+        public
+    {
+        // requirements
+        // param generation
+        CNameRegisterArgs memory a = gen_c_nameRegister(fa.idx_idx,
+                                                        fa.name_idx, fa.name1,
+                                                        fa.to_idx, fa.to1,
+                                                        fa.dur_idx, fa.dur1,
+                                                        fa.value_idx, fa.value1);
+        CNameRegisterWithConfigArgs memory ca = gen_c_nameRegisterWithConfig(fa);
+
+        // update state
+        bool ok = cons_c_nameRegisterWithConfig(a, ca);
+
+        if (ok) {
+            up_c_nameRegister(a);
+
+            if (fa.set_name) {
+                _pns_info_name_tbl[a.to] = a.stok;
+            }
+
+            for (uint i = 0; i < ca.khs.length; i++) {
+                _pns_info_record_tbl[a.stok][ca.khs[i]] = ca.vls[i];
+            }
+        }
+
+        // call op
+        uint256 balance_root   = _c_root[a.idx].balance;
+        uint256 balance_sender = msg.sender.balance;
+
+        uint256 ret =
+            abi.decode(h_c_call_with_value_assert(ok, a.idx, a.value,
+                                                  abi.encodeWithSelector(C[a.idx].nameRegisterWithConfig.selector,
+                                                                         a.name, a.to, a.dur,
+                                                                         ca.data, ca.khs, ca.vls)),
+                       (uint256));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        ast_c_nameRegister(a, balance_root, balance_sender, ret);
+
+        if (fa.set_name) {
+            assert(P.getName(a.to) == a.stok);
+        }
+
+        assert(keccak256(abi.encode(P.getManyByHash(ca.khs, a.stok))) ==
+               keccak256(abi.encode(ca.vls)));
+
+        for (uint i = 0; i < ca.khs.length; i++) {
+            assert(keccak256(abi.encodePacked(P.getByHash(ca.khs[i], a.stok))) ==
+                   keccak256(abi.encodePacked(ca.vls[i])));
         }
     }
 
