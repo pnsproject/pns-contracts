@@ -21,3 +21,9 @@ test/demo
 
 .openzeppelin/
 data/
+
+/patches
+/.pc
+
+/crytic-export
+/corpus
