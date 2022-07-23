@@ -334,6 +334,10 @@ contract TestPNS is EchidnaInit {
         // call op
         h_p_call_assert(ok, abi.encodeWithSelector(P.setContractConfig.selector, p_w));
 
+        if (!ok) {
+            return;
+        }
+
         // assertion
         assert(P.FLAGS() == ((p_w != 0) ? 1 : 0));
     }
@@ -384,6 +388,10 @@ contract TestPNS is EchidnaInit {
         // call op
         h_c_call_assert(ok, p_idx, abi.encodeWithSelector(C[p_idx].setContractConfig.selector,
                                                           p_fl, p_ml, p_md, p_pf));
+
+        if (!ok) {
+            return;
+        }
 
         // assertion
         assert(C[p_idx].FLAGS() ==
@@ -438,6 +446,10 @@ contract TestPNS is EchidnaInit {
         // call op
         h_c_call_assert(ok, p_idx, abi.encodeWithSelector(C[p_idx].setPrices.selector, p_bpl, p_rpl));
 
+        if (!ok) {
+            return;
+        }
+
         // assertion
         (uint256[] memory bpl_, uint256[] memory rpl_) = C[p_idx].getPrices();
         assert(keccak256(abi.encodePacked(bpl_)) == keccak256(abi.encodePacked(p_bpl)));
@@ -477,6 +489,10 @@ contract TestPNS is EchidnaInit {
 
         // call op
         h_p_call_assert(ok, abi.encodeWithSelector(P.mint.selector, p_to, p_tok));
+
+        if (!ok) {
+            return;
+        }
 
         // assertion
         assert(P.exists(p_tok));
@@ -572,6 +588,10 @@ contract TestPNS is EchidnaInit {
                                                                             to, ptok, name)),
                                  (uint256));
 
+        if (!ok) {
+            return;
+        }
+
         // assertion
         assert(ret == stok);
         assert(P.exists(stok));
@@ -627,6 +647,10 @@ contract TestPNS is EchidnaInit {
         // call op
         h_p_call_assert(ok, abi.encodeWithSelector(P.burn.selector, tok));
 
+        if (!ok) {
+            return;
+        }
+
         // assertion
         assert(!P.exists(tok));
         assert(P.origin(tok) == 0);
@@ -671,6 +695,10 @@ contract TestPNS is EchidnaInit {
 
         // call op
         h_p_call_assert(ok, abi.encodeWithSelector(P.bound.selector, tok));
+
+        if (!ok) {
+            return;
+        }
 
         // assertion
         assert(P.bounded(tok));
@@ -728,6 +756,10 @@ contract TestPNS is EchidnaInit {
 
         // call op
         h_p_call_assert(ok, abi.encodeWithSelector(P.setMetadataBatch.selector, toks, recs));
+
+        if (!ok) {
+            return;
+        }
 
         // assertion
         for (uint i = 0; i < len; i++) {
