@@ -118,31 +118,38 @@ contract TestPNS is EchidnaInit {
         return _pns_owner_tbl.get(tok) == owner;
     }
 
-    function h_call(address c, bytes memory d) internal returns(bool, bytes memory) {
-        (bool success, bytes memory returndata) = c.call(abi.encodePacked(d, msg.sender));
+    function h_call(address c, uint256 v, bytes memory d) internal returns(bool, bytes memory) {
+        (bool success, bytes memory returndata) = c.call{value: v}(abi.encodePacked(d, msg.sender));
         return (success, returndata);
     }
 
-    function h_call_assert(bool ok, address c, bytes memory d) internal returns(bytes memory) {
-        (bool ok_, bytes memory r) = h_call(c, d);
+    function h_call_assert(bool ok, address c, uint256 v, bytes memory d) internal returns(bytes memory) {
+        (bool ok_, bytes memory r) = h_call(c, v, d);
         assert(ok_ == ok);
         return r;
     }
 
     function h_p_call(bytes memory d) internal returns(bool, bytes memory) {
-        return h_call(address(P), d);
+        return h_call(address(P), 0, d);
     }
 
     function h_p_call_assert(bool ok, bytes memory d) internal returns(bytes memory) {
-        return h_call_assert(ok, address(P), d);
+        return h_call_assert(ok, address(P), 0, d);
     }
 
     function h_c_call(uint idx, bytes memory d) internal returns(bool, bytes memory) {
-        return h_call(address(C[idx]), d);
+        return h_call(address(C[idx]), 0, d);
     }
 
     function h_c_call_assert(bool ok, uint idx, bytes memory d) internal returns(bytes memory) {
-        return h_call_assert(ok, address(C[idx]), d);
+        return h_call_assert(ok, address(C[idx]), 0, d);
+    }
+
+    function h_c_call_with_value_assert(bool ok, uint idx, uint256 v, bytes memory d)
+        internal
+        returns(bytes memory)
+    {
+        return h_call_assert(ok, address(C[idx]), v, d);
     }
 
     function h_get_price(uint idx) internal view returns(uint256) {
