@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org2546657)
-2.  [模糊测试](#org7e4cacb)
-    1.  [合约分析](#org322bb39)
-        1.  [常数](#org6b7529c)
-        2.  [状态](#org3a62fa0)
-        3.  [辅助状态和辅助合约](#org3996360)
-        4.  [操作与断言](#org90c529b)
-        5.  [辅助操作与状态断言](#org717d827)
-    2.  [初始化](#orga6e0af7)
-    3.  [测试代码风格](#org57f3c1f)
+1.  [单元测试](#org053bb06)
+2.  [模糊测试](#org04c23df)
+    1.  [合约分析](#org97a6ff1)
+        1.  [常数](#org8441da8)
+        2.  [状态](#orga59bceb)
+        3.  [辅助状态和辅助合约](#orgba0150d)
+        4.  [操作与断言](#org0531565)
+        5.  [辅助操作与状态断言](#org54f0d65)
+    2.  [初始化](#orgeed7e28)
+    3.  [测试代码风格](#org2bdfe77)
 
 
 
-<a id="org2546657"></a>
+<a id="org053bb06"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org7e4cacb"></a>
+<a id="org04c23df"></a>
 
 # 模糊测试
 
 
-<a id="org322bb39"></a>
+<a id="org97a6ff1"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org6b7529c"></a>
+<a id="org8441da8"></a>
 
 ### 常数
 
@@ -177,13 +177,13 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 
 <tr>
 <td class="org-left">WORD_SET</td>
-<td class="org-left">少量的词汇表，包括"dot", "org", "com", "net", "www", "hello", "pns"</td>
+<td class="org-left">少量的词汇表，包括"dot", "org", "com", "net", "www", "hello", "pns"等</td>
 </tr>
 </tbody>
 </table>
 
 
-<a id="org3a62fa0"></a>
+<a id="orga59bceb"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org3996360"></a>
+<a id="orgba0150d"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org90c529b"></a>
+<a id="org0531565"></a>
 
 ### 操作与断言
 
@@ -964,7 +964,7 @@ Controller合约包括如下状态：
     -   约束（必要条件）
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
     -   参数
-        -   id：一半从\_pns\_token\_set随机选，一般随机
+        -   id：一半从\_pns\_token\_set随机选，一半随机
 -   `Controller.nameRegisterByManager(name, to, dur, set_name, khs, vls)`
     -   约束
         -   `_c*_is_live`
@@ -976,29 +976,31 @@ Controller合约包括如下状态：
             -   `_pns_mutable`
         -   PNS权限约束
             -   `C* ∈ { _pns_root, _pns_manager_set }`
+        -   记录约束
+            -   `khs ⊆ _pns_key_tbl`
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
         -   `_pns_sld_set.add(stok)`
         -   `_pns_sld_expire_tbl[stok] ← dur`
         -   `_pns_info_name_tbl[to] ← stok if set_name`
-        -   `∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl`
+        -   `∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record_tbl[stok][kh] ← vl`
     -   断言
         -   `ret == stok`
         -   `P.ownerOf(stok) == to`
         -   `P.getName(to) == stok if set_name`
         -   `P.getManyByHash(khs, stok) == vls`
-        -   `∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh) == vl`
+        -   `∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl`
         -   `P.expire(stok) == dur`
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
     -   **参数**
-        -   name：一半概率1到20个字符随机，一般概率从WORD\_SET随机取；
+        -   name：一半概率1到20个字符随机，一半概率从WORD\_SET随机取；
         -   to：大概率从SENDER\_POOL取，小概率随机；
         -   dur：1天到5年，随机；
         -   set\_name：true或false
-        -   khs：随机；
+        -   khs：极大概率WORD\_SET选取后哈希，极小概率随机；
         -   vls：khs等长，值随机；
     -   说明
         -   stok：name和C\*\_BASE\_NODE组合的哈希
@@ -1044,18 +1046,20 @@ Controller合约包括如下状态：
         -   更新记录约束
             -   \_pns\_mutable
         -   `length(khs) == length(vls)`
+        -   记录约束
+            -   `khs ⊆ _pns_key_tbl`
     -   状态更新
         -   包含Controller.nameRegister状态更新
         -   `_pns_info_name_tbl[to] ← stok if set_name`
-        -   `∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl`
+        -   `∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record_tbl[stok][kh] ← vl`
     -   断言
         -   包含Controller.nameRegister断言
         -   `P.getName(to) == stok if set_name`
         -   `P.getManyByHash(khs, stok) == vls`
-        -   `∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh) == vl`
+        -   `∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl`
     -   参数
         -   除khs，vls外参数见Controller.nameRegister
-        -   khs：随机；
+        -   khs：极大概率从WORD\_SET选取后哈希，极小概率随机；
         -   vls：大概率和khs等长，值随机；
 -   `Controller.nameRedeem(name, to, dur, dl, c)`
     -   约束
@@ -1216,7 +1220,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org717d827"></a>
+<a id="org54f0d65"></a>
 
 ### 辅助操作与状态断言
 
@@ -1564,7 +1568,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orga6e0af7"></a>
+<a id="orgeed7e28"></a>
 
 ## 初始化
 
@@ -1606,7 +1610,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org57f3c1f"></a>
+<a id="org2bdfe77"></a>
 
 ## 测试代码风格
 

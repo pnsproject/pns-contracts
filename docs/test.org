@@ -43,10 +43,10 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 #+caption: 合约常数
 
 测试过程中，涉及到以下常数：
-| 名称        | 说明                                                                |
-|-------------+---------------------------------------------------------------------|
-| SENDER_POOL | 所有可能的调用者地址                                                |
-| WORD_SET    | 少量的词汇表，包括"dot", "org", "com", "net", "www", "hello", "pns" |
+| 名称        | 说明                                                                  |
+|-------------+-----------------------------------------------------------------------|
+| SENDER_POOL | 所有可能的调用者地址                                                  |
+| WORD_SET    | 少量的词汇表，包括"dot", "org", "com", "net", "www", "hello", "pns"等 |
 *** 状态
 PNS合约包括如下状态，其中“预置”表示合约在部署的时候会设定一个预置值：
 | 名称                   | 类型                            | 初值 | 说明                           |
@@ -354,7 +354,7 @@ Controller合约包括如下状态：
   - 约束（必要条件）
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~
   - 参数
-    + id：一半从_pns_token_set随机选，一般随机
+    + id：一半从_pns_token_set随机选，一半随机
 + ~Controller.nameRegisterByManager(name, to, dur, set_name, khs, vls)~
   - 约束
     + ~_c*_is_live~
@@ -366,29 +366,31 @@ Controller合约包括如下状态：
       - ~_pns_mutable~
     + PNS权限约束
       - ~C* ∈ { _pns_root, _pns_manager_set }~
+    + 记录约束
+      - ~khs ⊆ _pns_key_tbl~
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
     + ~_pns_sld_set.add(stok)~
     + ~_pns_sld_expire_tbl[stok] ← dur~
     + ~_pns_info_name_tbl[to] ← stok if set_name~
-    + ~∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl~
+    + ~∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record_tbl[stok][kh] ← vl~
   - 断言
     + ~ret == stok~
     + ~P.ownerOf(stok) == to~
     + ~P.getName(to) == stok if set_name~
     + ~P.getManyByHash(khs, stok) == vls~
-    + ~∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh) == vl~
+    + ~∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl~
     + ~P.expire(stok) == dur~
     + ~P.origin(stok) == stok~
     + ~P.parent(stok) == stok~
     + ~!P.available(stok)~
   - *参数*
-    + name：一半概率1到20个字符随机，一般概率从WORD_SET随机取；
+    + name：一半概率1到20个字符随机，一半概率从WORD_SET随机取；
     + to：大概率从SENDER_POOL取，小概率随机；
     + dur：1天到5年，随机；
     + set_name：true或false
-    + khs：随机；
+    + khs：极大概率WORD_SET选取后哈希，极小概率随机；
     + vls：khs等长，值随机；
   - 说明
     + stok：name和C*_BASE_NODE组合的哈希
@@ -434,18 +436,20 @@ Controller合约包括如下状态：
     + 更新记录约束
       - _pns_mutable
     + ~length(khs) == length(vls)~
+    + 记录约束
+      - ~khs ⊆ _pns_key_tbl~
   - 状态更新
     + 包含Controller.nameRegister状态更新
     + ~_pns_info_name_tbl[to] ← stok if set_name~
-    + ~∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record[stok][kh] ← vl~
+    + ~∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record_tbl[stok][kh] ← vl~
   - 断言
     + 包含Controller.nameRegister断言
     + ~P.getName(to) == stok if set_name~
     + ~P.getManyByHash(khs, stok) == vls~
-    + ~∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh) == vl~
+    + ~∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl~
   - 参数
     + 除khs，vls外参数见Controller.nameRegister
-    + khs：随机；
+    + khs：极大概率从WORD_SET选取后哈希，极小概率随机；
     + vls：大概率和khs等长，值随机；
 + ~Controller.nameRedeem(name, to, dur, dl, c)~
   - 约束
