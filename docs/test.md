@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org77a0098)
-2.  [模糊测试](#org4d88f80)
-    1.  [合约分析](#orgd29b456)
-        1.  [常数](#orgc658afb)
-        2.  [状态](#orgfee2545)
-        3.  [辅助状态和辅助合约](#orgad14b94)
-        4.  [操作与断言](#orga093b42)
-        5.  [辅助操作与状态断言](#orgd6885ee)
-    2.  [初始化](#orgb7d1301)
-    3.  [测试代码风格](#orge889ba6)
+1.  [单元测试](#org2546657)
+2.  [模糊测试](#org7e4cacb)
+    1.  [合约分析](#org322bb39)
+        1.  [常数](#org6b7529c)
+        2.  [状态](#org3a62fa0)
+        3.  [辅助状态和辅助合约](#org3996360)
+        4.  [操作与断言](#org90c529b)
+        5.  [辅助操作与状态断言](#org717d827)
+    2.  [初始化](#orga6e0af7)
+    3.  [测试代码风格](#org57f3c1f)
 
 
 
-<a id="org77a0098"></a>
+<a id="org2546657"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org4d88f80"></a>
+<a id="org7e4cacb"></a>
 
 # 模糊测试
 
 
-<a id="orgd29b456"></a>
+<a id="org322bb39"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orgc658afb"></a>
+<a id="org6b7529c"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgfee2545"></a>
+<a id="org3a62fa0"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgad14b94"></a>
+<a id="org3996360"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="orga093b42"></a>
+<a id="org90c529b"></a>
 
 ### 操作与断言
 
@@ -855,8 +855,8 @@ Controller合约包括如下状态：
     -   断言
         -   `C*.getPrices() == (bp, rpl)`
     -   **参数**
-        -   bpl，数组，长度从1到20，非零递减
-        -   rpl，数组，和bpl等长，非零递减
+        -   bpl，数组，长度从1到20，非零递减，上限uint24类型
+        -   rpl，数组，和bpl等长，非零递减，上限uint24类型
 
 **域名管理**
 
@@ -1216,7 +1216,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="orgd6885ee"></a>
+<a id="org717d827"></a>
 
 ### 辅助操作与状态断言
 
@@ -1541,30 +1541,30 @@ Controller合约包括如下状态：
         -   `l2 ← min(length(_c*_rent_prices), length(name))`
         -   `cost_doller(x, y) ← _c*_base_prices[x -1] + _c*_rent_prices[y-1] * dur / (365 * 86400)`
         -   `(,dollar_per_eth,,,) ← _c*_price_feed.latestRoundData()`
-        -   `cost_wei ← cost_doller(l1, l2) * 10^18 * 10^8 / dollar_per_eth`
+        -   `cost_wei ← cost_doller(l1, l2) * 10**18 * 10**8 / dollar_per_eth`
         -   `Controller.totalRegisterPrice(name, dur) == cost_wei`
     -   参数：随机
     -   说明：
         -   `cost_wei` 的计算需要注意保留精度，先做乘法
         -   需要验证目标函数， ****若不抛出异常，则总是正确****
             -   因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
-            -   cost\_doller的运算使用一对uint256表示，等价uint512。
+            -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 -   `Controller.renewPrice(name, dur)`
     -   断言
         -   `l ← min(length(_c*_rent_prices), length(name))`
         -   `cost_doller(x) ← _c*_rent_prices[x-1] * dur / (365 * 86400)`
         -   `(,dollar_per_eth,,,) ← _c*_price_feed.latestRoundData()`
-        -   `cost_wei ← cost_doller(l) * 10^18 * 10^8 / dollar_per_eth`
+        -   `cost_wei ← cost_doller(l) * 10**18 * 10**8 / dollar_per_eth`
         -   `Controller.renewPrice(name, dur) == cost_wei`
     -   参数：随机
     -   说明：
         -   `cost_wei` 的计算需要注意保留精度，先做乘法
         -   需要验证目标函数， ****若不抛出异常，则总是正确****
             -   因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
-            -   cost\_doller的运算使用一对uint256表示，等价uint512。
+            -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgb7d1301"></a>
+<a id="orga6e0af7"></a>
 
 ## 初始化
 
@@ -1606,7 +1606,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="orge889ba6"></a>
+<a id="org57f3c1f"></a>
 
 ## 测试代码风格
 

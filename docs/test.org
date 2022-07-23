@@ -246,9 +246,8 @@ Controller合约包括如下状态：
   - 断言
     + ~C*.getPrices() == (bp, rpl)~
   - *参数*
-    + bpl，数组，长度从1到20，非零递减
-    + rpl，数组，和bpl等长，非零递减
-
+    + bpl，数组，长度从1到20，非零递减，上限uint24类型
+    + rpl，数组，和bpl等长，非零递减，上限uint24类型
 *域名管理*
 
 + ~PNS.mint(to, tok)~ ，超级用户用于铸造顶级域名（基节点）
@@ -721,27 +720,27 @@ Controller合约包括如下状态：
     + ~l2 ← min(length(_c*_rent_prices), length(name))~
     + ~cost_doller(x, y) ← _c*_base_prices[x -1] + _c*_rent_prices[y-1] * dur / (365 * 86400)~
     + ~(,dollar_per_eth,,,) ← _c*_price_feed.latestRoundData()~
-    + ~cost_wei ← cost_doller(l1, l2) * 10^18 * 10^8 / dollar_per_eth~
+    + ~cost_wei ← cost_doller(l1, l2) * 10**18 * 10**8 / dollar_per_eth~
     + ~Controller.totalRegisterPrice(name, dur) == cost_wei~
   - 参数：随机
   - 说明：
     + ~cost_wei~ 的计算需要注意保留精度，先做乘法
     + 需要验证目标函数， **若不抛出异常，则总是正确**
       + 因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
-      + cost_doller的运算使用一对uint256表示，等价uint512。
+      + cost_doller/cost_wei运算使用一对uint256表示，等价uint512。
 + ~Controller.renewPrice(name, dur)~
   - 断言
     + ~l ← min(length(_c*_rent_prices), length(name))~
     + ~cost_doller(x) ← _c*_rent_prices[x-1] * dur / (365 * 86400)~
     + ~(,dollar_per_eth,,,) ← _c*_price_feed.latestRoundData()~
-    + ~cost_wei ← cost_doller(l) * 10^18 * 10^8 / dollar_per_eth~
+    + ~cost_wei ← cost_doller(l) * 10**18 * 10**8 / dollar_per_eth~
     + ~Controller.renewPrice(name, dur) == cost_wei~
   - 参数：随机
   - 说明：
     +  ~cost_wei~ 的计算需要注意保留精度，先做乘法
     + 需要验证目标函数， **若不抛出异常，则总是正确**
       + 因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
-      + cost_doller的运算使用一对uint256表示，等价uint512。
+      + cost_doller/cost_wei运算使用一对uint256表示，等价uint512。
 ** 初始化
 合约的初始化通过typescript脚本实现，初始化的过程的事务会保存在 ~echidna-init.json~ 文件中，预置的一些数据会更新到 ~contracts/fuzzing/EchidnaInit.sol~ 文件，具体包括以下内容：
 
