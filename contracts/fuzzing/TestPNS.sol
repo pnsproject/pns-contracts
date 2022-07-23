@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "../pns/PNS.sol";
 import "../pns/PNSController.sol";
+import "../test/PriceOracle.sol";
 
 import "./EchidnaInit.sol";
 import "./IHEVM.sol";
@@ -788,6 +789,74 @@ contract TestPNS is EchidnaInit {
     }
 
     // ----------------------- aux operation ------------------------
+    function aop_pns_safeTransferFrom(uint8 to_idx, uint8 tok_idx) public {
+        // param generation
+        uint256 tok = h_sel_owned_token(tok_idx);
+        address from = _pns_owner_tbl.get(tok);
+        address to = h_sel_sender(to_idx);
+
+        // update state
+        _pns_owner_tbl.set(tok, to);
+
+        // call op
+        h_p_call(abi.encodeWithSignature("safeTransferFrom(address,address,uint256)",
+                                         from, to, tok));
+
+        // placeholder
+        assert(1 < 2);
+    }
+
+    function aop_pns_approve(uint8 to_idx, uint8 tok_idx) public {
+        // param generation
+        uint256 tok = h_sel_owned_token(tok_idx);
+        address to = h_sel_sender(to_idx);
+
+        // update state
+        _pns_approve_tbl[tok] = to;
+
+        // call op
+        h_p_call(abi.encodeWithSelector(P.approve.selector, tok, to));
+
+        // placeholder
+        assert(1 < 2);
+    }
+
+    function aop_nft_set_owner(bool idx, uint8 owner_idx) public {
+        // param generation
+        address owner = h_sel_sender(owner_idx);
+
+        // update state & call op
+        NFT[idx ? 1 : 0].transferOwnership(owner);
+
+        // placeholder
+        assert(1 < 2);
+    }
+
+    function aop_nft_transfer(bool idx, uint8 from_idx, uint8 to_idx, uint8 tok_idx) public {
+        // param generation
+        address from = h_sel_sender(from_idx);
+        address to   = h_sel_sender(to_idx);
+        uint256 tok  = tok_idx % 10;
+
+        // update state & call op
+        NFT[idx ? 1 : 0].safeTransferFrom(from, to, tok);
+
+        // placeholder
+        assert(1 < 2);
+    }
+
+    function aop_set_price(bool idx, int256 price) public {
+        // requirements
+        require(price > 0);
+
+        // param generation
+
+        // update state & call op
+        PriceOracle(address(PRICE[idx ? 1: 0])).updateAnswer(price);
+
+        // placeholder
+        assert(1 < 2);
+    }
 
     // ------------------------ state check ------------------------
 
