@@ -14,11 +14,13 @@ import "../test/PriceOracle.sol";
 
 import "./EchidnaInit.sol";
 import "./IHEVM.sol";
+import "./Math512.sol";
 
 contract TestPNS is EchidnaInit {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
+    using Math512 for Math512.uint512;
 
     using ECDSA for bytes32;
 
@@ -29,6 +31,7 @@ contract TestPNS is EchidnaInit {
     // ------------------------ state ----------------------
     // -------- const
     string[] WORD_SET = ["dot", "org", "com", "net", "www", "hello", "pns"];
+    uint constant SECONDS_PER_YEAR = 365 * 86400;
 
     // -------- pns
     bool _pns_mutable = true;
@@ -142,6 +145,11 @@ contract TestPNS is EchidnaInit {
         return h_call_assert(ok, address(C[idx]), d);
     }
 
+    function h_get_price(uint idx) internal view returns(uint256) {
+        (,int x,,,) = _c_price_feed[idx].latestRoundData();
+
+        return uint256(x);
+    }
     // ---------------------- operation ---------------------------
     function op_p_transferRootOwnership(uint8 fix_r, address p_r) public {
         // requirements
@@ -388,7 +396,7 @@ contract TestPNS is EchidnaInit {
         assert(address(C[p_idx].priceFeed())        == address(_c_price_feed[p_idx]));
     }
 
-    function op_c_setPrice(bool idx, uint16[] memory bpl, uint16[] memory rpl, uint8 bpl_min, uint8 rpl_min) public {
+    function op_c_setPrice(bool idx, uint24[] memory bpl, uint24[] memory rpl, uint8 bpl_min, uint8 rpl_min) public {
         // requirements
         require(bpl.length > 0);
         require(rpl.length > 0);
@@ -859,5 +867,144 @@ contract TestPNS is EchidnaInit {
     }
 
     // ------------------------ state check ------------------------
+    function st_p_getName(uint8 addr_idx, address addr1) public view {
+        // param generation
+        address addr = addr1;
 
+        if (addr_idx < 200) {
+            uint slen = SENDER_POOL.length();
+
+            addr_idx = uint8(addr_idx % (slen + 2));
+            if (addr_idx < slen) {
+                addr = SENDER_POOL.at(addr_idx);
+            }
+            else {
+                addr = address(NFT[addr_idx - slen]);
+            }
+        }
+
+        // assertion
+        uint256 tok = _pns_info_name_tbl[addr];
+        uint256 get = P.getName(addr);
+
+        if (_pns_owner_tbl.contains(tok) &&
+            (addr == _pns_owner_tbl.get(tok) ||
+             addr == _pns_approve_tbl[tok])) {
+            assert(get == tok);
+        }
+        else {
+            assert(get == 0);
+        }
+    }
+
+    function st_p_bounded(uint8 tok_idx, uint256 tok1) public view {
+        // param generation
+        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+
+        // assertion
+        assert(P.bounded(tok) == _pns_bound_set.contains(tok));
+    }
+
+    function st_p_nameExpired(uint8 tok_idx, uint256 tok1) public view {
+        // param generation
+        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+
+        // assertion
+        bool get = P.nameExpired(tok);
+
+        if (_pns_sld_set.contains(tok)) {
+            assert(get == (_pns_sld_expire_tbl[tok] + GRACE_PERIOD < block.timestamp));
+        }
+        else if (_pns_sd_set.contains(tok)) {
+            assert(get == (_pns_sld_expire_tbl[_pns_sd_origin_tbl[tok]] + GRACE_PERIOD < block.timestamp));
+        }
+        else {
+            assert(get == (GRACE_PERIOD < block.timestamp));
+        }
+    }
+
+    function st_p_available(uint8 tok_idx, uint256 tok1) public view {
+        // param generation
+        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+
+        // assertion
+        assert(P.available(tok) == (_pns_sld_set.contains(tok) || _pns_sd_set.contains(tok)));
+    }
+
+    function st_c_totalRegisterPrice(bool idx_idx, string memory name, uint256 dur) public view {
+        // param generation
+        uint idx = idx_idx ? 1 : 0;
+
+        uint l1 = _c_base_prices.length;
+        if (bytes(name).length < l1) {
+            l1 = bytes(name).length;
+        }
+
+        uint l2 = _c_rent_prices.length;
+        if (bytes(name).length < l2) {
+            l2 = bytes(name).length;
+        }
+
+        // avoid model fail, when implement will fail
+        if (l1 == 0) {
+            l1 = 1;
+        }
+
+        if (l2 == 0) {
+            l2 = 1;
+        }
+
+        uint dollar_per_eth = h_get_price(idx);
+
+        // assertion, use uint512 to avoid overflow
+        Math512.uint512 memory cost = Math512.from(_c_rent_prices[idx][l2 - 1]);
+
+        cost = cost.mul_nc(dur);
+        cost = cost.add_io(_c_base_prices[idx][l1 - 1] * SECONDS_PER_YEAR); // assume here not overflow
+        cost = cost.mul_nc(10**18).mul_nc(10**8);
+        cost = cost.div128_dr(uint128(SECONDS_PER_YEAR));
+        cost = cost.div128_dr(uint128(dollar_per_eth));
+
+        if (cost.hi > 0) {
+            assert(1 == 1);
+        }
+
+        uint256 get = C[idx].totalRegisterPrice(name, dur);
+
+        assert(cost.hi == 0); // is cost.hi != 0, C[idx].totalRegisterPrice will revert
+        assert(cost.lo == get);
+    }
+
+    function st_c_renewPrice(bool idx_idx, string memory name, uint256 dur) public view {
+        // param generation
+        uint idx = idx_idx ? 1 : 0;
+
+        uint l = _c_rent_prices.length;
+        if (bytes(name).length < l) {
+            l = bytes(name).length;
+        }
+
+        // avoid model fail, when implement will fail
+        if (l == 0) {
+            l = 1;
+        }
+
+        uint dollar_per_eth = h_get_price(idx);
+
+        // assertion
+        Math512.uint512 memory cost = Math512.from(_c_rent_prices[idx][l - 1]);
+
+        cost = cost.mul_nc(dur);
+        cost = cost.mul_nc(10**18).mul_nc(10**8);
+        cost = cost.div128_dr(uint128(SECONDS_PER_YEAR)).div128_dr(uint128(dollar_per_eth));
+
+        if (cost.hi > 0) {
+            assert(1 == 1);
+        }
+
+        uint256 get = C[idx].renewPrice(name, dur);
+
+        assert(cost.hi == 0); // will fail if implement not revert
+        assert(cost.lo == get);
+    }
 }
