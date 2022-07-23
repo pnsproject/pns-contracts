@@ -155,7 +155,7 @@ contract TestPNS is EchidnaInit {
         // requirements
 
         // param generation
-        if (fix_r < 250) {
+        if (fix_r < 200) {
             p_r = h_sel_sender(fix_r);
         }
         else {
@@ -188,7 +188,7 @@ contract TestPNS is EchidnaInit {
         // requirements
 
         // param generation
-        if (fix_r < 250) {
+        if (fix_r < 200) {
             p_r = h_sel_sender(fix_r);
         }
         else {
@@ -322,7 +322,7 @@ contract TestPNS is EchidnaInit {
         // requirements
 
         // param generation
-        uint256 p_w = (w < 250) ? 1 : 0;
+        uint256 p_w = (w < 200) ? 1 : 0;
 
         // update state
         bool ok = msg.sender == _pns_root;
@@ -347,9 +347,9 @@ contract TestPNS is EchidnaInit {
         uint p_idx = idx ? 1 : 0;
 
         // 0~7
-        bool fl_is_live    = fl_b0 < 250;
-        bool fl_is_open    = fl_b1 < 250;
-        bool fl_can_redeem = fl_b2 < 205;
+        bool fl_is_live    = fl_b0 < 200;
+        bool fl_is_open    = fl_b1 < 200;
+        bool fl_can_redeem = fl_b2 < 200;
 
         uint256 p_fl =
             (fl_is_live    ? 1 : 0) |
@@ -502,8 +502,8 @@ contract TestPNS is EchidnaInit {
         }
 
         // param generation
-        address to = h_sel_sender_alt(to_idx, 250, to1);
-        string memory name = h_sel_word_alt(name_idx, 250, name1);
+        address to = h_sel_sender_alt(to_idx, 200, to1);
+        string memory name = h_sel_word_alt(name_idx, 200, name1);
 
         uint256 ptok;
 
@@ -517,7 +517,7 @@ contract TestPNS is EchidnaInit {
             }
         }
         else {
-            ptok = h_sel_token_alt(ptok_idx, 250, ptok1);
+            ptok = h_sel_token_alt(ptok_idx, 200, ptok1);
         }
 
         uint256 stok = h_namehash(name, ptok);
@@ -585,7 +585,7 @@ contract TestPNS is EchidnaInit {
     function op_p_burn(uint8 tok_idx, uint256 tok1) public {
         // requirements
         // param generation
-        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
 
         // update state
         bool ok;
@@ -636,7 +636,7 @@ contract TestPNS is EchidnaInit {
     function op_p_bound(uint8 tok_idx, uint256 tok1) public {
         // requirements
         // param generation
-        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
 
         // update state
         bool ok = false;
@@ -899,7 +899,7 @@ contract TestPNS is EchidnaInit {
 
     function st_p_bounded(uint8 tok_idx, uint256 tok1) public view {
         // param generation
-        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
 
         // assertion
         assert(P.bounded(tok) == _pns_bound_set.contains(tok));
@@ -907,7 +907,7 @@ contract TestPNS is EchidnaInit {
 
     function st_p_nameExpired(uint8 tok_idx, uint256 tok1) public view {
         // param generation
-        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
 
         // assertion
         bool get = P.nameExpired(tok);
@@ -925,7 +925,7 @@ contract TestPNS is EchidnaInit {
 
     function st_p_available(uint8 tok_idx, uint256 tok1) public view {
         // param generation
-        uint256 tok = h_sel_token_alt(tok_idx, 250, tok1);
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
 
         // assertion
         assert(P.available(tok) == (_pns_sld_set.contains(tok) || _pns_sd_set.contains(tok)));
