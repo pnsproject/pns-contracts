@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org053bb06)
-2.  [模糊测试](#org04c23df)
-    1.  [合约分析](#org97a6ff1)
-        1.  [常数](#org8441da8)
-        2.  [状态](#orga59bceb)
-        3.  [辅助状态和辅助合约](#orgba0150d)
-        4.  [操作与断言](#org0531565)
-        5.  [辅助操作与状态断言](#org54f0d65)
-    2.  [初始化](#orgeed7e28)
-    3.  [测试代码风格](#org2bdfe77)
+1.  [单元测试](#org3c698e5)
+2.  [模糊测试](#orgc0c38c4)
+    1.  [合约分析](#org3edbfdd)
+        1.  [常数](#org01645da)
+        2.  [状态](#org68e9d90)
+        3.  [辅助状态和辅助合约](#orgdfe780a)
+        4.  [操作与断言](#orged1b033)
+        5.  [辅助操作与状态断言](#orgef291cd)
+    2.  [初始化](#orgcaddb8c)
+    3.  [测试代码风格](#org306b2e4)
 
 
 
-<a id="org053bb06"></a>
+<a id="org3c698e5"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org04c23df"></a>
+<a id="orgc0c38c4"></a>
 
 # 模糊测试
 
 
-<a id="org97a6ff1"></a>
+<a id="org3edbfdd"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org8441da8"></a>
+<a id="org01645da"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orga59bceb"></a>
+<a id="org68e9d90"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgba0150d"></a>
+<a id="orgdfe780a"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org0531565"></a>
+<a id="orged1b033"></a>
 
 ### 操作与断言
 
@@ -1029,8 +1029,8 @@ Controller合约包括如下状态：
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
-        -   `balanceOf(_c*_root) == balanceOf~(_c*_root) + price`
-        -   `balanceOf(_msgSender()) == balanceOf~(_msgSender()) + ~msg.value - price`
+        -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + price`
+        -   `balanceOf(_msgSender()) == balanceOf#(_msgSender()) + ~msg.value - price`
     -   参数
         -   name：一半概率随机，一半概率从WORD\_SET随机
         -   to：大概率随机从SENDER\_POOL选，小概率随机
@@ -1039,7 +1039,7 @@ Controller合约包括如下状态：
     -   说明
         -   price：C\*.totalRegisterPrice(name, dur)，totalRegisterPrice需要进行状态断言测试
         -   stok：name和C\*\_BASE\_NODE组合的哈希
-        -   balanceOf~表示调用操作前的资产
+        -   balanceOf#表示调用操作前的资产
 -   `Controller.nameRegisterWithConfig(name, to, dur, set_name, khs, vls)`
     -   约束
         -   包含Controller.nameRegister约束
@@ -1220,7 +1220,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org54f0d65"></a>
+<a id="orgef291cd"></a>
 
 ### 辅助操作与状态断言
 
@@ -1568,7 +1568,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgeed7e28"></a>
+<a id="orgcaddb8c"></a>
 
 ## 初始化
 
@@ -1610,7 +1610,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org2bdfe77"></a>
+<a id="org306b2e4"></a>
 
 ## 测试代码风格
 

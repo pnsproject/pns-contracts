@@ -419,8 +419,8 @@ Controller合约包括如下状态：
     + ~P.origin(stok) == stok~
     + ~P.parent(stok) == stok~
     + ~!P.available(stok)~
-    + ~balanceOf(_c*_root) == balanceOf~(_c*_root) + price~
-    + ~balanceOf(_msgSender()) == balanceOf~(_msgSender()) + ~msg.value - price~
+    + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + price~
+    + ~balanceOf(_msgSender()) == balanceOf#(_msgSender()) + ~msg.value - price~
   - 参数
     + name：一半概率随机，一半概率从WORD_SET随机
     + to：大概率随机从SENDER_POOL选，小概率随机
@@ -429,7 +429,7 @@ Controller合约包括如下状态：
   - 说明
     + price：C*.totalRegisterPrice(name, dur)，totalRegisterPrice需要进行状态断言测试
     + stok：name和C*_BASE_NODE组合的哈希
-    + balanceOf~表示调用操作前的资产
+    + balanceOf#表示调用操作前的资产
 + ~Controller.nameRegisterWithConfig(name, to, dur, set_name, khs, vls)~
   - 约束
     + 包含Controller.nameRegister约束
