@@ -1370,19 +1370,24 @@ contract TestPNS is EchidnaInit {
         }
 
         bool ok3 = false;
-        if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
+        if (_c_can_redeem[a.idx]) {
             ok3 = true;
         }
 
         bool ok4 = false;
-        if (address(C[a.idx]) == _pns_root) {
-            ok4 = true;
-        }
-        if (_pns_manager_set.contains(address(C[a.idx]))) {
+        if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
             ok4 = true;
         }
 
-        ok = ok1 && ok2 && ok3 && ok4;
+        bool ok5 = false;
+        if (address(C[a.idx]) == _pns_root) {
+            ok5 = true;
+        }
+        if (_pns_manager_set.contains(address(C[a.idx]))) {
+            ok5 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5;
     }
 
     function op_c_nameRedeem(CNameRedeemFuzzingArgs memory fa) public {

@@ -455,6 +455,7 @@ Controller合约包括如下状态：
   - 约束
     + ~block.timestamp < dl~
     + ~recover(keccak256(keccak256(name), to, dur, dl, block.chainid, C*), c) ∈ { _c*_root, _c*_manager_set }~
+    + _c*_can_redeem
     + 铸造约束
       - ~stok ∉ _pns_owner_tbl~
       - ~to ≠ 0~
