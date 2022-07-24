@@ -157,6 +157,18 @@ contract TestPNS is EchidnaInit {
 
         return uint256(x);
     }
+
+    function h_sign_hash(uint256 sk, bytes32 hash) internal returns(bytes memory) {
+        (uint8 v, bytes32 r, bytes32 s) = HEVM.sign(sk, hash);
+
+        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
+            s = bytes32(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - uint256(s));
+            v = (v == 28) ? 27 : 28;
+        }
+
+        return abi.encodePacked(r, s, v);
+    }
+
     // ---------------------- operation ---------------------------
     function op_p_transferRootOwnership(uint8 fix_r, address p_r) public {
         // requirements
@@ -1243,6 +1255,173 @@ contract TestPNS is EchidnaInit {
             assert(keccak256(abi.encodePacked(P.getByHash(ca.khs[i], a.stok))) ==
                    keccak256(abi.encodePacked(ca.vls[i])));
         }
+    }
+
+    struct CNameRedeemFuzzingArgs {
+        bool idx_idx;
+        uint8 name_idx; string name1;
+        uint8 to_idx; address to1;
+        uint8 dur_idx; uint256 dur1;
+        uint8 dl_idx; uint256 dl1;
+        uint8 c_idx; bytes c1; uint8 c_name_idx;
+        uint8 c_to_idx; uint8 c_dur_idx; uint8 c_dl_idx;
+        uint8 c_chainid_idx; uint8 c_caddr_idx;
+        uint8 c_sign_idx;
+    }
+
+    struct CNameRedeemArgs {
+        uint idx;
+        string name;
+        address to;
+        uint256 dur;
+        uint256 dl;
+        bytes c;
+        uint256 stok;
+    }
+
+    function gen_c_nameRedeem(CNameRedeemFuzzingArgs memory fa)
+        internal
+        returns(CNameRedeemArgs memory a)
+    {
+        a.idx = fa.idx_idx ? 1 : 0;
+        a.name = h_sel_word_alt(fa.name_idx, 125, fa.name1);
+        a.to = h_sel_sender_alt(fa.to_idx, 200, fa.to1);
+
+        // dur
+        if (fa.dur_idx < 80) {
+            // < c_min_reg_dur
+            a.dur = fa.dur1 % _c_min_reg_dur[a.idx];
+        }
+        else if (fa.dur_idx < 160) {
+            a.dur = _c_min_reg_dur[a.idx];
+        }
+        else {
+            unchecked {
+                a.dur = fa.dur1 + _c_min_reg_dur[a.idx];
+            }
+        }
+
+        // dl
+        if (fa.dl_idx < 80) {
+            a.dl = fa.dl1 % block.timestamp;
+        }
+        else if (fa.dur_idx < 160) {
+            a.dl = block.timestamp;
+        }
+        else {
+            unchecked {
+                a.dl = fa.dur1 + block.timestamp; // overflow
+            }
+        }
+
+        //
+        if (fa.c_idx < 200) {
+            CNameRedeemArgs memory a1;
+
+            a1.name = a.name; a1.to = a.to; a1.dur = a.dur; a1.dl = a.dl;
+            if (fa.c_name_idx > 200) {
+                bytes(a1.name)[0] = 'a'; }
+            if (fa.c_to_idx   > 200) {
+                a1.to = address(uint160(a1.to) ^ 1); }
+            if (fa.c_dur_idx  > 200) {
+                a1.dur ^= 1; }
+            if (fa.c_dl_idx   > 200) {
+                a1.dl  ^= 1; }
+
+            uint chainid = block.chainid;
+            address caddr = address(C[a.idx]);
+
+            if (fa.c_chainid_idx > 200) {
+                chainid ^= 1; }
+            if (fa.c_caddr_idx   > 200) {
+                caddr = address(uint160(caddr) ^ 1); }
+
+            uint256 sk = SENDER_PK[h_sel_sender(fa.c_sign_idx)];
+
+            bytes32 label = keccak256(bytes(a1.name));
+            a.c = h_sign_hash(sk, keccak256(abi.encodePacked(label, a1.to, a1.dur, a1.dl, chainid, caddr)));
+        }
+        else {
+            a.c = fa.c1;
+        }
+
+        a.stok = h_namehash(a.name, C_BASE_NODE[a.idx]);
+    }
+
+    function cons_c_nameRedeem(CNameRedeemArgs memory a) internal view returns(bool ok) {
+        bool ok1 = false;
+        if (block.timestamp < a.dl) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        bytes32 hash = keccak256(abi.encodePacked(keccak256(bytes(a.name)),
+                                                  a.to,
+                                                  a.dur,
+                                                  a.dl,
+                                                  block.chainid,
+                                                  address(C[a.idx])));
+        (address sa,) = hash.tryRecover(a.c);
+        if (sa == _c_root[a.idx]) {
+            ok2 = true;
+        }
+        if (_c_manager_set[a.idx].contains(sa)) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
+            ok3 = true;
+        }
+
+        bool ok4 = false;
+        if (address(C[a.idx]) == _pns_root) {
+            ok4 = true;
+        }
+        if (_pns_manager_set.contains(address(C[a.idx]))) {
+            ok4 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4;
+    }
+
+    function op_c_nameRedeem(CNameRedeemFuzzingArgs memory fa) public {
+        // requirements
+        // param generation
+        CNameRedeemArgs memory a = gen_c_nameRedeem(fa);
+
+        // update state
+        bool ok = cons_c_nameRedeem(a);
+
+        if (ok) {
+            _pns_owner_tbl.set(a.stok, a.to);
+            _pns_token_set.add(a.stok);
+            _pns_sld_set.add(a.stok);
+            _pns_sld_expire_tbl[a.stok] = a.dur + block.timestamp;
+        }
+
+        // call op
+        uint256 ret =
+            abi.decode(h_c_call_assert(ok, a.idx,
+                                       abi.encodeWithSelector(C[a.idx].nameRedeem.selector,
+                                                              a.name,
+                                                              a.to,
+                                                              a.dur,
+                                                              a.dl,
+                                                              a.c)),
+                       (uint256));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        assert(ret == a.stok);
+        assert(P.ownerOf(a.stok) == a.to);
+        assert(P.expire(a.stok) == block.timestamp + a.dur);
+        assert(P.origin(a.stok) == a.stok);
+        assert(P.parent(a.stok) == a.stok);
+        assert(!P.available(a.stok));
     }
 
     // requirements
