@@ -901,7 +901,7 @@ contract TestPNS is EchidnaInit {
             _pns_owner_tbl.set(a.stok, a.to);
             _pns_token_set.add(a.stok);
             _pns_sld_set.add(a.stok);
-            _pns_sld_expire_tbl[a.stok] = a.dur;
+            _pns_sld_expire_tbl[a.stok] = a.dur + block.timestamp;
             if (set_name) {
                 _pns_info_name_tbl[a.to] = a.stok;
             }
@@ -935,7 +935,7 @@ contract TestPNS is EchidnaInit {
                    keccak256(abi.encodePacked(a.vls[i])));
         }
 
-        assert(P.expire(a.stok) == a.dur);
+        assert(P.expire(a.stok) == a.dur + block.timestamp);
         assert(P.origin(a.stok) == a.stok);
         assert(P.parent(a.stok) == a.stok);
         assert(!P.available(a.stok));
@@ -1048,7 +1048,7 @@ contract TestPNS is EchidnaInit {
         _pns_owner_tbl.set(a.stok, a.to);
         _pns_token_set.add(a.stok);
         _pns_sld_set.add(a.stok);
-        _pns_sld_expire_tbl[a.stok] = a.dur;
+        _pns_sld_expire_tbl[a.stok] = a.dur + block.timestamp;
     }
 
     function ast_c_nameRegister(CNameRegisterArgs memory a,
@@ -1060,7 +1060,7 @@ contract TestPNS is EchidnaInit {
 
         assert(ret == a.stok);
         assert(P.ownerOf(a.stok) == a.to);
-        assert(P.expire(a.stok) == a.dur);
+        assert(P.expire(a.stok) == a.dur + block.timestamp);
         assert(P.origin(a.stok) == a.stok);
         assert(P.parent(a.stok) == a.stok);
         assert(!P.available(a.stok));
