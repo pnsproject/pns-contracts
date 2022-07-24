@@ -8,6 +8,9 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+
 import "../pns/PNS.sol";
 import "../pns/PNSController.sol";
 import "../test/PriceOracle.sol";
@@ -81,6 +84,18 @@ contract TestPNS is EchidnaInit {
 
         if (idx >= len) {
             return address(C[idx - len]);
+        }
+        else {
+            return SENDER_POOL.at(idx);
+        }
+    }
+
+    function h_sel_sender_with_nft(uint8 idx) internal view returns(address) {
+        uint len = SENDER_POOL.length();
+        idx = uint8(idx % (2 + len));
+
+        if (idx >= len) {
+            return address(NFT[idx - len]);
         }
         else {
             return SENDER_POOL.at(idx);
@@ -1589,6 +1604,189 @@ contract TestPNS is EchidnaInit {
         assert(P.expire(stok) == _pns_sld_expire_tbl[stok]);
     }
 
+    function cons_domain_modifiable(uint256 tok) internal view returns(bool) {
+        bool ok1 = false;
+        if (_pns_mutable) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (msg.sender == _pns_root) {
+            ok2 = true;
+        }
+        if (_pns_manager_set.contains(msg.sender)) {
+            ok2 = true;
+        }
+        if (h_pns_owner_is(tok, msg.sender)) {
+            ok2 = true;
+        }
+        if (_pns_approve_tbl[tok] == msg.sender) {
+            ok2 = true;
+        }
+
+        return ok1 && ok2;
+    }
+
+    function cons_p_setName(address addr, uint256 tok) internal view returns(bool) {
+        bool ok1 = false;
+        if (_pns_mutable) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if ((msg.sender == _pns_root) || (_pns_manager_set.contains(msg.sender))) {
+            ok2 = true;
+        }
+
+        bool own_tok = false;
+        if (h_pns_owner_is(tok, msg.sender)) {
+            own_tok = true;
+        }
+        if (_pns_approve_tbl[tok] == msg.sender) {
+            own_tok = true;
+        }
+
+        bool own_addr = false;
+        if (addr == msg.sender) {
+            own_addr = true;
+        }
+        try Ownable(addr).owner() returns(address owner) {
+            if (owner == msg.sender) {
+                own_addr == true;
+            }
+        } catch {}
+
+        if (own_tok && own_addr) {
+            ok2 = true;
+        }
+
+        return ok1 && ok2;
+    }
+
+    function op_p_setName(uint8 addr_idx, address addr1,
+                          uint8 tok_idx, uint256 tok1) public {
+
+        // requirements
+        // param generation
+        address addr = addr1;
+        if (addr_idx < 200) {
+            addr = h_sel_sender_with_nft(addr_idx);
+        }
+
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
+
+        // update state
+        bool ok = cons_p_setName(addr, tok);
+
+        if (ok) {
+            _pns_info_name_tbl[addr] = tok;
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setName.selector, addr, tok));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        assert(P.getName(addr) == tok);
+    }
+
+    function op_p_setNftName(uint8 naddr_idx, address naddr1,
+                             uint8 nid_idx, uint256 nid1,
+                             uint8 tok_idx, uint256 tok1) public {
+        // requirements
+        // param generation
+        address naddr = naddr1;
+        if (naddr_idx < 100) {
+            naddr = address(NFT[0]);
+        }
+        else if (naddr_idx < 200) {
+            naddr = address(NFT[1]);
+        }
+
+        uint256 nid = nid1;
+        if (nid_idx < 200) {
+            nid = nid1 % 10;
+        }
+
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
+
+        address nowner = address(0);
+
+        try IERC721(naddr).ownerOf(nid) returns(address owner) {
+            nowner = owner;
+        } catch {}
+
+        // update state
+        bool ok1 = false;
+        if (cons_domain_modifiable(tok)) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (msg.sender == nowner) {
+            ok2 = true;
+        }
+        try IERC721(naddr).getApproved(nid) returns(address ret) {
+            if (ret == msg.sender) {
+                ok2 = true;
+            }
+        } catch {}
+        try IERC721(naddr).isApprovedForAll(nowner, msg.sender) returns(bool ret) {
+            if (ret) {
+                ok2 = true;
+            }
+        } catch {}
+
+        bool ok = ok1 && ok2;
+
+        if (ok) {
+            _pns_info_nft_name_tbl[naddr][nid] = tok;
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setNftName.selector,
+                                                   naddr, nid, tok));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        assert(P.getNftName(naddr, nid) == tok);
+    }
+
+    function op_p_addKeys(uint8[] memory keys_idx, string[] memory keys1) public {
+        // requirements
+        // param generation
+        uint len = (keys1.length > keys_idx.length) ? keys_idx.length : keys1.length;
+        string[] memory keys = new string[](len);
+
+        for (uint i = 0; i < len; i++) {
+            keys[i] = h_sel_word_alt(keys_idx[i], 200, keys1[i]);
+        }
+
+        // update state, no constraint
+        for (uint i = 0; i < keys.length; i++) {
+            uint256 hash = uint256(keccak256(bytes(keys[i])));
+            _pns_key_tbl[hash] = keys[i];
+        }
+
+        // call op
+        h_p_call_assert(true, abi.encodeWithSelector(P.addKeys.selector, keys));
+
+        // assertion
+        for (uint i = 0; i < keys.length; i++) {
+            string memory key = keys[i];
+            bytes32 hash = keccak256(bytes(key));
+
+            assert(keccak256(bytes(P.getKey(uint256(hash)))) == hash);
+        }
+    }
+
+
     // requirements
     // param generation
     // update state
@@ -1720,15 +1918,7 @@ contract TestPNS is EchidnaInit {
         address addr = addr1;
 
         if (addr_idx < 200) {
-            uint slen = SENDER_POOL.length();
-
-            addr_idx = uint8(addr_idx % (slen + 2));
-            if (addr_idx < slen) {
-                addr = SENDER_POOL.at(addr_idx);
-            }
-            else {
-                addr = address(NFT[addr_idx - slen]);
-            }
+            addr = h_sel_sender_with_nft(addr_idx);
         }
 
         // assertion
