@@ -372,7 +372,7 @@ Controller合约包括如下状态：
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
     + ~_pns_sld_set.add(stok)~
-    + ~_pns_sld_expire_tbl[stok] ← dur~
+    + ~_pns_sld_expire_tbl[stok] ← block.timestamp + dur~
     + ~_pns_info_name_tbl[to] ← stok if set_name~
     + ~∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record_tbl[stok][kh] ← vl~
   - 断言
@@ -381,7 +381,7 @@ Controller合约包括如下状态：
     + ~P.getName(to) == stok if set_name~
     + ~P.getManyByHash(khs, stok) == vls~
     + ~∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl~
-    + ~P.expire(stok) == dur~
+    + ~P.expire(stok) == block.timestamp + dur~
     + ~P.origin(stok) == stok~
     + ~P.parent(stok) == stok~
     + ~!P.available(stok)~
@@ -411,11 +411,11 @@ Controller合约包括如下状态：
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
     + ~_pns_sld_set.add(stok)~
-    + ~_pns_sld_expire_tbl[stok] ← dur~
+    + ~_pns_sld_expire_tbl[stok] ← block.timestamp + dur~
   - 断言
     + ~ret == stok~
     + ~P.ownerOf(stok) == to~
-    + ~P.expire(stok) == dur~
+    + ~P.expire(stok) == block.timestamp + dur~
     + ~P.origin(stok) == stok~
     + ~P.parent(stok) == stok~
     + ~!P.available(stok)~
@@ -464,18 +464,19 @@ Controller合约包括如下状态：
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
     + ~_pns_sld_set.add(stok)~
-    + ~_pns_sld_expire_tbl[stok] ← dur~
+    + ~_pns_sld_expire_tbl[stok] ← block.timestamp + dur~
   - 断言
     - ~ret == stok~
     - ~P.ownerOf(stok) == to~
-    - ~P.expire(stok) == dur~
+    - ~P.expire(stok) == block.timestamp + dur~
     - ~P.origin(stok) == stok~
     - ~P.parent(stok) == stok~
     - ~!P.available(stok)~
   - 参数
     - name、to、dur：参见nameRegister的说明
     - dl：大约等概率的，小于、等于和大于block.timestamp
-    - c：小概率随机字符串，大概率随机从SENDER_POOL选签名者，然后小概率随机改变用于签名的name、to、dur和dl的值进行签名；
+    - c：小概率随机字符串，大概率随机从SENDER_POOL选签名者，
+      然后小概率随机改变用于签名的name、to、dur、dl、chainid和合约地址的值进行签名；
   - 说明
     - stok：name和C*_BASE_NODE组合的哈希
 + ~Controller.renew(name, dur)~

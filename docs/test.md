@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org3c698e5)
-2.  [模糊测试](#orgc0c38c4)
-    1.  [合约分析](#org3edbfdd)
-        1.  [常数](#org01645da)
-        2.  [状态](#org68e9d90)
-        3.  [辅助状态和辅助合约](#orgdfe780a)
-        4.  [操作与断言](#orged1b033)
-        5.  [辅助操作与状态断言](#orgef291cd)
-    2.  [初始化](#orgcaddb8c)
-    3.  [测试代码风格](#org306b2e4)
+1.  [单元测试](#org96261c7)
+2.  [模糊测试](#orga52f531)
+    1.  [合约分析](#orga1eecdb)
+        1.  [常数](#org3db0947)
+        2.  [状态](#org7ddbaea)
+        3.  [辅助状态和辅助合约](#org757b858)
+        4.  [操作与断言](#org119a3f5)
+        5.  [辅助操作与状态断言](#orgb86f693)
+    2.  [初始化](#org6384bcb)
+    3.  [测试代码风格](#orgdf14bf7)
 
 
 
-<a id="org3c698e5"></a>
+<a id="org96261c7"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgc0c38c4"></a>
+<a id="orga52f531"></a>
 
 # 模糊测试
 
 
-<a id="org3edbfdd"></a>
+<a id="orga1eecdb"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org01645da"></a>
+<a id="org3db0947"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org68e9d90"></a>
+<a id="org7ddbaea"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgdfe780a"></a>
+<a id="org757b858"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="orged1b033"></a>
+<a id="org119a3f5"></a>
 
 ### 操作与断言
 
@@ -982,7 +982,7 @@ Controller合约包括如下状态：
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
         -   `_pns_sld_set.add(stok)`
-        -   `_pns_sld_expire_tbl[stok] ← dur`
+        -   `_pns_sld_expire_tbl[stok] ← block.timestamp + dur`
         -   `_pns_info_name_tbl[to] ← stok if set_name`
         -   `∀ (kh, vl) ∈ zip(khs, vls), _pns_info_record_tbl[stok][kh] ← vl`
     -   断言
@@ -991,7 +991,7 @@ Controller合约包括如下状态：
         -   `P.getName(to) == stok if set_name`
         -   `P.getManyByHash(khs, stok) == vls`
         -   `∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl`
-        -   `P.expire(stok) == dur`
+        -   `P.expire(stok) == block.timestamp + dur`
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
@@ -1021,11 +1021,11 @@ Controller合约包括如下状态：
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
         -   `_pns_sld_set.add(stok)`
-        -   `_pns_sld_expire_tbl[stok] ← dur`
+        -   `_pns_sld_expire_tbl[stok] ← block.timestamp + dur`
     -   断言
         -   `ret == stok`
         -   `P.ownerOf(stok) == to`
-        -   `P.expire(stok) == dur`
+        -   `P.expire(stok) == block.timestamp + dur`
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
@@ -1074,18 +1074,19 @@ Controller合约包括如下状态：
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
         -   `_pns_sld_set.add(stok)`
-        -   `_pns_sld_expire_tbl[stok] ← dur`
+        -   `_pns_sld_expire_tbl[stok] ← block.timestamp + dur`
     -   断言
         -   `ret == stok`
         -   `P.ownerOf(stok) == to`
-        -   `P.expire(stok) == dur`
+        -   `P.expire(stok) == block.timestamp + dur`
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
     -   参数
         -   name、to、dur：参见nameRegister的说明
         -   dl：大约等概率的，小于、等于和大于block.timestamp
-        -   c：小概率随机字符串，大概率随机从SENDER\_POOL选签名者，然后小概率随机改变用于签名的name、to、dur和dl的值进行签名；
+        -   c：小概率随机字符串，大概率随机从SENDER\_POOL选签名者，
+            然后小概率随机改变用于签名的name、to、dur、dl、chainid和合约地址的值进行签名；
     -   说明
         -   stok：name和C\*\_BASE\_NODE组合的哈希
 -   `Controller.renew(name, dur)`
@@ -1220,7 +1221,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="orgef291cd"></a>
+<a id="orgb86f693"></a>
 
 ### 辅助操作与状态断言
 
@@ -1568,7 +1569,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgcaddb8c"></a>
+<a id="org6384bcb"></a>
 
 ## 初始化
 
@@ -1610,7 +1611,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org306b2e4"></a>
+<a id="orgdf14bf7"></a>
 
 ## 测试代码风格
 
