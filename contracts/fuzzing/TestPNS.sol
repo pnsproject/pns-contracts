@@ -1429,6 +1429,166 @@ contract TestPNS is EchidnaInit {
         assert(!P.available(a.stok));
     }
 
+    struct CRenewFuzzingArgs {
+        bool idx_idx;
+        uint8 name_idx; string name1;
+        uint256 dur;
+        uint8 value_idx; uint256 value1;
+    }
+
+    function cons_c_renew(uint idx, uint256 dur, uint256 value, uint256 price, uint256 stok)
+        internal view
+        returns(bool ok)
+    {
+        bool ok1 = false;
+        if (_c_is_open[idx]) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (address(C[idx]) == _pns_root) {
+            ok2 = true;
+        }
+        if (_pns_manager_set.contains(address(C[idx]))) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (_pns_sld_set.contains(stok)) {
+            ok3 = true;
+        }
+
+        bool ok4 = false;
+        if (value >= price) {
+            ok4 = true;
+        }
+
+        bool ok5 = false;
+        unchecked {
+            if (_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD >
+                _pns_sld_expire_tbl[stok] + GRACE_PERIOD) {
+                ok5 = true;
+            }
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5;
+    }
+
+    function op_c_renew(CRenewFuzzingArgs memory fa) public {
+        // requirements
+        // param generation
+        uint idx = fa.idx_idx ? 1 : 0;
+        string memory name = h_sel_word_alt(fa.name_idx, 200, fa.name1);
+        uint256 dur = fa.dur;
+
+        uint256 stok = h_namehash(name, C_BASE_NODE[idx]);
+
+        string memory name_fixed = name;
+        if (bytes(name).length == 0) {
+            name_fixed = "1";
+        }
+        uint256 price = C[idx].renewPrice(name, dur);
+
+        uint256 value;
+        if (fa.value_idx < 80) {
+            value = fa.value1 % price;
+        }
+        else if (fa.value_idx < 160) {
+            value = price;
+        }
+        else {
+            value = (price + fa.value1) % address(this).balance;
+        }
+
+        // update state
+        bool ok = cons_c_renew(idx, dur, value, price, stok);
+
+        if (ok) {
+            _pns_sld_expire_tbl[stok] += dur;
+        }
+
+        // call op
+        uint256 balance_root   = _c_root[idx].balance;
+        uint256 balance_sender = msg.sender.balance;
+
+        h_c_call_with_value_assert(ok, idx, value,
+                                   abi.encodeWithSelector(C[idx].renew.selector,
+                                                          name, dur));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        uint256 balance_root_new = _c_root[idx].balance;
+        uint256 balance_sender_new = msg.sender.balance;
+
+        assert(P.expire(stok) == _pns_sld_expire_tbl[stok]);
+        assert(balance_root_new == balance_root + price);
+        assert(balance_sender_new == balance_sender + value - price);
+    }
+
+    function op_c_renewByManager(bool idx_idx, uint8 name_idx, uint256 dur1) public {
+        // requirements
+        // param generation
+        uint idx = idx_idx ? 1 : 0;
+        string memory name = h_sel_word(name_idx);
+        uint256 dur = dur1 % (5 * 365 days - 1 days + 1) + 1 days;
+
+        uint256 stok = h_namehash(name, C_BASE_NODE[idx]);
+        // update state
+        bool ok1 = false;
+        if (_c_is_live[idx]) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (msg.sender == _c_root[idx]) {
+            ok2 = true;
+        }
+        if (_c_manager_set[idx].contains(msg.sender)) {
+            ok2 = true;
+        }
+
+        bool ok3 = false;
+        if (address(C[idx]) == _pns_root) {
+            ok3 = true;
+        }
+        if (_pns_manager_set.contains(address(C[idx]))) {
+            ok3 = true;
+        }
+
+        bool ok4 = false;
+        if (_pns_sld_set.contains(stok)) {
+            ok4 = true;
+        }
+
+        bool ok5 = false;
+        unchecked {
+            if (_pns_sld_expire_tbl[stok] + GRACE_PERIOD + dur >
+                _pns_sld_expire_tbl[stok] + GRACE_PERIOD) {
+                ok5 = true;
+            }
+        }
+
+        bool ok = ok1 && ok2 && ok3 && ok4 && ok5;
+
+        if (ok) {
+            _pns_sld_expire_tbl[stok] += dur;
+        }
+
+        // call op
+        h_c_call_assert(ok, idx, abi.encodeWithSelector(C[idx].renewByManager.selector,
+                                                        name, dur));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        assert(P.expire(stok) == _pns_sld_expire_tbl[stok]);
+    }
+
     // requirements
     // param generation
     // update state
