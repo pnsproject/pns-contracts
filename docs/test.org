@@ -523,6 +523,7 @@ Controller合约包括如下状态：
 - ~_pns_mutable~
 - ~_msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }~
 
+下面是具体的说明：
 - ~PNS.setName(addr, tok)~
   - 约束
     + ~_pns_mutable~
@@ -530,7 +531,7 @@ Controller合约包括如下状态：
       + 管理权限：~_msgSender() ∈ { _pns_root, _pns_manager_set}~
       + addr和tok授权
         - ~_msgSender() ∈ { _pns_owner_tbl[tok], _pns_prove_tbl[tok] }~
-        - _msgSender() ∈ { addr, OwnableUpgradeable(addr).owner() }
+        - _msgSender() ∈ { addr, Ownable(addr).owner() }
   - 状态更新
     - _pns_info_name_tbl[addr] ← tok
   - 断言
@@ -543,8 +544,8 @@ Controller合约包括如下状态：
     + 域名修改
     + NFT代币的授权，即以下任意一项：
       - ~_msgSender() == nowner~
-      - ~_msgSender() == IERC721Upgradeable(naddr).getApproved(nid)~
-      - ~IERC721Upgradeable(naddr).isApprovedOrOwner(nowner, _msgSender())~
+      - ~_msgSender() == IERC721(naddr).getApproved(nid)~
+      - ~IERC721(naddr).isApprovedForAll(nowner, _msgSender())~
   - 状态更新
     - _pns_info_nft_name_tbl[naddr][nid] ← tok
   - 断言
@@ -554,7 +555,7 @@ Controller合约包括如下状态：
     - nid：大概0～9，小概率随机
     - tok：大概率从_pns_token_set随机选，小概率随机
   - 说明
-    + nowner：IERC721Upgradeable(naddr).owner(nid)
+    + nowner：IERC721(naddr).ownerOf(nid)
 - ~PNS.addKeys(keys)~
   - 无约束
   - 状态更新

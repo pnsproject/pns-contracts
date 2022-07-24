@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org9db765b)
-2.  [模糊测试](#org25ca617)
-    1.  [合约分析](#orgd40d26f)
-        1.  [常数](#org0ff5543)
-        2.  [状态](#org66b6500)
-        3.  [辅助状态和辅助合约](#org9a832e0)
-        4.  [操作与断言](#org46d1a00)
-        5.  [辅助操作与状态断言](#orgc5f86a9)
-    2.  [初始化](#org029a4ce)
-    3.  [测试代码风格](#org8782ed4)
+1.  [单元测试](#org7aef112)
+2.  [模糊测试](#orga4954cb)
+    1.  [合约分析](#org4ee39ce)
+        1.  [常数](#orgc0b4af4)
+        2.  [状态](#orgbb1c0c0)
+        3.  [辅助状态和辅助合约](#orgf4cacf6)
+        4.  [操作与断言](#org881716c)
+        5.  [辅助操作与状态断言](#org264f6f4)
+    2.  [初始化](#org3cc7e29)
+    3.  [测试代码风格](#orgd68a5bf)
 
 
 
-<a id="org9db765b"></a>
+<a id="org7aef112"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org25ca617"></a>
+<a id="orga4954cb"></a>
 
 # 模糊测试
 
 
-<a id="orgd40d26f"></a>
+<a id="org4ee39ce"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org0ff5543"></a>
+<a id="orgc0b4af4"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org66b6500"></a>
+<a id="orgbb1c0c0"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org9a832e0"></a>
+<a id="orgf4cacf6"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org46d1a00"></a>
+<a id="org881716c"></a>
 
 ### 操作与断言
 
@@ -1134,6 +1134,8 @@ Controller合约包括如下状态：
 -   `_pns_mutable`
 -   `_msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }`
 
+下面是具体的说明：
+
 -   `PNS.setName(addr, tok)`
     -   约束
         -   `_pns_mutable`
@@ -1141,7 +1143,7 @@ Controller合约包括如下状态：
             -   管理权限：~\_msgSender() ∈ { \_pns\_root, \_pns\_manager\_set}~
             -   addr和tok授权
                 -   `_msgSender() ∈ { _pns_owner_tbl[tok], _pns_prove_tbl[tok] }`
-                -   \_msgSender() ∈ { addr, OwnableUpgradeable(addr).owner() }
+                -   \_msgSender() ∈ { addr, Ownable(addr).owner() }
     -   状态更新
         -   \_pns\_info\_name\_tbl[addr] ← tok
     -   断言
@@ -1154,8 +1156,8 @@ Controller合约包括如下状态：
         -   域名修改
         -   NFT代币的授权，即以下任意一项：
             -   `_msgSender() == nowner`
-            -   `_msgSender() == IERC721Upgradeable(naddr).getApproved(nid)`
-            -   `IERC721Upgradeable(naddr).isApprovedOrOwner(nowner, _msgSender())`
+            -   `_msgSender() == IERC721(naddr).getApproved(nid)`
+            -   `IERC721(naddr).isApprovedForAll(nowner, _msgSender())`
     -   状态更新
         -   \_pns\_info\_nft\_name\_tbl[naddr][nid] ← tok
     -   断言
@@ -1165,7 +1167,7 @@ Controller合约包括如下状态：
         -   nid：大概0～9，小概率随机
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
     -   说明
-        -   nowner：IERC721Upgradeable(naddr).owner(nid)
+        -   nowner：IERC721(naddr).ownerOf(nid)
 -   `PNS.addKeys(keys)`
     -   无约束
     -   状态更新
@@ -1223,7 +1225,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="orgc5f86a9"></a>
+<a id="org264f6f4"></a>
 
 ### 辅助操作与状态断言
 
@@ -1571,7 +1573,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org029a4ce"></a>
+<a id="org3cc7e29"></a>
 
 ## 初始化
 
@@ -1613,7 +1615,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org8782ed4"></a>
+<a id="orgd68a5bf"></a>
 
 ## 测试代码风格
 
