@@ -492,18 +492,19 @@ Controller合约包括如下状态：
     + ~_pns_sld_expire_tbl[stok] += dur~
   - 断言
     + ~P.expire(stok) == _pns_sld_expire_tbl[stok]~
-    + ~balanceOf(_c*_root) == balanceOf~(_c*_root) + price~
-    + ~balanceOf(_msgSender()) == balanceOf~(_msgSender()) + msg.value - price~
+    + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + price~
+    + ~balanceOf(_msgSender()) == balanceOf#(_msgSender()) + msg.value - price~
   - 参数
     + name：小概率随机，大概率从WORD_SET随机选
     + dur：随机
   - 说明
     + stok：name和C*_BASE_NODE组合后的哈希
     + price：C*.renewPrice(name, dur)，Controller.renewPrice需要进行状态断言测试
-    + balanceOf~表示调用操作前的资产
+    + balanceOf#表示调用操作前的资产
 + ~Controller.renewByManager(name, dur)~
   - 约束
     + ~_c*_is_live~
+    + ~_msgSender() ∈ { _c*_root, _c*_manager_set }~
     + PNS权限约束
       - ~C* ∈ { _pns_root, _pns_manager_set }~
     + ~stok ∈ _pns_sld_set~
