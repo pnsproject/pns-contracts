@@ -184,6 +184,14 @@ contract TestPNS is EchidnaInit {
         return abi.encodePacked(r, s, v);
     }
 
+    function h_str_eq(string memory a, string memory b) internal pure returns(bool) {
+        return keccak256(bytes(a)) == keccak256(bytes(b));
+    }
+
+    function h_str_ary_eq(string[] memory a, string[] memory b) internal pure returns(bool) {
+        return keccak256(abi.encode(a)) == keccak256(abi.encode(b));
+    }
+
     // ---------------------- operation ---------------------------
     function op_p_transferRootOwnership(uint8 fix_r, address p_r) public {
         // requirements
@@ -955,11 +963,9 @@ contract TestPNS is EchidnaInit {
         if (set_name) {
             assert(P.getName(a.to) == a.stok);
         }
-        assert(keccak256(abi.encode(P.getManyByHash(a.khs, a.stok))) ==
-               keccak256(abi.encode(a.vls)));
+        assert(h_str_ary_eq(P.getManyByHash(a.khs, a.stok), a.vls));
         for (uint i = 0; i < a.khs.length; i++) {
-            assert(keccak256(abi.encodePacked(P.getByHash(a.khs[i], a.stok))) ==
-                   keccak256(abi.encodePacked(a.vls[i])));
+            assert(h_str_eq(P.getByHash(a.khs[i], a.stok), a.vls[i]));
         }
 
         assert(P.expire(a.stok) == a.dur + block.timestamp);
@@ -1263,12 +1269,10 @@ contract TestPNS is EchidnaInit {
             assert(P.getName(a.to) == a.stok);
         }
 
-        assert(keccak256(abi.encode(P.getManyByHash(ca.khs, a.stok))) ==
-               keccak256(abi.encode(ca.vls)));
+        assert(h_str_ary_eq(P.getManyByHash(ca.khs, a.stok), ca.vls));
 
         for (uint i = 0; i < ca.khs.length; i++) {
-            assert(keccak256(abi.encodePacked(P.getByHash(ca.khs[i], a.stok))) ==
-                   keccak256(abi.encodePacked(ca.vls[i])));
+            assert(h_str_eq(P.getByHash(ca.khs[i], a.stok), ca.vls[i]));
         }
     }
 
@@ -1786,12 +1790,195 @@ contract TestPNS is EchidnaInit {
         }
     }
 
+    function op_p_setByHash(uint8 h_idx, uint256 h1,
+                            string memory v,
+                            uint8 tok_idx, uint256 tok1) public {
+        // requirements
+        // param generation
+        uint256 h = h1;
+        if (h_idx < 200) {
+            h = uint256(keccak256(bytes(h_sel_word(h_idx))));
+        }
 
-    // requirements
-    // param generation
-    // update state
-    // call op
-    // assertion
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
+
+        // update state
+        bool ok1 = false;
+        if (cons_domain_modifiable(tok)) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (bytes(_pns_key_tbl[tok]).length > 0) {
+            ok2 = true;
+        }
+
+        bool ok = ok1 && ok2;
+
+        if (ok) {
+            _pns_info_record_tbl[tok][h] = v;
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setByHash.selector, h, v, tok));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        assert(h_str_eq(P.getByHash(h, tok), v));
+    }
+
+    function op_p_setManyByHash(uint8[] memory hs_idx, uint256[] memory hs1,
+                                uint8 vs_idx, string[] memory vs1,
+                                uint8 tok_idx, uint256 tok1) public {
+        // requirements
+        // param generation
+        uint len = hs_idx.length;
+        if (hs1.length < len) { len = hs1.length; }
+
+        string[] memory vs = vs1;
+
+        if (vs_idx < 200) { // all has equal len
+            if (vs1.length < len) { len = vs1.length; }
+            vs = new string[](len);
+            for (uint i = 0; i < len; i++) { vs[i] = vs1[i]; }
+        }
+
+        uint256[] memory hs = new uint256[](len);
+        for (uint i = 0; i < len; i++) {
+            if (hs_idx[i] < 200) {
+                hs[i] = uint256(keccak256(bytes(h_sel_word(hs_idx[i]))));
+            }
+            else {
+                hs[i] = hs1[i];
+            }
+        }
+
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
+
+        // update state
+        bool ok1 = false;
+        if (cons_domain_modifiable(tok)) {
+            ok1 = true;
+        }
+
+        bool ok2 = true;
+        for (uint i = 0; i < hs.length; i++) {
+            if (bytes(_pns_key_tbl[hs[i]]).length == 0) {
+                ok2 = false;
+            }
+        }
+
+        bool ok3 = false;
+        if (hs.length == vs.length) {
+            ok3 = true;
+        }
+
+        bool ok = ok1 && ok2 && ok3;
+
+        if (ok) {
+            for (uint i = 0; i < hs.length; i++) {
+                _pns_info_record_tbl[tok][hs[i]] = vs[i];
+            }
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setManyByHash.selector, hs, vs, tok));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        for (uint i = 0; i < hs.length; i++) {
+            assert(h_str_eq(P.getByHash(hs[i], tok), vs[i]));
+        }
+
+        assert(h_str_ary_eq(P.getManyByHash(hs, tok), vs));
+    }
+
+    function op_p_setlink(uint8 tok_idx, uint256 tok1,
+                          uint256 tgt, uint256 v) public {
+        // requirements
+        // param generation
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
+
+        // update state
+        bool ok = cons_domain_modifiable(tok);
+
+        if (ok) {
+            _pns_info_link_tbl[tok][tgt] = v;
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setlink.selector, tok, tgt, v));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        assert(P.getlink(tok, tgt) == v);
+    }
+
+    function op_p_setlinks(uint8 tok_idx, uint256 tok1,
+                           uint256[] memory tgts1,
+                           uint8 vs_idx, uint256[] memory vs1) public {
+        // requirements
+        // param generation
+        uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
+
+        uint len = tgts1.length;
+
+        uint256[] memory vs = vs1;
+        if (vs_idx < 200) {
+            if (vs1.length < len) {
+                len = vs1.length;
+            }
+
+            vs = new uint256[](len);
+            for (uint i = 0; i < len; i++) { vs[i] = vs1[i]; }
+        }
+
+        uint256[] memory tgts = new uint256[](len);
+        for (uint i = 0; i < len; i++) { tgts[i] = tgts1[i]; }
+
+        // update state
+        bool ok1 = false;
+        if (cons_domain_modifiable(tok)) {
+            ok1 = true;
+        }
+
+        bool ok2 = false;
+        if (vs.length == tgts.length) {
+            ok2 = true;
+        }
+
+        bool ok = ok1 && ok2;
+
+        if (ok) {
+            for (uint i = 0; i < tgts.length; i++) {
+                _pns_info_link_tbl[tok][tgts[i]] = vs[i];
+            }
+        }
+
+        // call op
+        h_p_call_assert(ok, abi.encodeWithSelector(P.setlinks.selector, tok, tgts, vs));
+
+        if (!ok) {
+            return;
+        }
+
+        // assertion
+        for (uint i = 0; i < tgts.length; i++) {
+            assert(P.getlink(tok, tgts[i]) == vs[i]);
+        }
+
+        assert(keccak256(abi.encodePacked(P.getlinks(tok, tgts))) ==
+               keccak256(abi.encodePacked(vs)));
+    }
 
     // ----------------------- permission check --------------------
     function chk_p_register(string memory name, address to, uint256 dur, uint256 base) public {
