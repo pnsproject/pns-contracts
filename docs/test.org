@@ -584,11 +584,11 @@ Controller合约包括如下状态：
   - 状态更新
     + ~∀ (h,v) ∈ zip(hs, vs), _pns_info_record_tbl[tok][h] ← v~
   - 断言
-    + ~∀ (h,v) ∈ zip(hs, vs), P.getHash(h, tok) == v~
+    + ~∀ (h,v) ∈ zip(hs, vs), P.getByHash(h, tok) == v~
     + ~P.getManyByHash(hs, tok) == vs~
   - 参数
     + hs：长度随机，值大概率从WORD_SET随机取再然后哈希，小概率随机字符串再哈希，小概率随机
-    + vs：长度大概等于hs，小概率随机，值随机
+    + vs：长度大概率等于hs，小概率随机，值随机
     + tok：大概率从_pns_token_set随机，小概率随机
 - ~PNS.setlink(tok, tgt, v)~
   - 约束：域名修改
@@ -601,12 +601,14 @@ Controller合约包括如下状态：
     - tgt：随机
     - v：随机
 - ~PNS.setlinks(tok, tgts, vs)~
-  - 约束：域名修改
+  - 约束
+    + 域名修改
+    + tgts.length == vs.length
   - 状态更新
     + ~∀ (tgt, v) ∈ zip(tgts, vs), _pns_info_link_tbl[tok][tgt] ← v~
   - 断言
     + ~∀ (tgt, v) ∈ zip(tgts, vs), P.getlink(tok, tgt) == v~
-    + ~P.getlinks(tok, tgs) == vs~
+    + ~P.getlinks(tok, tgts) == vs~
   - 参数
     - tok：大概率从_pns_token_set随机选，小概率随机
     - tgts：随机

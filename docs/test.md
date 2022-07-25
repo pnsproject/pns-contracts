@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org7aef112)
-2.  [模糊测试](#orga4954cb)
-    1.  [合约分析](#org4ee39ce)
-        1.  [常数](#orgc0b4af4)
-        2.  [状态](#orgbb1c0c0)
-        3.  [辅助状态和辅助合约](#orgf4cacf6)
-        4.  [操作与断言](#org881716c)
-        5.  [辅助操作与状态断言](#org264f6f4)
-    2.  [初始化](#org3cc7e29)
-    3.  [测试代码风格](#orgd68a5bf)
+1.  [单元测试](#orgbaab9b2)
+2.  [模糊测试](#orgc8b0d47)
+    1.  [合约分析](#org12e5c2c)
+        1.  [常数](#orgd9905c6)
+        2.  [状态](#org88dc493)
+        3.  [辅助状态和辅助合约](#orga09a16c)
+        4.  [操作与断言](#org10a8b8d)
+        5.  [辅助操作与状态断言](#orgf687a90)
+    2.  [初始化](#orgf18984b)
+    3.  [测试代码风格](#org4821105)
 
 
 
-<a id="org7aef112"></a>
+<a id="orgbaab9b2"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orga4954cb"></a>
+<a id="orgc8b0d47"></a>
 
 # 模糊测试
 
 
-<a id="org4ee39ce"></a>
+<a id="org12e5c2c"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orgc0b4af4"></a>
+<a id="orgd9905c6"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgbb1c0c0"></a>
+<a id="org88dc493"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgf4cacf6"></a>
+<a id="orga09a16c"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org881716c"></a>
+<a id="org10a8b8d"></a>
 
 ### 操作与断言
 
@@ -1196,11 +1196,11 @@ Controller合约包括如下状态：
     -   状态更新
         -   `∀ (h,v) ∈ zip(hs, vs), _pns_info_record_tbl[tok][h] ← v`
     -   断言
-        -   `∀ (h,v) ∈ zip(hs, vs), P.getHash(h, tok) == v`
+        -   `∀ (h,v) ∈ zip(hs, vs), P.getByHash(h, tok) == v`
         -   `P.getManyByHash(hs, tok) == vs`
     -   参数
         -   hs：长度随机，值大概率从WORD\_SET随机取再然后哈希，小概率随机字符串再哈希，小概率随机
-        -   vs：长度大概等于hs，小概率随机，值随机
+        -   vs：长度大概率等于hs，小概率随机，值随机
         -   tok：大概率从\_pns\_token\_set随机，小概率随机
 -   `PNS.setlink(tok, tgt, v)`
     -   约束：域名修改
@@ -1213,19 +1213,21 @@ Controller合约包括如下状态：
         -   tgt：随机
         -   v：随机
 -   `PNS.setlinks(tok, tgts, vs)`
-    -   约束：域名修改
+    -   约束
+        -   域名修改
+        -   tgts.length == vs.length
     -   状态更新
         -   `∀ (tgt, v) ∈ zip(tgts, vs), _pns_info_link_tbl[tok][tgt] ← v`
     -   断言
         -   `∀ (tgt, v) ∈ zip(tgts, vs), P.getlink(tok, tgt) == v`
-        -   `P.getlinks(tok, tgs) == vs`
+        -   `P.getlinks(tok, tgts) == vs`
     -   参数
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
         -   tgts：随机
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org264f6f4"></a>
+<a id="orgf687a90"></a>
 
 ### 辅助操作与状态断言
 
@@ -1573,7 +1575,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org3cc7e29"></a>
+<a id="orgf18984b"></a>
 
 ## 初始化
 
@@ -1615,7 +1617,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="orgd68a5bf"></a>
+<a id="org4821105"></a>
 
 ## 测试代码风格
 
