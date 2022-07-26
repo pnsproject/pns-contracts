@@ -8,13 +8,13 @@ library Math512 {
         uint256 lo;
     }
 
-    function from(uint256 lo) pure public returns(uint512 memory res) {
+    function from(uint256 lo) pure internal returns(uint512 memory res) {
         res.hi = 0;
         res.lo = lo;
     }
 
     // NOTE, ignore overflow
-    function add_io(uint512 memory a, uint256 b) pure public returns(uint512 memory res) {
+    function add_io(uint512 memory a, uint256 b) pure internal returns(uint512 memory res) {
         res.hi = a.hi;
 
         unchecked {
@@ -26,7 +26,7 @@ library Math512 {
     }
 
     // NOTE: ignore underflow
-    function sub_iu(uint512 memory a, uint256 b) pure public returns(uint512 memory res) {
+    function sub_iu(uint512 memory a, uint256 b) pure internal returns(uint512 memory res) {
         res.hi = a.hi;
 
         unchecked {
@@ -40,7 +40,7 @@ library Math512 {
     uint256 constant MASK128 = 2 ** 128 - 1;
 
     // NOTE: here ci is pre accumulation of co, not from previous stage
-    function _add3(uint256 x, uint256 y, uint256 z, uint256 ci) pure public returns(uint256 s, uint256 co) {
+    function _add3(uint256 x, uint256 y, uint256 z, uint256 ci) pure internal returns(uint256 s, uint256 co) {
         s = x;
         co = ci;
 
@@ -60,7 +60,7 @@ library Math512 {
         uint256 _0;
     }
 
-    function mul(uint512 memory x, uint256 b) pure public returns(uint512 memory res, uint256 carry) {
+    function mul(uint512 memory x, uint256 b) pure internal returns(uint512 memory res, uint256 carry) {
         // split 128bit interger
         _uint_by_128 memory a;
 
@@ -115,13 +115,13 @@ library Math512 {
     }
 
     // mul, ensure no carry
-    function mul_nc(uint512 memory a, uint256 b) pure public returns(uint512 memory res) {
+    function mul_nc(uint512 memory a, uint256 b) pure internal returns(uint512 memory res) {
         uint256 c;
         (res, c) = mul(a, b);
         assert(c == 0);
     }
 
-    function div128(uint512 memory x, uint128 b) pure public returns(uint512 memory quo, uint128 rem) {
+    function div128(uint512 memory x, uint128 b) pure internal returns(uint512 memory quo, uint128 rem) {
         // split 128bit interger
         _uint_by_128 memory a;
 
@@ -148,7 +148,7 @@ library Math512 {
     }
 
     // div, drop remainder
-    function div128_dr(uint512 memory a, uint128 b) pure public returns(uint512 memory quo) {
+    function div128_dr(uint512 memory a, uint128 b) pure internal returns(uint512 memory quo) {
         (quo,) = div128(a, b);
     }
 }
