@@ -409,7 +409,8 @@ contract TestPNS is EchidnaInit {
         uint256 p_md = md % (365 days  - 1 hours + 1) + 1 hours;
 
         // PRICE0, PRICE1
-        address p_pf = address(PRICE[pf ? 1 : 0]);
+        uint pf_idx = pf ? 1 : 0;
+        address p_pf = address(PRICE[pf_idx]);
 
         // update state
         bool ok = false;
@@ -2067,7 +2068,8 @@ contract TestPNS is EchidnaInit {
         address owner = h_sel_sender(owner_idx);
 
         // update state & call op
-        NFT[idx ? 1 : 0].transferOwnership(owner);
+        uint p_idx = idx ? 1 : 0;
+        NFT[p_idx].transferOwnership(owner);
 
         // placeholder
         assert(1 < 2);
@@ -2080,7 +2082,8 @@ contract TestPNS is EchidnaInit {
         uint256 tok  = tok_idx % 10;
 
         // update state & call op
-        NFT[idx ? 1 : 0].safeTransferFrom(from, to, tok);
+        uint p_idx = idx ? 1 : 0;
+        NFT[p_idx].safeTransferFrom(from, to, tok);
 
         // placeholder
         assert(1 < 2);
@@ -2093,7 +2096,8 @@ contract TestPNS is EchidnaInit {
         // param generation
 
         // update state & call op
-        PriceOracle(address(PRICE[idx ? 1: 0])).updateAnswer(price);
+        uint p_idx = idx ? 1 : 0;
+        PriceOracle(address(PRICE[p_idx])).updateAnswer(price);
 
         // placeholder
         assert(1 < 2);
