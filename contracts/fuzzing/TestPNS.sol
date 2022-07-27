@@ -1810,7 +1810,7 @@ contract TestPNS is EchidnaInit {
         }
 
         bool ok2 = false;
-        if (bytes(_pns_key_tbl[tok]).length > 0) {
+        if (bytes(_pns_key_tbl[h]).length > 0) {
             ok2 = true;
         }
 
