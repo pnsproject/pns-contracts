@@ -719,7 +719,7 @@ Controller合约包括如下状态：
     + tok：大概率从_pns_token_set随机选，小概率随机
 + ~PNS.available(tok)~
   - 断言
-    + ~P.available(tok) == (tok ∈ {_pns_sld_set, _pns_sd_set})~
+    + ~P.available(tok) != (tok ∈ {_pns_sld_set, _pns_sd_set})~
   - 参数
     + tok：大概率从_pns_token_set随机选，小概率随机
   - 说明

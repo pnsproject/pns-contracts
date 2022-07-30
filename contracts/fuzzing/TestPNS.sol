@@ -2157,7 +2157,7 @@ contract TestPNS is EchidnaInit {
         uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
 
         // assertion
-        assert(P.available(tok) == (_pns_sld_set.contains(tok) || _pns_sd_set.contains(tok)));
+        assert(P.available(tok) != (_pns_sld_set.contains(tok) || _pns_sd_set.contains(tok)));
     }
 
     function st_c_totalRegisterPrice(bool idx_idx, string memory name, uint256 dur) public view {
