@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orgb5055b9)
-2.  [模糊测试](#org6d76476)
-    1.  [合约分析](#orgddd7883)
-        1.  [常数](#org2a6d0d1)
-        2.  [状态](#org59eabc4)
-        3.  [辅助状态和辅助合约](#org4a5557c)
-        4.  [操作与断言](#org68a9ae2)
-        5.  [辅助操作与状态断言](#org2e10686)
-    2.  [初始化](#orgfc1fa4e)
-    3.  [测试代码风格](#org58b55a7)
+1.  [单元测试](#org3705726)
+2.  [模糊测试](#org8296bfa)
+    1.  [合约分析](#orgf802d72)
+        1.  [常数](#orgcd22ecf)
+        2.  [状态](#org1675744)
+        3.  [辅助状态和辅助合约](#org7dfeb7f)
+        4.  [操作与断言](#org605e21d)
+        5.  [辅助操作与状态断言](#org18ab842)
+    2.  [初始化](#orgebe9288)
+    3.  [测试代码风格](#org105d7f2)
 
 
 
-<a id="orgb5055b9"></a>
+<a id="org3705726"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org6d76476"></a>
+<a id="org8296bfa"></a>
 
 # 模糊测试
 
 
-<a id="orgddd7883"></a>
+<a id="orgf802d72"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org2a6d0d1"></a>
+<a id="orgcd22ecf"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org59eabc4"></a>
+<a id="org1675744"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org4a5557c"></a>
+<a id="org7dfeb7f"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org68a9ae2"></a>
+<a id="org605e21d"></a>
 
 ### 操作与断言
 
@@ -952,7 +952,7 @@ Controller合约包括如下状态：
         -   `P.origin(tok) == rec.origin`
         -   `P.parent(tok) == rec.parent`
     -   **参数**
-        -   toks：长度随机，从 \_pns\_owner\_tbl 随机选
+        -   toks：长度随机，从 \_pns\_sld\_set 和 \_pns\_sd\_set 随机选，且不重复
         -   recs：和toks等长
             -   origin：一半概率是对应的tok，一半概率从 \_pns\_owner\_tbl 随机选
             -   expire：若origin是自身，则随机1天到5年，否则是0
@@ -1143,11 +1143,14 @@ Controller合约包括如下状态：
             -   管理权限：~\_msgSender() ∈ { \_pns\_root, \_pns\_manager\_set}~
             -   addr和tok授权
                 -   `_msgSender() ∈ { _pns_owner_tbl[tok], _pns_prove_tbl[tok] }`
-                -   \_msgSender() ∈ { addr, Ownable(addr).owner() }
+                -   `_msgSender() ∈ { addr, Ownable(addr).owner() }`
     -   状态更新
         -   \_pns\_info\_name\_tbl[addr] ← tok
     -   断言
-        -   P.getName(addr) == tok
+        -   若 `tok ∈ { _pns_owner_tbl[tok], _pns_prove_tbl[tok] }`
+            -   P.getName(addr) == tok
+        -   否则
+            -   P.getName(addr) == 0
     -   参数
         -   addr：大概率从SENDER\_POOL、NFT0和NFT1选，小概率随机
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
@@ -1227,7 +1230,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org2e10686"></a>
+<a id="org18ab842"></a>
 
 ### 辅助操作与状态断言
 
@@ -1575,7 +1578,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgfc1fa4e"></a>
+<a id="orgebe9288"></a>
 
 ## 初始化
 
@@ -1617,7 +1620,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org58b55a7"></a>
+<a id="org105d7f2"></a>
 
 ## 测试代码风格
 

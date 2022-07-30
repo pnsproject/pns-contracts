@@ -124,6 +124,23 @@ contract TestPNS is EchidnaInit {
         (tok, ) = _pns_owner_tbl.at(idx % _pns_owner_tbl.length());
     }
 
+    function h_sel_sld_sd_token(uint8 idx) internal view returns(uint256 tok) {
+        uint len_sld = _pns_sld_set.length();
+        uint len_sd  = _pns_sd_set.length();
+        uint len = len_sld + len_sd;
+
+        require(len_sd + len_sld > 0);
+
+        idx = uint8(idx % len);
+
+        if (idx >= len_sld) {
+            return _pns_sd_set.at(idx - len_sld);
+        }
+        else {
+            return _pns_sld_set.at(idx);
+        }
+    }
+
     function h_namehash(string memory prefix, uint256 base) internal pure returns(uint256) {
         return uint256(keccak256(abi.encodePacked(base, keccak256(bytes(prefix)))));
     }
@@ -756,6 +773,8 @@ contract TestPNS is EchidnaInit {
 
     function op_p_setMetadataBatch(SetMetadataBatchArg[] memory args) public {
         // requirements
+        require(_pns_sd_set.length() + _pns_sld_set.length() > 0);
+
         // param generation
         uint len = args.length;
 
@@ -765,10 +784,43 @@ contract TestPNS is EchidnaInit {
         for (uint i = 0; i < len; i++) {
             bool is_sld = args[i].origin_idx > 128;
 
-            toks[i] = h_sel_owned_token(args[i].tok_idx);
+            toks[i] = h_sel_sld_sd_token(args[i].tok_idx);
             recs[i].origin = is_sld ? toks[i] : h_sel_owned_token(args[i].origin_idx);
+
+            // here, re-evaluate is_sld
+            if (recs[i].origin == toks[i]) {
+                is_sld = true;
+            }
+
             recs[i].expire = is_sld ? (args[i].expire1 % (5 * 365 days - 1 days + 1) + 1 days) : 0;
             recs[i].parent = is_sld ? toks[i] : h_sel_owned_token(args[i].parent_idx);
+        }
+
+        uint len1 = 0;
+
+        for (uint i = 1; i < len; i++) { // get uniq list
+            for (uint j = 0; j < i; j++) {
+                if (toks[i] == toks[j]) {
+                    len1 = i;
+                    break;
+                }
+            }
+
+            if (len1 > 0) break;
+        }
+
+        if (len1 > 0) {
+            len = len1;
+            uint256[] memory toks1 = toks;
+            PNS.Record[] memory recs1 = recs;
+
+            toks = new uint256[](len);
+            recs = new PNS.Record[](len);
+
+            for (uint i = 0; i < len; i++) {
+                toks[i] = toks1[i];
+                recs[i] = recs1[i];
+            }
         }
 
         // update state
@@ -1695,7 +1747,14 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
-        assert(P.getName(addr) == tok);
+        if (_pns_owner_tbl.contains(tok) &&
+            (addr == _pns_owner_tbl.get(tok) ||
+             addr == _pns_approve_tbl[tok])) {
+            assert(P.getName(addr) == tok);
+        }
+        else {
+            assert(P.getName(addr) == 0);
+        }
     }
 
     function op_p_setNftName(uint8 naddr_idx, address naddr1,
