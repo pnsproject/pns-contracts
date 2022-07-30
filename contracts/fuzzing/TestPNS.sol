@@ -201,6 +201,14 @@ contract TestPNS is EchidnaInit {
         return abi.encodePacked(r, s, v);
     }
 
+    function h_sign_hash_eth(uint256 sk, bytes32 hash) internal returns(bytes memory) {
+        return h_sign_hash(sk, h_eth_prefix(hash));
+    }
+
+    function h_eth_prefix(bytes32 hash) internal pure returns(bytes32) {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+    }
+
     function h_str_eq(string memory a, string memory b) internal pure returns(bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
@@ -1407,7 +1415,7 @@ contract TestPNS is EchidnaInit {
             uint256 sk = SENDER_PK[h_sel_sender(fa.c_sign_idx)];
 
             bytes32 label = keccak256(bytes(a1.name));
-            a.c = h_sign_hash(sk, keccak256(abi.encodePacked(label, a1.to, a1.dur, a1.dl, chainid, caddr)));
+            a.c = h_sign_hash_eth(sk, keccak256(abi.encodePacked(label, a1.to, a1.dur, a1.dl, chainid, caddr)));
         }
         else {
             a.c = fa.c1;
@@ -1429,7 +1437,7 @@ contract TestPNS is EchidnaInit {
                                                   a.dl,
                                                   block.chainid,
                                                   address(C[a.idx])));
-        (address sa,) = hash.tryRecover(a.c);
+        (address sa,) = h_eth_prefix(hash).tryRecover(a.c);
         if (sa == _c_root[a.idx]) {
             ok2 = true;
         }
