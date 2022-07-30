@@ -2094,8 +2094,9 @@ contract TestPNS is EchidnaInit {
         _pns_owner_tbl.set(tok, to);
 
         // call op
-        h_p_call(abi.encodeWithSignature("safeTransferFrom(address,address,uint256)",
-                                         from, to, tok));
+        (bool ok, ) = h_p_call(abi.encodeWithSignature("safeTransferFrom(address,address,uint256)",
+                                                  from, to, tok));
+        require(ok); // ok or revert
 
         // placeholder
         assert(1 < 2);
@@ -2110,7 +2111,8 @@ contract TestPNS is EchidnaInit {
         _pns_approve_tbl[tok] = to;
 
         // call op
-        h_p_call(abi.encodeWithSelector(P.approve.selector, tok, to));
+        (bool ok, ) = h_p_call(abi.encodeWithSelector(P.approve.selector, tok, to));
+        require(ok); // ok or revert
 
         // placeholder
         assert(1 < 2);
