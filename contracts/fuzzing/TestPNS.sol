@@ -584,13 +584,7 @@ contract TestPNS is EchidnaInit {
         uint256 ptok;
 
         if ((msg.sender == _pns_root) || (_pns_manager_set.contains(msg.sender))) {
-            ptok_idx = uint8(ptok_idx % (len_sld + len_sd));
-            if (ptok_idx >= len_sld) {
-                ptok = _pns_sd_set.at(ptok_idx - len_sld);
-            }
-            else {
-                ptok = _pns_sld_set.at(ptok_idx);
-            }
+            ptok = h_sel_sld_sd_token(ptok_idx);
         }
         else {
             ptok = h_sel_token_alt(ptok_idx, 200, ptok1);
