@@ -325,6 +325,7 @@ Controller合约包括如下状态：
     + ~P.bounded(tok)~
   - 参数
     + tok：大概率从_pns_token_set随机选，小概率随机
+      - 若msgSender()因管理权限满足约束，则tok不能为0；
 + ~PNS.setMetadataBatch(toks, recs)~
   - 约束
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~

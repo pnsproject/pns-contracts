@@ -721,9 +721,11 @@ contract TestPNS is EchidnaInit {
 
         bool ok1 = false;
         if (msg.sender == _pns_root) {
+            require(tok != 0);
             ok1 = true;
         }
         if (_pns_manager_set.contains(msg.sender)) {
+            require(tok != 0);
             ok1 = true;
         }
         if (h_pns_owner_is(tok, msg.sender)) {
