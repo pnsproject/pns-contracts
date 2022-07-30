@@ -60,6 +60,9 @@ async function nft_init() {
     NFT[0] = await MacroNFT.deploy()
     NFT[1] = await MacroNFT.deploy()
 
+    await NFT[0].deployed()
+    await NFT[1].deployed()
+
     for (var i = 0; i < 10; i++) {
         await (await NFT[0].mint(SENDER_POOL[i % 3])).wait()
         await (await NFT[1].mint(SENDER_POOL[(i + 1) % 3])).wait()
@@ -73,12 +76,17 @@ async function price_init() {
     const PriceOracle = await ethers.getContractFactory("PriceOracle")
     PRICE[0] = await PriceOracle.deploy(Math.floor(79.2222 * 100000000))
     PRICE[1] = await PriceOracle.deploy(Math.floor(47.1234 * 100000000))
+
+    await PRICE[0].deployed()
+    await PRICE[1].deployed()
 }
 
 async function pns_and_controller_init() {
     // pns
     const PNS = await ethers.getContractFactory("PNS")
     P = await upgrades.deployProxy(PNS, [], { constructorArgs: [TEST_CONTRACT_ADDR] })
+
+    await P.deployed()
 
     // NOTE, ManagerOwnableUpgradeable will add deployer to manager set
     _pns_manager_set.push(_deployer.address)
@@ -91,6 +99,7 @@ async function pns_and_controller_init() {
 
         C[i] = await Controller.deploy(P.address, C_BASE_NODE[i], _c_base_prices[i],
                                        _c_rent_prices[i], _c_price_feed[i], TEST_CONTRACT_ADDR);
+        await C[i].deployed()
     }
 }
 
