@@ -13,8 +13,10 @@ import "./IPNS.sol";
 import "./IResolver.sol";
 
 import "../utils/RootOwnable.sol";
+import "../utils/StringUtils.sol";
 
 contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, ERC2771ContextUpgradeable {
+    using StringUtils for *;
 
     event ConfigUpdated(uint256 flags);
 
@@ -85,6 +87,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     }
 
     function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override  authorised(tokenId) returns (uint256) {
+        require(name.domainPrefixValid());
+
         // parent domain owner only
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(tokenId, label));
@@ -390,6 +394,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     }
 
     function register(string calldata name, address to, uint256 duration, uint256 baseNode) public override onlyManager returns(uint256) {
+        // require(name.domainPreifxValid()); // skip due this will check by mintSubdomain
         uint256 tokenId = mintSubdomain(to, baseNode, name);
         require(available(tokenId), "tokenId not available");
 

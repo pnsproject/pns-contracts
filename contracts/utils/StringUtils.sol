@@ -3,6 +3,34 @@
 pragma solidity >=0.8.4;
 
 library StringUtils {
+    // return true if s contain only '0-9A-Za-z' & '-', and is not empty
+    function domainPrefixValid(string calldata s) internal pure returns(bool) {
+        uint len = bytes(s).length;
+        if (len == 0) return false;
+
+        for (uint i = 0; i < len; i++) {
+            uint8 b = uint8(bytes(s)[i]);
+
+            // 0 ~ 9 -> 0x30 ~ 0x39
+            // A ~ Z -> 0x41 ~ 0x5A
+            // a ~ z -> 0x61 ~ 0x7A
+            // -     -> 0x2d
+            if (b == 0x2d) continue;
+
+            if (b < 0x30) return false;
+            if (b > 0x7A) return false;
+
+            if (b <= 0x39) continue;
+            if (b >= 0x61) continue;
+
+            if ((0x41 <= b) && (b <= 0x5A)) continue;
+
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * @dev Returns the length of a given string
      *

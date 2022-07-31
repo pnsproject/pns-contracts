@@ -91,6 +91,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
+        // require(name.domainPreifxValid()); // skip due this will check by _pns.register
         uint256 tokenId = _pns.register(name, to, duration, BASE_NODE);
 
         if (keyHashes.length > 0) {
@@ -105,7 +106,9 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function nameRegister(string calldata name, address to, uint256 duration) public override payable open returns(uint256) {
-        uint256 len = name.strlen();
+        // require(name.domainPreifxValid()); // skip due this will check by _pns.register
+
+        uint256 len = bytes(name).length;
         require(len >= MIN_REGISTRATION_LENGTH, "name too short");
         uint256 GRACE_PERIOD = _pns.GRACE_PERIOD();
         require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "overflow");
@@ -246,7 +249,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function basePrice(string memory name) view public override returns(uint256) {
-        uint256 len = name.strlen();
+        uint256 len = bytes(name).length;
         if(len > basePrices.length) {
             len = basePrices.length;
         }
@@ -256,7 +259,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function rentPrice(string memory name, uint256 duration) view public override returns(uint256) {
-        uint256 len = name.strlen();
+        uint256 len = bytes(name).length;
         if(len > rentPrices.length) {
             len = rentPrices.length;
         }
