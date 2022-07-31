@@ -2125,12 +2125,17 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
+        uint256[] memory vs_s = new uint256[](vs.length);
+        for (uint i = 0; i < vs_s.length; i++) {
+            vs_s[i] = _pns_info_link_tbl[tok][tgts[i]];
+        }
+
         for (uint i = 0; i < tgts.length; i++) {
-            assert(P.getlink(tok, tgts[i]) == vs[i]);
+            assert(P.getlink(tok, tgts[i]) == vs_s[i]);
         }
 
         assert(keccak256(abi.encodePacked(P.getlinks(tok, tgts))) ==
-               keccak256(abi.encodePacked(vs)));
+               keccak256(abi.encodePacked(vs_s)));
     }
 
     // ----------------------- permission check --------------------

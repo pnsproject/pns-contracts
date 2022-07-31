@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org33f2e4e)
-2.  [模糊测试](#orgb68bdba)
-    1.  [合约分析](#org514f984)
-        1.  [常数](#org79c8cf5)
-        2.  [状态](#orge5fbda6)
-        3.  [辅助状态和辅助合约](#org72d7f6a)
-        4.  [操作与断言](#org8c245da)
-        5.  [辅助操作与状态断言](#org1d47693)
-    2.  [初始化](#org15ee3b8)
-    3.  [测试代码风格](#orgfdee6be)
+1.  [单元测试](#org6342134)
+2.  [模糊测试](#org3b02e81)
+    1.  [合约分析](#orga864bfb)
+        1.  [常数](#orgec44413)
+        2.  [状态](#orgcb69c06)
+        3.  [辅助状态和辅助合约](#org9f4d760)
+        4.  [操作与断言](#orgc10e83f)
+        5.  [辅助操作与状态断言](#org3c952a6)
+    2.  [初始化](#org84dcbbf)
+    3.  [测试代码风格](#org2f9b551)
 
 
 
-<a id="org33f2e4e"></a>
+<a id="org6342134"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgb68bdba"></a>
+<a id="org3b02e81"></a>
 
 # 模糊测试
 
 
-<a id="org514f984"></a>
+<a id="orga864bfb"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org79c8cf5"></a>
+<a id="orgec44413"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orge5fbda6"></a>
+<a id="orgcb69c06"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org72d7f6a"></a>
+<a id="org9f4d760"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org8c245da"></a>
+<a id="orgc10e83f"></a>
 
 ### 操作与断言
 
@@ -1228,17 +1228,19 @@ Controller合约包括如下状态：
         -   域名修改
         -   tgts.length == vs.length
     -   状态更新
-        -   `∀ (tgt, v) ∈ zip(tgts, vs), _pns_info_link_tbl[tok][tgt] ← v`
+        -   `∀ (tgt, v) ∈ zip(tgts, vs#), _pns_info_link_tbl[tok][tgt] ← v`
     -   断言
-        -   `∀ (tgt, v) ∈ zip(tgts, vs), P.getlink(tok, tgt) == v`
-        -   `P.getlinks(tok, tgts) == vs`
+        -   `∀ (tgt, v) ∈ zip(tgts, vs#), P.getlink(tok, tgt) == v`
+        -   `P.getlinks(tok, tgts) == vs#`
     -   参数
         -   tok：大概率从\_pns\_token\_set随机选，小概率随机
         -   tgts：随机
         -   vs：大概率长度和tgts相同，小概率随机，值随机
+    -   说明
+        -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="org1d47693"></a>
+<a id="org3c952a6"></a>
 
 ### 辅助操作与状态断言
 
@@ -1588,7 +1590,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org15ee3b8"></a>
+<a id="org84dcbbf"></a>
 
 ## 初始化
 
@@ -1630,7 +1632,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="orgfdee6be"></a>
+<a id="org2f9b551"></a>
 
 ## 测试代码风格
 
