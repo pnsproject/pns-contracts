@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orge1a2c5e)
-2.  [模糊测试](#org0c45a31)
-    1.  [合约分析](#org9e80fce)
-        1.  [常数](#orgfb325ef)
-        2.  [状态](#orga0b5563)
-        3.  [辅助状态和辅助合约](#orgae73697)
-        4.  [操作与断言](#org1c3eaaf)
-        5.  [辅助操作与状态断言](#orgb656065)
-    2.  [初始化](#org37a8ff6)
-    3.  [测试代码风格](#org9309de6)
+1.  [单元测试](#org33f2e4e)
+2.  [模糊测试](#orgb68bdba)
+    1.  [合约分析](#org514f984)
+        1.  [常数](#org79c8cf5)
+        2.  [状态](#orge5fbda6)
+        3.  [辅助状态和辅助合约](#org72d7f6a)
+        4.  [操作与断言](#org8c245da)
+        5.  [辅助操作与状态断言](#org1d47693)
+    2.  [初始化](#org15ee3b8)
+    3.  [测试代码风格](#orgfdee6be)
 
 
 
-<a id="orge1a2c5e"></a>
+<a id="org33f2e4e"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org0c45a31"></a>
+<a id="orgb68bdba"></a>
 
 # 模糊测试
 
 
-<a id="org9e80fce"></a>
+<a id="org514f984"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orgfb325ef"></a>
+<a id="org79c8cf5"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orga0b5563"></a>
+<a id="orge5fbda6"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgae73697"></a>
+<a id="org72d7f6a"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org1c3eaaf"></a>
+<a id="org8c245da"></a>
 
 ### 操作与断言
 
@@ -990,8 +990,8 @@ Controller合约包括如下状态：
         -   `ret == stok`
         -   `P.ownerOf(stok) == to`
         -   `P.getName(to) == stok if set_name`
-        -   `P.getManyByHash(khs, stok) == vls`
-        -   `∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl`
+        -   `P.getManyByHash(khs, stok) == vls#`
+        -   `∀ (kh, vl) ∈ zip(khs, vls#), P.getByHash(kh, stok) == vl`
         -   `P.expire(stok) == block.timestamp + dur`
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
@@ -1006,6 +1006,7 @@ Controller合约包括如下状态：
     -   说明
         -   stok：name和C\*\_BASE\_NODE组合的哈希
         -   不对dur时间长度和name的字符长度限制
+        -   vls#：vls处理后的值，用于hls中有重复的情况，具体参加PNS.setManyByHash中vs#生成方法。
 -   `Controller.nameRegister(name, to, dur)`
     -   约束
         -   `_c*_is_open`
@@ -1057,12 +1058,14 @@ Controller合约包括如下状态：
     -   断言
         -   包含Controller.nameRegister断言
         -   `P.getName(to) == stok if set_name`
-        -   `P.getManyByHash(khs, stok) == vls`
-        -   `∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl`
+        -   `P.getManyByHash(khs, stok) == vls#`
+        -   `∀ (kh, vl) ∈ zip(khs, vls#), P.getByHash(kh, stok) == vl`
     -   参数
         -   除khs，vls外参数见Controller.nameRegister
         -   khs：极大概率从WORD\_SET选取后哈希，极小概率随机；
         -   vls：大概率和khs等长，值随机；
+    -   说明
+        -   vls#：见Controller.nameRegisterByManager相关说明；
 -   `Controller.nameRedeem(name, to, dur, dl, c)`
     -   约束
         -   `block.timestamp < dl`
@@ -1202,12 +1205,14 @@ Controller合约包括如下状态：
     -   状态更新
         -   `∀ (h,v) ∈ zip(hs, vs), _pns_info_record_tbl[tok][h] ← v`
     -   断言
-        -   `∀ (h,v) ∈ zip(hs, vs), P.getByHash(h, tok) == v`
-        -   `P.getManyByHash(hs, tok) == vs`
+        -   `∀ (h,v) ∈ zip(hs, vs#), P.getByHash(h, tok) == v`
+        -   `P.getManyByHash(hs, tok) == vs#`
     -   参数
         -   hs：长度随机，值大概率从WORD\_SET随机取再然后哈希，小概率随机字符串再哈希，小概率随机
         -   vs：长度大概率等于hs，小概率随机，值随机
         -   tok：大概率从\_pns\_token\_set随机，小概率随机
+    -   说明
+        -   vs#是vs处理后的值，用于处理hs中有重复元素的情况。通过从\_pns\_info\_record\_tbl[tok][h]的方式获取。
 -   `PNS.setlink(tok, tgt, v)`
     -   约束：域名修改
     -   状态更新
@@ -1233,7 +1238,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="orgb656065"></a>
+<a id="org1d47693"></a>
 
 ### 辅助操作与状态断言
 
@@ -1583,7 +1588,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org37a8ff6"></a>
+<a id="org15ee3b8"></a>
 
 ## 初始化
 
@@ -1625,7 +1630,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org9309de6"></a>
+<a id="orgfdee6be"></a>
 
 ## 测试代码风格
 

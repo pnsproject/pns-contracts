@@ -244,6 +244,22 @@ contract TestPNS is EchidnaInit {
     }
 
 
+    function h_bytes2str(bytes memory bs) internal pure returns(string memory) {
+        bytes memory res = "";
+        for (uint i = 0; i < bs.length; i++) {
+            if (i > 0) {
+                res = abi.encodePacked(res, ",", Strings.toHexString(uint8(bs[i]), 1));
+            }
+            else {
+                res = abi.encodePacked("[", Strings.toHexString(uint8(bs[i]), 1));
+            }
+        }
+
+        res = abi.encodePacked(res, "]");
+
+        return string(res);
+    }
+
     function debug(bytes memory str) internal {
         emit Debug(string(str));
     }
@@ -1046,14 +1062,20 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
+        string[] memory vls_s = new string[](a.vls.length);
+
+        for (uint i = 0; i < vls_s.length; i++) {
+            vls_s[i] = _pns_info_record_tbl[a.stok][a.khs[i]];
+        }
+
         assert(ret == a.stok);
         assert(P.ownerOf(a.stok) == a.to);
         if (set_name) {
             assert(P.getName(a.to) == a.stok);
         }
-        assert(h_str_ary_eq(P.getManyByHash(a.khs, a.stok), a.vls));
+        assert(h_str_ary_eq(P.getManyByHash(a.khs, a.stok), vls_s));
         for (uint i = 0; i < a.khs.length; i++) {
-            assert(h_str_eq(P.getByHash(a.khs[i], a.stok), a.vls[i]));
+            assert(h_str_eq(P.getByHash(a.khs[i], a.stok), vls_s[i]));
         }
 
         assert(P.expire(a.stok) == uint64(a.dur + block.timestamp));
@@ -1356,16 +1378,21 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
+        string[] memory vls_s = new string[](ca.vls.length);
+        for (uint i = 0; i < vls_s.length; i++) {
+            vls_s[i] = _pns_info_record_tbl[a.stok][ca.khs[i]];
+        }
+
         ast_c_nameRegister(a, balance_root, balance_sender, ret);
 
         if (fa.set_name) {
             assert(P.getName(a.to) == a.stok);
         }
 
-        assert(h_str_ary_eq(P.getManyByHash(ca.khs, a.stok), ca.vls));
+        assert(h_str_ary_eq(P.getManyByHash(ca.khs, a.stok), vls_s));
 
         for (uint i = 0; i < ca.khs.length; i++) {
-            assert(h_str_eq(P.getByHash(ca.khs[i], a.stok), ca.vls[i]));
+            assert(h_str_eq(P.getByHash(ca.khs[i], a.stok), vls_s[i]));
         }
     }
 
@@ -2004,11 +2031,25 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
-        for (uint i = 0; i < hs.length; i++) {
-            assert(h_str_eq(P.getByHash(hs[i], tok), vs[i]));
+        string[] memory vs_s = new string[](vs.length);
+        for (uint i = 0; i < vs_s.length; i++) {
+            vs_s[i] = _pns_info_record_tbl[tok][hs[i]];
         }
 
-        assert(h_str_ary_eq(P.getManyByHash(hs, tok), vs));
+        debug(abi.encodePacked("tok = ", Strings.toHexString(tok)));
+
+        for (uint i = 0; i < hs.length; i++) {
+            debug(abi.encodePacked(Strings.toString(i), "/", Strings.toString(hs.length),
+                                   ", hs[i] = ", Strings.toHexString(hs[i]),
+                                   ", vs_s[i] = ", h_bytes2str(bytes(vs_s[i])),
+                                   ", getByHash = ", h_bytes2str(bytes(P.getByHash(hs[i], tok)))));
+        }
+
+        for (uint i = 0; i < hs.length; i++) {
+            assert(h_str_eq(P.getByHash(hs[i], tok), vs_s[i]));
+        }
+
+        assert(h_str_ary_eq(P.getManyByHash(hs, tok), vs_s));
     }
 
     function op_p_setlink(uint8 tok_idx, uint256 tok1,

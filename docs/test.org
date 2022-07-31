@@ -380,8 +380,8 @@ Controller合约包括如下状态：
     + ~ret == stok~
     + ~P.ownerOf(stok) == to~
     + ~P.getName(to) == stok if set_name~
-    + ~P.getManyByHash(khs, stok) == vls~
-    + ~∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl~
+    + ~P.getManyByHash(khs, stok) == vls#~
+    + ~∀ (kh, vl) ∈ zip(khs, vls#), P.getByHash(kh, stok) == vl~
     + ~P.expire(stok) == block.timestamp + dur~
     + ~P.origin(stok) == stok~
     + ~P.parent(stok) == stok~
@@ -396,6 +396,7 @@ Controller合约包括如下状态：
   - 说明
     + stok：name和C*_BASE_NODE组合的哈希
     + 不对dur时间长度和name的字符长度限制
+    + vls#：vls处理后的值，用于hls中有重复的情况，具体参加PNS.setManyByHash中vs#生成方法。
 + ~Controller.nameRegister(name, to, dur)~
   - 约束
     + ~_c*_is_open~
@@ -447,12 +448,14 @@ Controller合约包括如下状态：
   - 断言
     + 包含Controller.nameRegister断言
     + ~P.getName(to) == stok if set_name~
-    + ~P.getManyByHash(khs, stok) == vls~
-    + ~∀ (kh, vl) ∈ zip(khs, vls), P.getByHash(kh, stok) == vl~
+    + ~P.getManyByHash(khs, stok) == vls#~
+    + ~∀ (kh, vl) ∈ zip(khs, vls#), P.getByHash(kh, stok) == vl~
   - 参数
     + 除khs，vls外参数见Controller.nameRegister
     + khs：极大概率从WORD_SET选取后哈希，极小概率随机；
     + vls：大概率和khs等长，值随机；
+  - 说明
+    + vls#：见Controller.nameRegisterByManager相关说明；
 + ~Controller.nameRedeem(name, to, dur, dl, c)~
   - 约束
     + ~block.timestamp < dl~
@@ -590,12 +593,14 @@ Controller合约包括如下状态：
   - 状态更新
     + ~∀ (h,v) ∈ zip(hs, vs), _pns_info_record_tbl[tok][h] ← v~
   - 断言
-    + ~∀ (h,v) ∈ zip(hs, vs), P.getByHash(h, tok) == v~
-    + ~P.getManyByHash(hs, tok) == vs~
+    + ~∀ (h,v) ∈ zip(hs, vs#), P.getByHash(h, tok) == v~
+    + ~P.getManyByHash(hs, tok) == vs#~
   - 参数
     + hs：长度随机，值大概率从WORD_SET随机取再然后哈希，小概率随机字符串再哈希，小概率随机
     + vs：长度大概率等于hs，小概率随机，值随机
     + tok：大概率从_pns_token_set随机，小概率随机
+  - 说明
+    + vs#是vs处理后的值，用于处理hs中有重复元素的情况。通过从_pns_info_record_tbl[tok][h]的方式获取。
 - ~PNS.setlink(tok, tgt, v)~
   - 约束：域名修改
   - 状态更新
