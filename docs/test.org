@@ -287,7 +287,8 @@ Controller合约包括如下状态：
     + to：大概率SENDER_POOL，小概率随机
     + ptok
       - 若 ~_msgSender() ∈ {_pns_manager_set, _pns_root}~ ，则从 ~{_pns_sld_set, _pns_sd_set}~ 中随机选择
-      - 否则，大概率从 _pns_token_set 中随机选择，小概率随机
+      - 否则，大概率从 _pns_token_set 中随机选择，小概率随机；
+      - 且不能是顶级域名，若属于_pns_owner_tbl，则必须在_pns_sld_set或_pns_sd_set中；
     + name：大概率从WORD_SET中随机选，小概率随机
   - 说明
     + stok为name和ptok组合后的哈希；

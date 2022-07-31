@@ -640,10 +640,17 @@ contract TestPNS is EchidnaInit {
 
         if ((msg.sender == _pns_root) || (_pns_manager_set.contains(msg.sender))) {
             ptok = h_sel_sld_sd_token(ptok_idx);
+
+            debug("ptok select from sld or sd");
         }
         else {
             ptok = h_sel_token_alt(ptok_idx, 200, ptok1);
+
+            debug("ptok random select ");
         }
+
+        // fix for tld
+        require(_pns_owner_tbl.contains(ptok) && (_pns_sld_set.contains(ptok) || _pns_sd_set.contains(ptok)));
 
         uint256 stok = h_namehash(name, ptok);
 
@@ -682,11 +689,21 @@ contract TestPNS is EchidnaInit {
             _pns_sd_set.add(stok);
             _pns_sd_parent_tbl[stok] = ptok;
 
+            debug(abi.encodePacked("ptok = ", Strings.toHexString(ptok)));
+
             if (_pns_sld_set.contains(ptok)) {
                 _pns_sd_origin_tbl[stok] = ptok;
+
+                debug(abi.encodePacked("ptok is sld, P.origin(ptok) = ",
+                                       Strings.toHexString(P.origin(ptok))));
             }
             else {
                 _pns_sd_origin_tbl[stok] = _pns_sd_origin_tbl[ptok];
+
+                debug(abi.encodePacked("ptok assume be sd, ptok.origin = ",
+                                       Strings.toHexString(_pns_sd_origin_tbl[ptok]),
+                                       ", P.origin(ptok) = ",
+                                       Strings.toHexString(P.origin(ptok))));
             }
 
             _pns_token_set.add(stok);
@@ -702,6 +719,10 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
+        debug(abi.encodePacked("name = ", h_bytes2str(bytes(name)),
+                               ", stok = ", Strings.toHexString(stok),
+                               ", ret = ", Strings.toHexString(ret)));
+
         assert(ret == stok);
         assert(P.exists(stok));
         assert(P.ownerOf(stok) == to);
