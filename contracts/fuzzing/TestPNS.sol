@@ -31,6 +31,8 @@ contract TestPNS is EchidnaInit {
 
     event AssertionFailed(string message);
 
+    event Debug(string m);
+
     // ------------------------ state ----------------------
     // -------- const
     string[] WORD_SET = ["dot", "org", "com", "net", "www", "hello", "pns"];
@@ -215,6 +217,35 @@ contract TestPNS is EchidnaInit {
 
     function h_str_ary_eq(string[] memory a, string[] memory b) internal pure returns(bool) {
         return keccak256(abi.encode(a)) == keccak256(abi.encode(b));
+    }
+
+    function h_strlen(string memory s) internal pure returns(uint) {
+        // here use function from implementation
+        uint len;
+        uint i = 0;
+        uint bytelength = bytes(s).length;
+        for(len = 0; i < bytelength; len++) {
+            bytes1 b = bytes(s)[i];
+            if(b < 0x80) {
+                i += 1;
+            } else if (b < 0xE0) {
+                i += 2;
+            } else if (b < 0xF0) {
+                i += 3;
+            } else if (b < 0xF8) {
+                i += 4;
+            } else if (b < 0xFC) {
+                i += 5;
+            } else {
+                i += 6;
+            }
+        }
+        return len;
+    }
+
+
+    function debug(bytes memory str) internal {
+        emit Debug(string(str));
     }
 
     // ---------------------- operation ---------------------------
@@ -2225,18 +2256,18 @@ contract TestPNS is EchidnaInit {
         assert(P.available(tok) != (_pns_sld_set.contains(tok) || _pns_sd_set.contains(tok)));
     }
 
-    function st_c_totalRegisterPrice(bool idx_idx, string memory name, uint256 dur) public view {
+    function st_c_totalRegisterPrice(bool idx_idx, string memory name, uint256 dur) public {
         // param generation
         uint idx = idx_idx ? 1 : 0;
 
-        uint l1 = _c_base_prices.length;
-        if (bytes(name).length < l1) {
-            l1 = bytes(name).length;
+        uint l1 = _c_base_prices[idx].length;
+        if (h_strlen(name) < l1) {
+            l1 = h_strlen(name);
         }
 
-        uint l2 = _c_rent_prices.length;
-        if (bytes(name).length < l2) {
-            l2 = bytes(name).length;
+        uint l2 = _c_rent_prices[idx].length;
+        if (h_strlen(name) < l2) {
+            l2 = h_strlen(name);
         }
 
         // avoid model fail, when implement will fail
@@ -2265,17 +2296,29 @@ contract TestPNS is EchidnaInit {
 
         uint256 get = C[idx].totalRegisterPrice(name, dur);
 
+        debug(abi.encodePacked("tokPrice = ", Strings.toString(uint(C[idx].getTokenPrice())),
+                               ", rentPrice = ", Strings.toString(C[idx].rentPrice(name, dur)),
+                               ", basePrice = ", Strings.toString(C[idx].basePrice(name)),
+                               ", get = ", Strings.toString(get)));
+
+
+        debug(abi.encodePacked("l1 = ", Strings.toString(l1),
+                               ", l2 = ", Strings.toString(l2),
+                               ", dpe = ", Strings.toString(dollar_per_eth),
+                               ", cost.lo = ", Strings.toString(cost.lo)));
+
+
         assert(cost.hi == 0); // is cost.hi != 0, C[idx].totalRegisterPrice will revert
-        assert(cost.lo == get);
+        assert((cost.lo == get) || (cost.lo == get + 1));
     }
 
-    function st_c_renewPrice(bool idx_idx, string memory name, uint256 dur) public view {
+    function st_c_renewPrice(bool idx_idx, string memory name, uint256 dur) public {
         // param generation
         uint idx = idx_idx ? 1 : 0;
 
-        uint l = _c_rent_prices.length;
-        if (bytes(name).length < l) {
-            l = bytes(name).length;
+        uint l = _c_rent_prices[idx].length;
+        if (h_strlen(name) < l) {
+            l = h_strlen(name);
         }
 
         // avoid model fail, when implement will fail
@@ -2298,7 +2341,16 @@ contract TestPNS is EchidnaInit {
 
         uint256 get = C[idx].renewPrice(name, dur);
 
+        debug(abi.encodePacked("tokPrice = ", Strings.toString(uint(C[idx].getTokenPrice())),
+                               ", rentPrice = ", Strings.toString(C[idx].rentPrice(name, dur)),
+                               ", get = ", Strings.toString(get)));
+
+
+        debug(abi.encodePacked("l = ", Strings.toString(l),
+                               ", dpe = ", Strings.toString(dollar_per_eth),
+                               ", cost.lo = ", Strings.toString(cost.lo)));
+
         assert(cost.hi == 0); // will fail if implement not revert
-        assert(cost.lo == get);
+        assert((cost.lo == get) || (cost.lo == get + 1)) ;
     }
 }

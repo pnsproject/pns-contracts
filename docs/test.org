@@ -735,10 +735,11 @@ Controller合约包括如下状态：
     + ~cost_doller(x, y) ← _c*_base_prices[x -1] + _c*_rent_prices[y-1] * dur / (365 * 86400)~
     + ~(,dollar_per_eth,,,) ← _c*_price_feed.latestRoundData()~
     + ~cost_wei ← cost_doller(l1, l2) * 10**18 * 10**8 / dollar_per_eth~
-    + ~Controller.totalRegisterPrice(name, dur) == cost_wei~
+    + ~|Controller.totalRegisterPrice(name, dur) - cost_wei| ≤ 1~
   - 参数：随机
   - 说明：
     + ~cost_wei~ 的计算需要注意保留精度，先做乘法
+    + 注意name的长度需要考虑UTF-8
     + 需要验证目标函数， **若不抛出异常，则总是正确**
       + 因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
       + cost_doller/cost_wei运算使用一对uint256表示，等价uint512。
@@ -748,10 +749,11 @@ Controller合约包括如下状态：
     + ~cost_doller(x) ← _c*_rent_prices[x-1] * dur / (365 * 86400)~
     + ~(,dollar_per_eth,,,) ← _c*_price_feed.latestRoundData()~
     + ~cost_wei ← cost_doller(l) * 10**18 * 10**8 / dollar_per_eth~
-    + ~Controller.renewPrice(name, dur) == cost_wei~
+    + ~|Controller.renewPrice(name, dur) - cost_wei| ≤ 1~
   - 参数：随机
   - 说明：
-    +  ~cost_wei~ 的计算需要注意保留精度，先做乘法
+    +  ~cost_wei~ 的计算需要注意保留精度，先做乘法；
+    + 注意name的长度需要考虑UTF-8
     + 需要验证目标函数， **若不抛出异常，则总是正确**
       + 因此需要避免模型溢出，抛出异常，导致待测函数未覆盖的情况。
       + cost_doller/cost_wei运算使用一对uint256表示，等价uint512。
