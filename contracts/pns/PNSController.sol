@@ -28,7 +28,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     IPNS public _pns;
 
     uint256 public BASE_NODE;
-    uint256 public MIN_REGISTRATION_DURATION;
+    uint64  public MIN_REGISTRATION_DURATION;
     uint256 public MIN_REGISTRATION_LENGTH;
     uint256 public FLAGS;
 
@@ -82,7 +82,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         _;
     }
 
-    function setContractConfig(uint256 _flags, uint256 _min_length, uint256 _min_duration, address _price_feed) public onlyRoot {
+    function setContractConfig(uint256 _flags, uint256 _min_length, uint64 _min_duration, address _price_feed) public onlyRoot {
         FLAGS = _flags;
         MIN_REGISTRATION_LENGTH = _min_length;
         MIN_REGISTRATION_DURATION = _min_duration;
@@ -90,7 +90,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         emit ConfigUpdated(_flags);
     }
 
-    function nameRegisterByManager(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
+    function nameRegisterByManager(string calldata name, address to, uint64 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override live onlyManager returns(uint256) {
         // require(name.domainPreifxValid()); // skip due this will check by _pns.register
         uint256 tokenId = _pns.register(name, to, duration, BASE_NODE);
 
@@ -105,7 +105,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         return tokenId;
     }
 
-    function nameRegister(string calldata name, address to, uint256 duration) public override payable open returns(uint256) {
+    function nameRegister(string calldata name, address to, uint64 duration) public override payable open returns(uint256) {
         // require(name.domainPreifxValid()); // skip due this will check by _pns.register
 
         uint256 len = bytes(name).length;
@@ -127,7 +127,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         return tokenId;
     }
 
-    function nameRegisterWithConfig(string calldata name, address to, uint256 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override payable returns(uint256) {
+    function nameRegisterWithConfig(string calldata name, address to, uint64 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override payable returns(uint256) {
         uint256 tokenId = nameRegister(name, to, duration);
 
         if (keyHashes.length > 0) {
@@ -141,7 +141,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         return tokenId;
     }
 
-    function nameRedeem(string calldata name, address to, uint256 duration, uint256 deadline, bytes calldata code) public override redeemable returns(uint256) {
+    function nameRedeem(string calldata name, address to, uint64 duration, uint256 deadline, bytes calldata code) public override redeemable returns(uint256) {
         bytes32 label = keccak256(bytes(name));
         bytes memory combined = abi.encodePacked(label, to, duration, deadline, block.chainid, address(this));
         require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
@@ -154,7 +154,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
 
     // controller methods
 
-    function renew(string calldata name, uint256 duration) external override open payable {
+    function renew(string calldata name, uint64 duration) external override open payable {
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(BASE_NODE, label));
         uint256 tokenId = uint256(subnode);
@@ -171,7 +171,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         }
     }
 
-    function renewByManager(string calldata name, uint256 duration) external override live onlyManager {
+    function renewByManager(string calldata name, uint64 duration) external override live onlyManager {
         bytes32 label = keccak256(bytes(name));
         bytes32 subnode = keccak256(abi.encodePacked(BASE_NODE, label));
         uint256 tokenId = uint256(subnode);
@@ -238,12 +238,12 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         emit PriceChanged(_basePrices, _rentPrices);
     }
 
-    function totalRegisterPrice(string memory name, uint256 duration) view public override returns(uint256) {
+    function totalRegisterPrice(string memory name, uint64 duration) view public override returns(uint256) {
         uint256 price = uint256(getTokenPrice());
         return basePrice(name).mul(10 ** 26).div(price) + rentPrice(name, duration).mul(10 ** 26).div(price).div(86400*365);
     }
 
-    function renewPrice(string memory name, uint256 duration) view public override returns(uint256) {
+    function renewPrice(string memory name, uint64 duration) view public override returns(uint256) {
         uint256 price = uint256(getTokenPrice());
         return rentPrice(name, duration).mul(10 ** 26).div(price).div(86400*365);
     }
@@ -258,7 +258,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         return price;
     }
 
-    function rentPrice(string memory name, uint256 duration) view public override returns(uint256) {
+    function rentPrice(string memory name, uint64 duration) view public override returns(uint256) {
         uint256 len = bytes(name).length;
         if(len > rentPrices.length) {
             len = rentPrices.length;

@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orgf917ca8)
-2.  [模糊测试](#orgfc8e97c)
-    1.  [合约分析](#orgae34118)
-        1.  [常数](#org97c49c5)
-        2.  [状态](#org175e172)
-        3.  [辅助状态和辅助合约](#org6a9876d)
-        4.  [操作与断言](#org661fd97)
-        5.  [辅助操作与状态断言](#orge818b42)
-    2.  [初始化](#org1c23bdf)
-    3.  [测试代码风格](#org620bced)
+1.  [单元测试](#org6450cf6)
+2.  [模糊测试](#orgde430f1)
+    1.  [合约分析](#org8bee235)
+        1.  [常数](#org3f1b921)
+        2.  [状态](#org091e0e4)
+        3.  [辅助状态和辅助合约](#org55db928)
+        4.  [操作与断言](#org6108780)
+        5.  [辅助操作与状态断言](#orgdab300b)
+    2.  [初始化](#orgb5ed4b2)
+    3.  [测试代码风格](#org9972fd2)
 
 
 
-<a id="orgf917ca8"></a>
+<a id="org6450cf6"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgfc8e97c"></a>
+<a id="orgde430f1"></a>
 
 # 模糊测试
 
 
-<a id="orgae34118"></a>
+<a id="org8bee235"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org97c49c5"></a>
+<a id="org3f1b921"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org175e172"></a>
+<a id="org091e0e4"></a>
 
 ### 状态
 
@@ -264,7 +264,7 @@ PNS合约包括如下状态，其中“预置”表示合约在部署的时候�
 
 <tr>
 <td class="org-left">_pns_sld_expire_tbl</td>
-<td class="org-left">M(uint256, uint256)</td>
+<td class="org-left">M(uint256, uint64)</td>
 <td class="org-left">空</td>
 <td class="org-left">二级域名有效期表</td>
 </tr>
@@ -401,7 +401,7 @@ Controller合约包括如下状态：
 <tbody>
 <tr>
 <td class="org-left">_c*_min_reg_dur</td>
-<td class="org-left">uint256</td>
+<td class="org-left">uint64</td>
 <td class="org-left">28天</td>
 <td class="org-left">最小的注册时间</td>
 </tr>
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org6a9876d"></a>
+<a id="org55db928"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org661fd97"></a>
+<a id="org6108780"></a>
 
 ### 操作与断言
 
@@ -1247,7 +1247,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orge818b42"></a>
+<a id="orgdab300b"></a>
 
 ### 辅助操作与状态断言
 
@@ -1595,7 +1595,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org1c23bdf"></a>
+<a id="orgb5ed4b2"></a>
 
 ## 初始化
 
@@ -1637,7 +1637,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org620bced"></a>
+<a id="org9972fd2"></a>
 
 ## 测试代码风格
 

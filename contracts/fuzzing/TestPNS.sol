@@ -46,7 +46,7 @@ contract TestPNS is EchidnaInit {
     mapping(uint256 => address) _pns_approve_tbl;
 
     EnumerableSet.UintSet       _pns_sld_set;
-    mapping(uint256 => uint256) _pns_sld_expire_tbl;
+    mapping(uint256 => uint64) _pns_sld_expire_tbl;
 
     EnumerableSet.UintSet       _pns_sd_set;
     mapping(uint256 => uint256) _pns_sd_origin_tbl;
@@ -63,7 +63,7 @@ contract TestPNS is EchidnaInit {
 
 
     // --------- controller
-    uint256[2] _c_min_reg_dur = [28 days , 28 days];
+    uint64[2]  _c_min_reg_dur = [28 days , 28 days];
     uint256[2] _c_min_reg_len = [10      , 10];
 
     bool[2] _c_is_live    = [true, true];
@@ -480,7 +480,7 @@ contract TestPNS is EchidnaInit {
         uint256 p_ml = ml % 20 + 1;
 
         // 1hr ~ 1yr
-        uint256 p_md = md % (365 days  - 1 hours + 1) + 1 hours;
+        uint64 p_md = md % (365 days  - 1 hours + 1) + 1 hours;
 
         // PRICE0, PRICE1
         uint pf_idx = pf ? 1 : 0;
@@ -946,7 +946,7 @@ contract TestPNS is EchidnaInit {
         uint idx;
         string name;
         address to;
-        uint256 dur;
+        uint64 dur;
         uint data;
         uint256[] khs;
         string[] vls;
@@ -967,7 +967,7 @@ contract TestPNS is EchidnaInit {
         a.idx = idx_idx ? 1 : 0;
         a.name = h_sel_word_alt(name_idx, 125, name1);
         a.to = h_sel_sender_alt(to_idx, 200, to1);
-        a.dur = uint256(dur1) % (5 * 365 days - 1 days + 1) + 1 days;
+        a.dur = dur1 % (5 * 365 days - 1 days + 1) + 1 days;
 
         a.data = set_name ? 1 : 0;
 
@@ -1101,7 +1101,7 @@ contract TestPNS is EchidnaInit {
             assert(h_str_eq(P.getByHash(a.khs[i], a.stok), vls_s[i]));
         }
 
-        assert(P.expire(a.stok) == uint64(a.dur + block.timestamp));
+        assert(P.expire(a.stok) == a.dur + block.timestamp);
         assert(P.origin(a.stok) == a.stok);
         assert(P.parent(a.stok) == a.stok);
         assert(!P.available(a.stok));
@@ -1111,7 +1111,7 @@ contract TestPNS is EchidnaInit {
         uint idx;
         string name;
         address to;
-        uint256 dur;
+        uint64 dur;
         uint256 value;
         uint256 stok;
         uint256 price;
@@ -1120,7 +1120,7 @@ contract TestPNS is EchidnaInit {
     function gen_c_nameRegister(bool idx_idx,
                                 uint8 name_idx, string memory name1,
                                 uint8 to_idx, address to1,
-                                uint8 dur_idx, uint256 dur1,
+                                uint8 dur_idx, uint64 dur1,
                                 uint8 value_idx, uint256 value1)
         internal
         view
@@ -1256,7 +1256,7 @@ contract TestPNS is EchidnaInit {
     function op_c_nameRegister(bool idx_idx,
                                uint8 name_idx, string memory name1,
                                uint8 to_idx, address to1,
-                               uint8 dur_idx, uint256 dur1,
+                               uint8 dur_idx, uint64 dur1,
                                uint8 value_idx, uint256 value1)
         public
     {
@@ -1297,7 +1297,7 @@ contract TestPNS is EchidnaInit {
         bool idx_idx;
         uint8 name_idx; string name1;
         uint8 to_idx; address to1;
-        uint8 dur_idx; uint256 dur1;
+        uint8 dur_idx; uint64 dur1;
         uint8 value_idx; uint256 value1;
         bool set_name;
         uint256[] khs1; uint8[] khs_idx;
@@ -1436,7 +1436,7 @@ contract TestPNS is EchidnaInit {
         bool idx_idx;
         uint8 name_idx; string name1;
         uint8 to_idx; address to1;
-        uint8 dur_idx; uint256 dur1;
+        uint8 dur_idx; uint64 dur1;
         uint8 dl_idx; uint256 dl1;
         uint8 c_idx; bytes c1; uint8 c_name_idx;
         uint8 c_to_idx; uint8 c_dur_idx; uint8 c_dl_idx;
@@ -1448,7 +1448,7 @@ contract TestPNS is EchidnaInit {
         uint idx;
         string name;
         address to;
-        uint256 dur;
+        uint64 dur;
         uint256 dl;
         bytes c;
         uint256 stok;
@@ -1614,11 +1614,11 @@ contract TestPNS is EchidnaInit {
     struct CRenewFuzzingArgs {
         bool idx_idx;
         uint8 name_idx; string name1;
-        uint256 dur;
+        uint64 dur;
         uint8 value_idx; uint256 value1;
     }
 
-    function cons_c_renew(uint idx, uint256 dur, uint256 value, uint256 price, uint256 stok)
+    function cons_c_renew(uint idx, uint64 dur, uint256 value, uint256 price, uint256 stok)
         internal view
         returns(bool ok)
     {
@@ -1666,7 +1666,7 @@ contract TestPNS is EchidnaInit {
         // param generation
         uint idx = fa.idx_idx ? 1 : 0;
         string memory name = h_sel_word_alt(fa.name_idx, 200, fa.name1);
-        uint256 dur = fa.dur;
+        uint64 dur = fa.dur;
 
         uint256 stok = h_namehash(name, C_BASE_NODE[idx]);
 
@@ -1721,12 +1721,12 @@ contract TestPNS is EchidnaInit {
         }
     }
 
-    function op_c_renewByManager(bool idx_idx, uint8 name_idx, uint256 dur1) public {
+    function op_c_renewByManager(bool idx_idx, uint8 name_idx, uint64 dur1) public {
         // requirements
         // param generation
         uint idx = idx_idx ? 1 : 0;
         string memory name = h_sel_word(name_idx);
-        uint256 dur = dur1 % (5 * 365 days - 1 days + 1) + 1 days;
+        uint64 dur = dur1 % (5 * 365 days - 1 days + 1) + 1 days;
 
         uint256 stok = h_namehash(name, C_BASE_NODE[idx]);
         // update state
@@ -1767,7 +1767,7 @@ contract TestPNS is EchidnaInit {
         bool ok = ok1 && ok2 && ok3 && ok4 && ok5;
 
         if (ok) {
-            _pns_sld_expire_tbl[stok] += uint64(dur);
+            _pns_sld_expire_tbl[stok] += dur;
         }
 
         // call op
@@ -2181,7 +2181,7 @@ contract TestPNS is EchidnaInit {
     }
 
     // ----------------------- permission check --------------------
-    function chk_p_register(string memory name, address to, uint256 dur, uint256 base) public {
+    function chk_p_register(string memory name, address to, uint64 dur, uint256 base) public {
         // requirements
         // param generation
         // update state
@@ -2204,7 +2204,7 @@ contract TestPNS is EchidnaInit {
         revert();
     }
 
-    function chk_p_renew(uint8 id_idx, uint256 id1, uint256 dur) public {
+    function chk_p_renew(uint8 id_idx, uint256 id1, uint64 dur) public {
         // requirements
         // param generation
         uint256 id = h_sel_token_alt(id_idx, 128, id1);
@@ -2361,7 +2361,7 @@ contract TestPNS is EchidnaInit {
         assert(P.available(tok) != (_pns_sld_set.contains(tok) || _pns_sd_set.contains(tok)));
     }
 
-    function st_c_totalRegisterPrice(bool idx_idx, string memory name, uint256 dur) public {
+    function st_c_totalRegisterPrice(bool idx_idx, string memory name, uint64 dur) public {
         // param generation
         uint idx = idx_idx ? 1 : 0;
 
@@ -2417,7 +2417,7 @@ contract TestPNS is EchidnaInit {
         assert((cost.lo == get) || (cost.lo == get + 1));
     }
 
-    function st_c_renewPrice(bool idx_idx, string memory name, uint256 dur) public {
+    function st_c_renewPrice(bool idx_idx, string memory name, uint64 dur) public {
         // param generation
         uint idx = idx_idx ? 1 : 0;
 

@@ -34,7 +34,7 @@ interface IPNS is IERC721MetadataUpgradeable {
 
     function available(uint256 tokenId) external view returns(bool);
 
-    function register(string calldata name, address to, uint256 duration, uint256 BASE_NODE) external returns(uint256);
+    function register(string calldata name, address to, uint64 duration, uint256 BASE_NODE) external returns(uint256);
 
-    function renew(uint256 id, uint256 duration) external returns(uint256);
+    function renew(uint256 id, uint64 duration) external returns(uint256);
 }
