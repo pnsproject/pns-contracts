@@ -269,6 +269,7 @@ Controller合约包括如下状态：
     + ~_msgSender() ∈ {_pns_root, _pns_manager_set, _pns_approve_tbl[ptok], _pns_owner_tbl[ptok]}~
     + ~to ≠ 0~
     + ~stok ∉ _pns_owner_tbl~
+    + name为有效的域名前缀（非0长度，仅包含数字字母和“-”）
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_sd_set.add(stok)~
@@ -370,6 +371,7 @@ Controller合约包括如下状态：
       - ~C* ∈ { _pns_root, _pns_manager_set }~
     + 记录约束
       - ~khs ⊆ _pns_key_tbl~
+    + name为有效的域名前缀
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
@@ -411,6 +413,7 @@ Controller合约包括如下状态：
     + PNS权限约束
       - ~C* ∈ { _pns_root, _pns_manager_set }~
     + 余额不小于value
+    + name为有效的域名前缀
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
@@ -445,6 +448,7 @@ Controller合约包括如下状态：
     + ~length(khs) == length(vls)~
     + 记录约束
       - ~khs ⊆ _pns_key_tbl~
+    + name为有效的域名前缀
   - 状态更新
     + 包含Controller.nameRegister状态更新
     + ~_pns_info_name_tbl[to] ← stok if set_name~
@@ -470,6 +474,7 @@ Controller合约包括如下状态：
       - ~to ≠ 0~
     + PNS权限约束
       - ~C* ∈ { _pns_root, _pns_manager_set }~
+    + name为有效的域名前缀
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~

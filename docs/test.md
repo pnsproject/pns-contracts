@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org6450cf6)
-2.  [模糊测试](#orgde430f1)
-    1.  [合约分析](#org8bee235)
-        1.  [常数](#org3f1b921)
-        2.  [状态](#org091e0e4)
-        3.  [辅助状态和辅助合约](#org55db928)
-        4.  [操作与断言](#org6108780)
-        5.  [辅助操作与状态断言](#orgdab300b)
-    2.  [初始化](#orgb5ed4b2)
-    3.  [测试代码风格](#org9972fd2)
+1.  [单元测试](#org2fd7a72)
+2.  [模糊测试](#org220dbfa)
+    1.  [合约分析](#org4d26c28)
+        1.  [常数](#org3b3305b)
+        2.  [状态](#org2a39f3f)
+        3.  [辅助状态和辅助合约](#orga88ab93)
+        4.  [操作与断言](#org93ee102)
+        5.  [辅助操作与状态断言](#orgc1b2676)
+    2.  [初始化](#org6d4ec30)
+    3.  [测试代码风格](#org2108752)
 
 
 
-<a id="org6450cf6"></a>
+<a id="org2fd7a72"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgde430f1"></a>
+<a id="org220dbfa"></a>
 
 # 模糊测试
 
 
-<a id="org8bee235"></a>
+<a id="org4d26c28"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org3f1b921"></a>
+<a id="org3b3305b"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org091e0e4"></a>
+<a id="org2a39f3f"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org55db928"></a>
+<a id="orga88ab93"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org6108780"></a>
+<a id="org93ee102"></a>
 
 ### 操作与断言
 
@@ -879,6 +879,7 @@ Controller合约包括如下状态：
         -   `_msgSender() ∈ {_pns_root, _pns_manager_set, _pns_approve_tbl[ptok], _pns_owner_tbl[ptok]}`
         -   `to ≠ 0`
         -   `stok ∉ _pns_owner_tbl`
+        -   name为有效的域名前缀（非0长度，仅包含数字字母和“-”）
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_sd_set.add(stok)`
@@ -980,6 +981,7 @@ Controller合约包括如下状态：
             -   `C* ∈ { _pns_root, _pns_manager_set }`
         -   记录约束
             -   `khs ⊆ _pns_key_tbl`
+        -   name为有效的域名前缀
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
@@ -1021,6 +1023,7 @@ Controller合约包括如下状态：
         -   PNS权限约束
             -   `C* ∈ { _pns_root, _pns_manager_set }`
         -   余额不小于value
+        -   name为有效的域名前缀
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
@@ -1055,6 +1058,7 @@ Controller合约包括如下状态：
         -   `length(khs) == length(vls)`
         -   记录约束
             -   `khs ⊆ _pns_key_tbl`
+        -   name为有效的域名前缀
     -   状态更新
         -   包含Controller.nameRegister状态更新
         -   `_pns_info_name_tbl[to] ← stok if set_name`
@@ -1080,6 +1084,7 @@ Controller合约包括如下状态：
             -   `to ≠ 0`
         -   PNS权限约束
             -   `C* ∈ { _pns_root, _pns_manager_set }`
+        -   name为有效的域名前缀
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
@@ -1247,7 +1252,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orgdab300b"></a>
+<a id="orgc1b2676"></a>
 
 ### 辅助操作与状态断言
 
@@ -1595,7 +1600,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgb5ed4b2"></a>
+<a id="org6d4ec30"></a>
 
 ## 初始化
 
@@ -1637,7 +1642,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org9972fd2"></a>
+<a id="org2108752"></a>
 
 ## 测试代码风格
 

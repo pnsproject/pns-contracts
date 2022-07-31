@@ -128,6 +128,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function nameRegisterWithConfig(string calldata name, address to, uint64 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override payable returns(uint256) {
+        // require(name.domainPreifxValid()); // skip due this will check by nameRegister
         uint256 tokenId = nameRegister(name, to, duration);
 
         if (keyHashes.length > 0) {
@@ -142,6 +143,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function nameRedeem(string calldata name, address to, uint64 duration, uint256 deadline, bytes calldata code) public override redeemable returns(uint256) {
+        // require(name.domainPreifxValid()); // skip due this will check by _pns.register
         bytes32 label = keccak256(bytes(name));
         bytes memory combined = abi.encodePacked(label, to, duration, deadline, block.chainid, address(this));
         require(isManager(recoverKey(keccak256(combined), code)), "code invalid");
