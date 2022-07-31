@@ -423,8 +423,11 @@ Controller合约包括如下状态：
     + ~P.origin(stok) == stok~
     + ~P.parent(stok) == stok~
     + ~!P.available(stok)~
-    + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + price~
-    + ~balanceOf(_msgSender()) == balanceOf#(_msgSender()) + ~msg.value - price~
+    + 若 ~_c*_root != _msgSender()~
+      + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + price~
+      + ~balanceOf(_msgSender()) == balanceOf#(_msgSender()) + msg.value - price~
+    + 否则
+      + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + msg.value~
   - 参数
     + name：一半概率随机，一半概率从WORD_SET随机
     + to：大概率随机从SENDER_POOL选，小概率随机
@@ -499,8 +502,11 @@ Controller合约包括如下状态：
     + ~_pns_sld_expire_tbl[stok] += uint64(dur)~
   - 断言
     + ~P.expire(stok) == _pns_sld_expire_tbl[stok]~
-    + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + price~
-    + ~balanceOf(_msgSender()) == balanceOf#(_msgSender()) + msg.value - price~
+    + 若 ~_c*_root != _msgSender()~
+      + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + price~
+      + ~balanceOf(_msgSender()) == balanceOf#(_msgSender()) + msg.value - price~
+    + 否则
+      + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + msg.value~
   - 参数
     + name：小概率随机，大概率从WORD_SET随机选
     + dur：随机

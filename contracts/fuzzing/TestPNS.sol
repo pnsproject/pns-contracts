@@ -1177,7 +1177,7 @@ contract TestPNS is EchidnaInit {
         }
 
         bool ok3 = false;
-        if (bytes(a.name).length >= _c_min_reg_len[a.idx]) {
+        if (h_strlen(a.name) >= _c_min_reg_len[a.idx]) {
             ok3 = true;
         }
 
@@ -1224,7 +1224,7 @@ contract TestPNS is EchidnaInit {
 
     function ast_c_nameRegister(CNameRegisterArgs memory a,
                                 uint256 balance_root, uint256 balance_sender, uint256 ret)
-        internal view
+        internal
     {
         uint256 balance_root_new = _c_root[a.idx].balance;
         uint256 balance_sender_new = msg.sender.balance;
@@ -1236,8 +1236,21 @@ contract TestPNS is EchidnaInit {
         assert(P.parent(a.stok) == a.stok);
         assert(!P.available(a.stok));
 
-        assert(balance_root_new == balance_root + a.price);
-        assert(balance_sender_new == balance_sender + a.value - a.price);
+        debug(abi.encodePacked("root = ", Strings.toString(uint160(_c_root[a.idx])),
+                               ", msg.sender = ", Strings.toString(uint160(msg.sender))));
+
+        debug(abi.encodePacked("price = ", Strings.toString(a.price),
+                               ", balance_root = ", Strings.toString(balance_root),
+                               ", balance_root + price = ", Strings.toString(balance_root + a.price),
+                               ", balance_root_new = ", Strings.toString(balance_root_new)));
+
+        if (msg.sender != _c_root[a.idx]) {
+            assert(balance_root_new == balance_root + a.price);
+            assert(balance_sender_new == balance_sender + a.value - a.price);
+        }
+        else {
+            assert(balance_root_new == balance_root + a.value);
+        }
     }
 
     function op_c_nameRegister(bool idx_idx,
@@ -1698,8 +1711,14 @@ contract TestPNS is EchidnaInit {
         uint256 balance_sender_new = msg.sender.balance;
 
         assert(P.expire(stok) == _pns_sld_expire_tbl[stok]);
-        assert(balance_root_new == balance_root + price);
-        assert(balance_sender_new == balance_sender + value - price);
+
+        if (_c_root[idx] != msg.sender) {
+            assert(balance_root_new == balance_root + price);
+            assert(balance_sender_new == balance_sender + value - price);
+        }
+        else {
+            assert(balance_root_new == balance_root + value);
+        }
     }
 
     function op_c_renewByManager(bool idx_idx, uint8 name_idx, uint256 dur1) public {

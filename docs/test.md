@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org8b1610d)
-2.  [模糊测试](#orga03aa7d)
-    1.  [合约分析](#org013bb92)
-        1.  [常数](#org54c0895)
-        2.  [状态](#org74ee41e)
-        3.  [辅助状态和辅助合约](#orge1cef6a)
-        4.  [操作与断言](#org7a13a50)
-        5.  [辅助操作与状态断言](#org3c2e310)
-    2.  [初始化](#org4630549)
-    3.  [测试代码风格](#org432fd5b)
+1.  [单元测试](#org0e96e1b)
+2.  [模糊测试](#org4ad25da)
+    1.  [合约分析](#orgf19b41c)
+        1.  [常数](#orgcbb1ac3)
+        2.  [状态](#org80099c3)
+        3.  [辅助状态和辅助合约](#org35aa953)
+        4.  [操作与断言](#orgbaf1f23)
+        5.  [辅助操作与状态断言](#orga5313f1)
+    2.  [初始化](#orgc73b525)
+    3.  [测试代码风格](#org2903635)
 
 
 
-<a id="org8b1610d"></a>
+<a id="org0e96e1b"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orga03aa7d"></a>
+<a id="org4ad25da"></a>
 
 # 模糊测试
 
 
-<a id="org013bb92"></a>
+<a id="orgf19b41c"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org54c0895"></a>
+<a id="orgcbb1ac3"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org74ee41e"></a>
+<a id="org80099c3"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orge1cef6a"></a>
+<a id="org35aa953"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org7a13a50"></a>
+<a id="orgbaf1f23"></a>
 
 ### 操作与断言
 
@@ -1033,8 +1033,11 @@ Controller合约包括如下状态：
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
-        -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + price`
-        -   `balanceOf(_msgSender()) == balanceOf#(_msgSender()) + ~msg.value - price`
+        -   若 `_c*_root != _msgSender()`
+            -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + price`
+            -   `balanceOf(_msgSender()) == balanceOf#(_msgSender()) + msg.value - price`
+        -   否则
+            -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + msg.value`
     -   参数
         -   name：一半概率随机，一半概率从WORD\_SET随机
         -   to：大概率随机从SENDER\_POOL选，小概率随机
@@ -1109,8 +1112,11 @@ Controller合约包括如下状态：
         -   `_pns_sld_expire_tbl[stok] += uint64(dur)`
     -   断言
         -   `P.expire(stok) == _pns_sld_expire_tbl[stok]`
-        -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + price`
-        -   `balanceOf(_msgSender()) == balanceOf#(_msgSender()) + msg.value - price`
+        -   若 `_c*_root != _msgSender()`
+            -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + price`
+            -   `balanceOf(_msgSender()) == balanceOf#(_msgSender()) + msg.value - price`
+        -   否则
+            -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + msg.value`
     -   参数
         -   name：小概率随机，大概率从WORD\_SET随机选
         -   dur：随机
@@ -1241,7 +1247,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="org3c2e310"></a>
+<a id="orga5313f1"></a>
 
 ### 辅助操作与状态断言
 
@@ -1591,7 +1597,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org4630549"></a>
+<a id="orgc73b525"></a>
 
 ## 初始化
 
@@ -1633,7 +1639,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org432fd5b"></a>
+<a id="org2903635"></a>
 
 ## 测试代码风格
 
