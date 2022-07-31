@@ -33,6 +33,8 @@ contract TestPNS is EchidnaInit {
 
     event Debug(string m);
 
+    constructor() payable {}
+
     // ------------------------ state ----------------------
     // -------- const
     string[] WORD_SET = ["dot", "org", "com", "net", "www", "hello", "pns"];

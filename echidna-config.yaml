@@ -7,9 +7,16 @@ sender: ["0x5409ed021d9299bf6814279a6a1411a7e866a631", "0x6ecbe1db9ef729cbe972c8
 #format: text
 corpusDir: "./corpus"
 testMode: assertion
+balanceContract: 100000000000000000000
 
 #filterBlacklist: false
 #filterFunctions:
 #  - TestPNS.st_c_renewPrice(bool,string,uint256)
 #  - TestPNS.st_c_totalRegisterPrice(bool,string,uint256)
 #  - TestPNS.op_c_nameRedeem((bool,uint8,string,uint8,address,uint8,uint256,uint8,uint256,uint8,bytes,uint8,uint8,uint8,uint8,uint8,uint8,uint8))
+#  - TestPNS.op_p_addKeys(uint8[],string[])
+#  - TestPNS.op_c_nameRegisterByManager(bool,uint8,string,uint8,address,uint32,bool,uint256[],uint8[],string[])
+#  - TestPNS.op_p_setManyByHash(uint8[],uint256[],uint8,string[],uint8,uint256)
+#  - TestPNS.op_p_setlinks(uint8,uint256,uint256[],uint8,uint256[])
+#  - TestPNS.op_p_mint(uint8,uint8)
+#  - TestPNS.op_p_mintSubdomain(uint8,address,uint8,uint256,uint8,string)
