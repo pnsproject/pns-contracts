@@ -1024,7 +1024,7 @@ contract TestPNS is EchidnaInit {
             _pns_owner_tbl.set(a.stok, a.to);
             _pns_token_set.add(a.stok);
             _pns_sld_set.add(a.stok);
-            _pns_sld_expire_tbl[a.stok] = a.dur + block.timestamp;
+            _pns_sld_expire_tbl[a.stok] = uint64(a.dur + block.timestamp);
             if (set_name) {
                 _pns_info_name_tbl[a.to] = a.stok;
             }
@@ -1056,7 +1056,7 @@ contract TestPNS is EchidnaInit {
             assert(h_str_eq(P.getByHash(a.khs[i], a.stok), a.vls[i]));
         }
 
-        assert(P.expire(a.stok) == a.dur + block.timestamp);
+        assert(P.expire(a.stok) == uint64(a.dur + block.timestamp));
         assert(P.origin(a.stok) == a.stok);
         assert(P.parent(a.stok) == a.stok);
         assert(!P.available(a.stok));
@@ -1161,7 +1161,12 @@ contract TestPNS is EchidnaInit {
             ok7 = true;
         }
 
-        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7;
+        bool ok8 = false;
+        if (address(this).balance >= a.value) {
+            ok8 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8;
     }
 
 
@@ -1169,7 +1174,7 @@ contract TestPNS is EchidnaInit {
         _pns_owner_tbl.set(a.stok, a.to);
         _pns_token_set.add(a.stok);
         _pns_sld_set.add(a.stok);
-        _pns_sld_expire_tbl[a.stok] = a.dur + block.timestamp;
+        _pns_sld_expire_tbl[a.stok] = uint64(a.dur + block.timestamp);
     }
 
     function ast_c_nameRegister(CNameRegisterArgs memory a,
@@ -1181,7 +1186,7 @@ contract TestPNS is EchidnaInit {
 
         assert(ret == a.stok);
         assert(P.ownerOf(a.stok) == a.to);
-        assert(P.expire(a.stok) == a.dur + block.timestamp);
+        assert(P.expire(a.stok) == uint64(a.dur + block.timestamp));
         assert(P.origin(a.stok) == a.stok);
         assert(P.parent(a.stok) == a.stok);
         assert(!P.available(a.stok));
@@ -1509,7 +1514,10 @@ contract TestPNS is EchidnaInit {
             _pns_owner_tbl.set(a.stok, a.to);
             _pns_token_set.add(a.stok);
             _pns_sld_set.add(a.stok);
-            _pns_sld_expire_tbl[a.stok] = a.dur + block.timestamp;
+            _pns_sld_expire_tbl[a.stok] = uint64(a.dur + block.timestamp);
+
+            debug(abi.encodePacked("dur = ", Strings.toString(a.dur),
+                                   ", ts = ", Strings.toString(block.timestamp)));
         }
 
         // call op
@@ -1528,9 +1536,13 @@ contract TestPNS is EchidnaInit {
         }
 
         // assertion
+        debug(abi.encodePacked("P.expire = ", Strings.toString(P.expire(a.stok)),
+                               ", ts = ", Strings.toString(block.timestamp),
+                               ", ts+dur = ", Strings.toString(block.timestamp + a.dur)));
+
         assert(ret == a.stok);
         assert(P.ownerOf(a.stok) == a.to);
-        assert(P.expire(a.stok) == block.timestamp + a.dur);
+        assert(P.expire(a.stok) == uint64(block.timestamp + a.dur));
         assert(P.origin(a.stok) == a.stok);
         assert(P.parent(a.stok) == a.stok);
         assert(!P.available(a.stok));
@@ -1578,7 +1590,12 @@ contract TestPNS is EchidnaInit {
             }
         }
 
-        ok = ok1 && ok2 && ok3 && ok4 && ok5;
+        bool ok6 = false;
+        if (address(this).balance >= value) {
+            ok6 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6;
     }
 
     function op_c_renew(CRenewFuzzingArgs memory fa) public {
@@ -1611,7 +1628,7 @@ contract TestPNS is EchidnaInit {
         bool ok = cons_c_renew(idx, dur, value, price, stok);
 
         if (ok) {
-            _pns_sld_expire_tbl[stok] += dur;
+            _pns_sld_expire_tbl[stok] += uint64(dur);
         }
 
         // call op
@@ -1681,7 +1698,7 @@ contract TestPNS is EchidnaInit {
         bool ok = ok1 && ok2 && ok3 && ok4 && ok5;
 
         if (ok) {
-            _pns_sld_expire_tbl[stok] += dur;
+            _pns_sld_expire_tbl[stok] += uint64(dur);
         }
 
         // call op

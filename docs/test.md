@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org61d9af8)
-2.  [模糊测试](#org999b5cc)
-    1.  [合约分析](#org04d2da6)
-        1.  [常数](#org5f060fb)
-        2.  [状态](#orgafa6fc0)
-        3.  [辅助状态和辅助合约](#org6d55eb5)
-        4.  [操作与断言](#orgaa91446)
-        5.  [辅助操作与状态断言](#org6bd1940)
-    2.  [初始化](#orgb5d7b26)
-    3.  [测试代码风格](#org8d05cf3)
+1.  [单元测试](#orge1a2c5e)
+2.  [模糊测试](#org0c45a31)
+    1.  [合约分析](#org9e80fce)
+        1.  [常数](#orgfb325ef)
+        2.  [状态](#orga0b5563)
+        3.  [辅助状态和辅助合约](#orgae73697)
+        4.  [操作与断言](#org1c3eaaf)
+        5.  [辅助操作与状态断言](#orgb656065)
+    2.  [初始化](#org37a8ff6)
+    3.  [测试代码风格](#org9309de6)
 
 
 
-<a id="org61d9af8"></a>
+<a id="orge1a2c5e"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org999b5cc"></a>
+<a id="org0c45a31"></a>
 
 # 模糊测试
 
 
-<a id="org04d2da6"></a>
+<a id="org9e80fce"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org5f060fb"></a>
+<a id="orgfb325ef"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgafa6fc0"></a>
+<a id="orga0b5563"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org6d55eb5"></a>
+<a id="orgae73697"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="orgaa91446"></a>
+<a id="org1c3eaaf"></a>
 
 ### 操作与断言
 
@@ -1018,15 +1018,16 @@ Controller合约包括如下状态：
             -   `to ≠ 0`
         -   PNS权限约束
             -   `C* ∈ { _pns_root, _pns_manager_set }`
+        -   余额不小于value
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
         -   `_pns_sld_set.add(stok)`
-        -   `_pns_sld_expire_tbl[stok] ← block.timestamp + dur`
+        -   `_pns_sld_expire_tbl[stok] ← uint64(block.timestamp + dur)`
     -   断言
         -   `ret == stok`
         -   `P.ownerOf(stok) == to`
-        -   `P.expire(stok) == block.timestamp + dur`
+        -   `P.expire(stok) == uint64(block.timestamp + dur)`
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
@@ -1076,11 +1077,11 @@ Controller合约包括如下状态：
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_token_set.add(stok)`
         -   `_pns_sld_set.add(stok)`
-        -   `_pns_sld_expire_tbl[stok] ← block.timestamp + dur`
+        -   `_pns_sld_expire_tbl[stok] ← uint64(block.timestamp + dur)`
     -   断言
         -   `ret == stok`
         -   `P.ownerOf(stok) == to`
-        -   `P.expire(stok) == block.timestamp + dur`
+        -   `P.expire(stok) == uint64(block.timestamp + dur)`
         -   `P.origin(stok) == stok`
         -   `P.parent(stok) == stok`
         -   `!P.available(stok)`
@@ -1099,8 +1100,9 @@ Controller合约包括如下状态：
         -   `stok ∈ _pns_sld_set` ，必须是二级域名
         -   `msg.value >= price` ，续费要求
         -   `_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD > _pns_sld_expire_tbl[stok] + GRACE_PERIOD` ，不溢出
+        -   余额不小于value
     -   状态更新
-        -   `_pns_sld_expire_tbl[stok] += dur`
+        -   `_pns_sld_expire_tbl[stok] += uint64(dur)`
     -   断言
         -   `P.expire(stok) == _pns_sld_expire_tbl[stok]`
         -   `balanceOf(_c*_root) == balanceOf#(_c*_root) + price`
@@ -1231,7 +1233,7 @@ Controller合约包括如下状态：
         -   vs：大概率长度和tgts相同，小概率随机，值随机
 
 
-<a id="org6bd1940"></a>
+<a id="orgb656065"></a>
 
 ### 辅助操作与状态断言
 
@@ -1581,7 +1583,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgb5d7b26"></a>
+<a id="org37a8ff6"></a>
 
 ## 初始化
 
@@ -1623,7 +1625,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org8d05cf3"></a>
+<a id="org9309de6"></a>
 
 ## 测试代码风格
 

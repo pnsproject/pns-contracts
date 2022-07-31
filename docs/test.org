@@ -408,15 +408,16 @@ Controller合约包括如下状态：
       - ~to ≠ 0~
     + PNS权限约束
       - ~C* ∈ { _pns_root, _pns_manager_set }~
+    + 余额不小于value
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
     + ~_pns_sld_set.add(stok)~
-    + ~_pns_sld_expire_tbl[stok] ← block.timestamp + dur~
+    + ~_pns_sld_expire_tbl[stok] ← uint64(block.timestamp + dur)~
   - 断言
     + ~ret == stok~
     + ~P.ownerOf(stok) == to~
-    + ~P.expire(stok) == block.timestamp + dur~
+    + ~P.expire(stok) == uint64(block.timestamp + dur)~
     + ~P.origin(stok) == stok~
     + ~P.parent(stok) == stok~
     + ~!P.available(stok)~
@@ -466,11 +467,11 @@ Controller合约包括如下状态：
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_token_set.add(stok)~
     + ~_pns_sld_set.add(stok)~
-    + ~_pns_sld_expire_tbl[stok] ← block.timestamp + dur~
+    + ~_pns_sld_expire_tbl[stok] ← uint64(block.timestamp + dur)~
   - 断言
     - ~ret == stok~
     - ~P.ownerOf(stok) == to~
-    - ~P.expire(stok) == block.timestamp + dur~
+    - ~P.expire(stok) == uint64(block.timestamp + dur)~
     - ~P.origin(stok) == stok~
     - ~P.parent(stok) == stok~
     - ~!P.available(stok)~
@@ -489,8 +490,9 @@ Controller合约包括如下状态：
     + ~stok ∈ _pns_sld_set~ ，必须是二级域名
     + ~msg.value >= price~ ，续费要求
     + ~_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD > _pns_sld_expire_tbl[stok] + GRACE_PERIOD~ ，不溢出
+    + 余额不小于value
   - 状态更新
-    + ~_pns_sld_expire_tbl[stok] += dur~
+    + ~_pns_sld_expire_tbl[stok] += uint64(dur)~
   - 断言
     + ~P.expire(stok) == _pns_sld_expire_tbl[stok]~
     + ~balanceOf(_c*_root) == balanceOf#(_c*_root) + price~
