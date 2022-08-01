@@ -16,22 +16,16 @@ import "../pns/PNSController.sol";
 import "../test/PriceOracle.sol";
 
 import "./EchidnaInit.sol";
-import "./IHEVM.sol";
 import "./Math512.sol";
+import "./EchidnaHelper.sol";
 
-contract TestPNS is EchidnaInit {
+contract TestPNS is EchidnaInit, EchidnaHelper {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     using Math512 for Math512.uint512;
 
     using ECDSA for bytes32;
-
-    IHEVM HEVM = IHEVM(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
-
-    event AssertionFailed(string message);
-
-    event Debug(string m);
 
     constructor() payable {}
 
@@ -161,7 +155,8 @@ contract TestPNS is EchidnaInit {
 
     function h_call_assert(bool ok, address c, uint256 v, bytes memory d) internal returns(bytes memory) {
         (bool ok_, bytes memory r) = h_call(c, v, d);
-        assert(ok_ == ok);
+
+        assert_eq("h_call", ok_, ok);
         return r;
     }
 
@@ -282,10 +277,6 @@ contract TestPNS is EchidnaInit {
         }
 
         return true;
-    }
-
-    function debug(bytes memory str) internal {
-        emit Debug(string(str));
     }
 
     // ---------------------- operation ---------------------------
