@@ -87,7 +87,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     }
 
     function mintSubdomain(address to, uint256 tokenId, string calldata name) public virtual override  authorised(tokenId) returns (uint256) {
-        require(name.domainPrefixValid());
+        require(name.domainPrefixValid(), "name invalid");
 
         // parent domain owner only
         bytes32 label = keccak256(bytes(name));
