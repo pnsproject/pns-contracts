@@ -408,7 +408,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
 
     function renew(uint256 id, uint64 duration) public override onlyManager returns(uint256) {
         require(records[id].origin == id, "not renewable");
-        require(records[id].expire + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "prevent overflow");
+        require(records[id].expire + duration + GRACE_PERIOD > records[id].expire + GRACE_PERIOD, "prevent overflow");
         // todo
         records[id].expire += duration;
         return records[id].expire;
