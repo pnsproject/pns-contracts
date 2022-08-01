@@ -1618,12 +1618,12 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
                                ", ts = ", Strings.toString(block.timestamp),
                                ", ts+dur = ", Strings.toString(block.timestamp + a.dur)));
 
-        assert(ret == a.stok);
-        assert(P.ownerOf(a.stok) == a.to);
-        assert(P.expire(a.stok) == uint64(block.timestamp + a.dur));
-        assert(P.origin(a.stok) == a.stok);
-        assert(P.parent(a.stok) == a.stok);
-        assert(!P.available(a.stok));
+        assert_eq("stok", ret, a.stok);
+        assert_eq("P.ownerOf", P.ownerOf(a.stok), a.to);
+        assert_eq("P.expire", P.expire(a.stok), uint64(block.timestamp + a.dur));
+        assert_eq("P.origin", P.origin(a.stok), a.stok);
+        assert_eq("P.parent", P.parent(a.stok), a.stok);
+        assert_eq("P.available", P.available(a.stok), false);
     }
 
     struct CRenewFuzzingArgs {
