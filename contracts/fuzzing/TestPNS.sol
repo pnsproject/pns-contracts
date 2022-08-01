@@ -262,6 +262,28 @@ contract TestPNS is EchidnaInit {
         return string(res);
     }
 
+    function h_namePrefixValidChar(bytes1 b) internal pure returns(bool) {
+        if (b == bytes("-")[0]) return true;
+
+        if ((bytes('0')[0] <= b) && (b <= bytes('9')[0])) return true;
+        if ((bytes('A')[0] <= b) && (b <= bytes('Z')[0])) return true;
+        if ((bytes('a')[0] <= b) && (b <= bytes('z')[0])) return true;
+
+        return false;
+    }
+
+    function h_namePrefixValid(string memory s) internal pure returns(bool) {
+        uint len = bytes(s).length;
+
+        if (len == 0) return false;
+
+        for (uint i = 0; i < len; i++) {
+            if (!h_namePrefixValidChar(bytes(s)[i])) return false;
+        }
+
+        return true;
+    }
+
     function debug(bytes memory str) internal {
         emit Debug(string(str));
     }
@@ -683,7 +705,12 @@ contract TestPNS is EchidnaInit {
             ok3 = true;
         }
 
-        ok = ok1 && ok2 && ok3;
+        bool ok4 = false;
+        if (h_namePrefixValid(name)) {
+            ok4 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4;
 
         if (ok) {
             _pns_owner_tbl.set(stok, to);
@@ -1036,7 +1063,12 @@ contract TestPNS is EchidnaInit {
             }
         }
 
-        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6;
+        bool ok7 = false;
+        if (h_namePrefixValid(a.name)) {
+            ok7 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7;
     }
 
     function op_c_nameRegisterByManager(bool idx_idx,
@@ -1211,7 +1243,12 @@ contract TestPNS is EchidnaInit {
             ok8 = true;
         }
 
-        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8;
+        bool ok9 = false;
+        if (h_namePrefixValid(a.name)) {
+            ok9 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9;
     }
 
 
@@ -1562,7 +1599,12 @@ contract TestPNS is EchidnaInit {
             ok5 = true;
         }
 
-        ok = ok1 && ok2 && ok3 && ok4 && ok5;
+        bool ok6 = false;
+        if (h_namePrefixValid(a.name)) {
+            ok6 = true;
+        }
+
+        ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6;
     }
 
     function op_c_nameRedeem(CNameRedeemFuzzingArgs memory fa) public {
@@ -1579,7 +1621,9 @@ contract TestPNS is EchidnaInit {
             _pns_sld_set.add(a.stok);
             _pns_sld_expire_tbl[a.stok] = uint64(a.dur + block.timestamp);
 
-            debug(abi.encodePacked("dur = ", Strings.toString(a.dur),
+            debug(abi.encodePacked("name = ", a.name,
+                                   ", stok = ", Strings.toHexString(a.stok),
+                                   ", dur = ", Strings.toString(a.dur),
                                    ", ts = ", Strings.toString(block.timestamp)));
         }
 

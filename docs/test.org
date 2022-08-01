@@ -448,7 +448,6 @@ Controller合约包括如下状态：
     + ~length(khs) == length(vls)~
     + 记录约束
       - ~khs ⊆ _pns_key_tbl~
-    + name为有效的域名前缀
   - 状态更新
     + 包含Controller.nameRegister状态更新
     + ~_pns_info_name_tbl[to] ← stok if set_name~

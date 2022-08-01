@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org2fd7a72)
-2.  [模糊测试](#org220dbfa)
-    1.  [合约分析](#org4d26c28)
-        1.  [常数](#org3b3305b)
-        2.  [状态](#org2a39f3f)
-        3.  [辅助状态和辅助合约](#orga88ab93)
-        4.  [操作与断言](#org93ee102)
-        5.  [辅助操作与状态断言](#orgc1b2676)
-    2.  [初始化](#org6d4ec30)
-    3.  [测试代码风格](#org2108752)
+1.  [单元测试](#orgc97c2be)
+2.  [模糊测试](#org97ea067)
+    1.  [合约分析](#org4e98e44)
+        1.  [常数](#org76c50ce)
+        2.  [状态](#org64194b3)
+        3.  [辅助状态和辅助合约](#orgab4c985)
+        4.  [操作与断言](#org514fc50)
+        5.  [辅助操作与状态断言](#org6da7d2f)
+    2.  [初始化](#org9a18c71)
+    3.  [测试代码风格](#org7c1853c)
 
 
 
-<a id="org2fd7a72"></a>
+<a id="orgc97c2be"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org220dbfa"></a>
+<a id="org97ea067"></a>
 
 # 模糊测试
 
 
-<a id="org4d26c28"></a>
+<a id="org4e98e44"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org3b3305b"></a>
+<a id="org76c50ce"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org2a39f3f"></a>
+<a id="org64194b3"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orga88ab93"></a>
+<a id="orgab4c985"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org93ee102"></a>
+<a id="org514fc50"></a>
 
 ### 操作与断言
 
@@ -1058,7 +1058,6 @@ Controller合约包括如下状态：
         -   `length(khs) == length(vls)`
         -   记录约束
             -   `khs ⊆ _pns_key_tbl`
-        -   name为有效的域名前缀
     -   状态更新
         -   包含Controller.nameRegister状态更新
         -   `_pns_info_name_tbl[to] ← stok if set_name`
@@ -1252,7 +1251,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orgc1b2676"></a>
+<a id="org6da7d2f"></a>
 
 ### 辅助操作与状态断言
 
@@ -1600,7 +1599,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org6d4ec30"></a>
+<a id="org9a18c71"></a>
 
 ## 初始化
 
@@ -1642,7 +1641,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org2108752"></a>
+<a id="org7c1853c"></a>
 
 ## 测试代码风格
 
