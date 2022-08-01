@@ -719,17 +719,21 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         }
 
         // assertion
-        debug(abi.encodePacked("name = ", h_bytes2str(bytes(name)),
+        debug(abi.encodePacked("ref: name = ", h_bytes2str(bytes(name)),
                                ", stok = ", Strings.toHexString(stok),
+                               ", origin = ", Strings.toHexString(_pns_sd_origin_tbl[stok]),
+                               ", expire = ", Strings.toHexString(_pns_sld_expire_tbl[_pns_sd_origin_tbl[stok]]),
                                ", ret = ", Strings.toHexString(ret)));
 
-        assert(ret == stok);
-        assert(P.exists(stok));
-        assert(P.ownerOf(stok) == to);
-        assert(P.nameExpired(stok) == (_pns_sld_expire_tbl[_pns_sd_origin_tbl[stok]] + GRACE_PERIOD < block.timestamp));
-        assert(!P.available(stok));
-        assert(P.origin(stok) == _pns_sd_origin_tbl[stok]);
-        assert(P.parent(stok) == ptok);
+        assert_eq("stok", ret, stok);
+        assert_eq("P.exist", P.exists(stok), true);
+        assert_eq("P.ownerOf", P.ownerOf(stok), to);
+        assert_eq("P.nameExpire",
+                  P.nameExpired(stok),
+                  (_pns_sld_expire_tbl[_pns_sd_origin_tbl[stok]] + GRACE_PERIOD < block.timestamp));
+        assert_eq("P.available", P.available(stok), false);
+        assert_eq("P.origin", P.origin(stok), _pns_sd_origin_tbl[stok]);
+        assert_eq("P.parent", P.parent(stok), ptok);
     }
 
     function op_p_burn(uint8 tok_idx, uint256 tok1) public {
