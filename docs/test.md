@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orgc97c2be)
-2.  [模糊测试](#org97ea067)
-    1.  [合约分析](#org4e98e44)
-        1.  [常数](#org76c50ce)
-        2.  [状态](#org64194b3)
-        3.  [辅助状态和辅助合约](#orgab4c985)
-        4.  [操作与断言](#org514fc50)
-        5.  [辅助操作与状态断言](#org6da7d2f)
-    2.  [初始化](#org9a18c71)
-    3.  [测试代码风格](#org7c1853c)
+1.  [单元测试](#org456685f)
+2.  [模糊测试](#org015eac2)
+    1.  [合约分析](#org4807e01)
+        1.  [常数](#orgca5c3e9)
+        2.  [状态](#orgb7ccc39)
+        3.  [辅助状态和辅助合约](#org6d6f062)
+        4.  [操作与断言](#orgc6d2a93)
+        5.  [辅助操作与状态断言](#orgf23bd4c)
+    2.  [初始化](#org3c6c4d4)
+    3.  [测试代码风格](#org368903a)
 
 
 
-<a id="orgc97c2be"></a>
+<a id="org456685f"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org97ea067"></a>
+<a id="org015eac2"></a>
 
 # 模糊测试
 
 
-<a id="org4e98e44"></a>
+<a id="org4807e01"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org76c50ce"></a>
+<a id="orgca5c3e9"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org64194b3"></a>
+<a id="orgb7ccc39"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgab4c985"></a>
+<a id="org6d6f062"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org514fc50"></a>
+<a id="orgc6d2a93"></a>
 
 ### 操作与断言
 
@@ -944,8 +944,12 @@ Controller合约包括如下状态：
     -   状态更新
         对于toks和recs的每一对值(tok, rec)：
         -   若 `rec.origin == tok`
+            -   `_pns_sd_set.remove(tok)`
+            -   `_pns_sld_set.add(tok)`
             -   `_pns_sld_expire_tbl[tok] ← rec.expire`
         -   否则，
+            -   `_pns_sld_set.remove(tok)`
+            -   `_pns_sd_set.add(tok)`
             -   `_pns_sd_origin_tbl[tok] ← rec.origin`
             -   `_pns_sd_parent_tbl[tok] ← rec.parent`
     -   断言
@@ -960,6 +964,9 @@ Controller合约包括如下状态：
             -   origin：一半概率是对应的tok，一半概率从 \_pns\_owner\_tbl 随机选
             -   expire：若origin是自身，则随机1天到5年，否则是0
             -   parent：若origin是自身，则也是自身，否则随机从 \_pns\_owner\_tbl 选
+    -   说明
+        -   供维护时迁移数据用，因此toks应该是二级域名或多级域名；
+        -   迁移可能导致二级域名和多级域名类型互换；
 -   `PNS.register(name, to, dur, base)` ，受限，被合约调用
     -   约束（必要条件）
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
@@ -1251,7 +1258,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="org6da7d2f"></a>
+<a id="orgf23bd4c"></a>
 
 ### 辅助操作与状态断言
 
@@ -1599,7 +1606,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org9a18c71"></a>
+<a id="org3c6c4d4"></a>
 
 ## 初始化
 
@@ -1641,7 +1648,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org7c1853c"></a>
+<a id="org368903a"></a>
 
 ## 测试代码风格
 

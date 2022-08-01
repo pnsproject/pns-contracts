@@ -334,8 +334,12 @@ Controller合约包括如下状态：
   - 状态更新
     对于toks和recs的每一对值(tok, rec)：
     + 若 ~rec.origin == tok~
+      - ~_pns_sd_set.remove(tok)~
+      - ~_pns_sld_set.add(tok)~
       - ~_pns_sld_expire_tbl[tok] ← rec.expire~
     + 否则，
+      - ~_pns_sld_set.remove(tok)~
+      - ~_pns_sd_set.add(tok)~
       - ~_pns_sd_origin_tbl[tok] ← rec.origin~
       - ~_pns_sd_parent_tbl[tok] ← rec.parent~
   - 断言
@@ -350,6 +354,9 @@ Controller合约包括如下状态：
       - origin：一半概率是对应的tok，一半概率从 _pns_owner_tbl 随机选
       - expire：若origin是自身，则随机1天到5年，否则是0
       - parent：若origin是自身，则也是自身，否则随机从 _pns_owner_tbl 选
+  - 说明
+    + 供维护时迁移数据用，因此toks应该是二级域名或多级域名；
+    + 迁移可能导致二级域名和多级域名类型互换；
 + ~PNS.register(name, to, dur, base)~ ，受限，被合约调用
   - 约束（必要条件）
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~

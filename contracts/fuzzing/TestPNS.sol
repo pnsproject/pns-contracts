@@ -919,10 +919,19 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
                 uint256 tok = toks[i];
                 PNS.Record memory rec = recs[i];
 
+                debug(abi.encodePacked("set meta, tok = ", Strings.toHexString(tok),
+                                       ", expire = ", Strings.toString(rec.expire),
+                                       ", origin = ", Strings.toHexString(rec.origin),
+                                       ", parent = ", Strings.toHexString(rec.parent)));
+
                 if (rec.origin == tok) {
+                    _pns_sd_set.remove(tok);
+                    _pns_sld_set.add(tok);
                     _pns_sld_expire_tbl[tok] = rec.expire;
                 }
                 else {
+                    _pns_sld_set.remove(tok);
+                    _pns_sd_set.add(tok);
                     _pns_sd_origin_tbl[tok] = rec.origin;
                     _pns_sd_parent_tbl[tok] = rec.parent;
                 }
