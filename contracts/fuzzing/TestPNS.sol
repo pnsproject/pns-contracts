@@ -1837,32 +1837,39 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         return ok1 && ok2;
     }
 
-    function cons_p_setName(address addr, uint256 tok) internal view returns(bool) {
+    function cons_p_setName(address addr, uint256 tok) internal returns(bool) {
         bool ok1 = false;
         if (_pns_mutable) {
             ok1 = true;
+            debug("pns mutable");
         }
 
         bool ok2 = false;
         if ((msg.sender == _pns_root) || (_pns_manager_set.contains(msg.sender))) {
             ok2 = true;
+
+            debug("privileged sender");
         }
 
         bool own_tok = false;
         if (h_pns_owner_is(tok, msg.sender)) {
             own_tok = true;
+            debug("tok owned by sender ");
         }
         if (_pns_approve_tbl[tok] == msg.sender) {
             own_tok = true;
+            debug("tok approved to sender");
         }
 
         bool own_addr = false;
         if (addr == msg.sender) {
             own_addr = true;
+            debug("addr eq to sender");
         }
         try Ownable(addr).owner() returns(address owner) {
             if (owner == msg.sender) {
-                own_addr == true;
+                own_addr = true;
+                debug("addr owned by sender");
             }
         } catch {}
 
@@ -1903,10 +1910,10 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         if (_pns_owner_tbl.contains(tok) &&
             (addr == _pns_owner_tbl.get(tok) ||
              addr == _pns_approve_tbl[tok])) {
-            assert(P.getName(addr) == tok);
+            assert_eq("P.getName", P.getName(addr), tok);
         }
         else {
-            assert(P.getName(addr) == 0);
+            assert_eq("P.getName", P.getName(addr), 0);
         }
     }
 
