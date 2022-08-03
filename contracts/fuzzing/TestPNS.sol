@@ -259,6 +259,10 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         return true;
     }
 
+    function placeholder() internal pure {
+        assert(1 + 2 > 1);
+    }
+
     // ---------------------- operation ---------------------------
     function op_p_transferRootOwnership(uint8 fix_r, address p_r) public {
         // requirements
@@ -339,15 +343,18 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         bool ok2 = false;
 
         if (msg.sender == _pns_root) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         if (_pns_manager_set.contains(p_m) && !p_b) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         if (!_pns_manager_set.contains(p_m) && p_b) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok = ok1 && ok2;
@@ -389,15 +396,18 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         bool ok2 = false;
 
         if (msg.sender == _c_root[p_idx]) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         if (_c_manager_set[p_idx].contains(p_m) && !p_b) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         if (!_c_manager_set[p_idx].contains(p_m) && p_b) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok = ok1 && ok2;
@@ -463,6 +473,22 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         bool fl_is_live    = fl_b0 < 200;
         bool fl_is_open    = fl_b1 < 200;
         bool fl_can_redeem = fl_b2 < 200;
+
+
+        if (fl_is_live) {
+            placeholder(); } else {
+            placeholder();
+        }
+
+        if (fl_is_open) {
+            placeholder(); } else {
+            placeholder();
+        }
+
+        if (fl_can_redeem) {
+            placeholder(); } else {
+            placeholder();
+        }
 
         uint256 p_fl =
             (fl_is_live    ? 1 : 0) |
@@ -577,17 +603,20 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         bool ok1 = false;
         if (msg.sender == _pns_root) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (p_to != address(0)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (!_pns_owner_tbl.contains(p_tok)) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2 && ok3;
@@ -656,31 +685,38 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         bool ok1 = false;
         if (msg.sender == _pns_root) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(msg.sender)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
         if (_pns_approve_tbl[ptok] == msg.sender) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
         if (h_pns_owner_is(ptok, msg.sender)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (to != address(0)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (!_pns_owner_tbl.contains(stok)) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok4 = false;
         if (h_namePrefixValid(name)) {
-            ok4 = true;
+            ok4 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2 && ok3 && ok4;
@@ -752,27 +788,39 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         bool ok1 = false;
         if (_pns_owner_tbl.contains(tok)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (P.nameExpired(tok) && !_pns_bound_set.contains(tok)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
+
         if (msg.sender == _pns_root) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
+
         if (h_pns_owner_is(tok, msg.sender)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
+
         if (msg.sender == _pns_approve_tbl[tok]) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
+
         if (h_pns_owner_is(_pns_sd_origin_tbl[tok], msg.sender)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
+
         if (_pns_approve_tbl[_pns_sd_origin_tbl[tok]] == msg.sender) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2;
@@ -813,21 +861,29 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         }
         if (_pns_manager_set.contains(msg.sender)) {
             require(tok != 0);
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
+
         if (h_pns_owner_is(tok, msg.sender)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
+
         if (_pns_approve_tbl[tok] == msg.sender) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (_pns_sld_set.contains(tok)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
+
         if (_pns_bound_set.contains(_pns_sd_origin_tbl[tok])) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2;
@@ -910,11 +966,13 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         bool ok = false;
 
         if (msg.sender == _pns_root) {
-            ok = true;
+            ok = true; } else {
+            placeholder();
         }
 
         if (_pns_manager_set.contains(msg.sender)) {
-            ok = true;
+            ok = true; } else {
+            placeholder();
         }
 
         if (ok) {
@@ -1019,45 +1077,54 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         bool ok1 = false;
         if (_c_is_live[idx]) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (msg.sender == _c_root[idx]) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         if (_c_manager_set[idx].contains(msg.sender)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok4 = false;
         if (_pns_mutable) {
-            ok4 = true;
+            ok4 = true; } else {
+            placeholder();
         }
 
         bool ok5 = false;
         if (address(C[idx]) == _pns_root) {
-            ok5 = true;
+            ok5 = true; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(address(C[idx]))) {
-            ok5 = true;
+            ok5 = true; } else {
+            placeholder();
         }
 
         bool ok6 = true;
         for (uint i = 0; i < a.khs.length; i++) {
             if (bytes(_pns_key_tbl[a.khs[i]]).length == 0) {
-                ok6 = false;
+                ok6 = false; } else {
+                placeholder();
             }
         }
 
         bool ok7 = false;
         if (h_namePrefixValid(a.name)) {
-            ok7 = true;
+            ok7 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7;
@@ -1192,52 +1259,62 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
     {
         bool ok1 = false;
         if (_c_is_open[a.idx]) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (a.value >= a.price) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (h_strlen(a.name) >= _c_min_reg_len[a.idx]) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok4 = false;
         if (a.dur >= _c_min_reg_dur[a.idx]) {
-            ok4 = true;
+            ok4 = true; } else {
+            placeholder();
         }
 
         bool ok5 = false;
         unchecked {
             if (block.timestamp + a.dur + GRACE_PERIOD > block.timestamp + GRACE_PERIOD) {
-                ok5 = true;
+                ok5 = true; } else {
+                placeholder();
             }
         }
 
         bool ok6 = false;
         if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
-            ok6 = true;
+            ok6 = true; } else {
+            placeholder();
         }
 
         bool ok7 = false;
         if (address(C[a.idx]) == _pns_root) {
-            ok7 = true;
+            ok7 = true; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(address(C[a.idx]))) {
-            ok7 = true;
+            ok7 = true; } else {
+            placeholder();
         }
 
         bool ok8 = false;
         if (address(this).balance >= a.value) {
-            ok8 = true;
+            ok8 = true; } else {
+            placeholder();
         }
 
         bool ok9 = false;
         if (h_namePrefixValid(a.name)) {
-            ok9 = true;
+            ok9 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9;
@@ -1377,23 +1454,27 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
     {
         bool ok1 = false;
         if (cons_c_nameRegister(a)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (_pns_mutable) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (ca.vls.length == ca.khs.length) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok4 = true;
         for (uint i = 0; i < ca.khs.length; i++) {
             if (bytes(_pns_key_tbl[ca.khs[i]]).length == 0) {
-                ok4 = false;
+                ok4 = false; } else {
+                placeholder();
             }
         }
 
@@ -1567,33 +1648,40 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
                                                   address(C[a.idx])));
         (address sa,) = h_eth_prefix(hash).tryRecover(a.c);
         if (sa == _c_root[a.idx]) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         if (_c_manager_set[a.idx].contains(sa)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (_c_can_redeem[a.idx]) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok4 = false;
         if (!_pns_owner_tbl.contains(a.stok) && (a.to != address(0))) {
-            ok4 = true;
+            ok4 = true; } else {
+            placeholder();
         }
 
         bool ok5 = false;
         if (address(C[a.idx]) == _pns_root) {
-            ok5 = true;
+            ok5 = true; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(address(C[a.idx]))) {
-            ok5 = true;
+            ok5 = true; } else {
+            placeholder();
         }
 
         bool ok6 = false;
         if (h_namePrefixValid(a.name)) {
-            ok6 = true;
+            ok6 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6;
@@ -1660,38 +1748,45 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
     {
         bool ok1 = false;
         if (_c_is_open[idx]) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (address(C[idx]) == _pns_root) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(address(C[idx]))) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (_pns_sld_set.contains(stok)) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok4 = false;
         if (value >= price) {
-            ok4 = true;
+            ok4 = true; } else {
+            placeholder();
         }
 
         bool ok5 = false;
         unchecked {
             if (_pns_sld_expire_tbl[stok] + dur + GRACE_PERIOD >
                 _pns_sld_expire_tbl[stok] + GRACE_PERIOD) {
-                ok5 = true;
+                ok5 = true; } else {
+                placeholder();
             }
         }
 
         bool ok6 = false;
         if (address(this).balance >= value) {
-            ok6 = true;
+            ok6 = true; } else {
+            placeholder();
         }
 
         ok = ok1 && ok2 && ok3 && ok4 && ok5 && ok6;
@@ -1768,35 +1863,42 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         // update state
         bool ok1 = false;
         if (_c_is_live[idx]) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (msg.sender == _c_root[idx]) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         if (_c_manager_set[idx].contains(msg.sender)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok3 = false;
         if (address(C[idx]) == _pns_root) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(address(C[idx]))) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok4 = false;
         if (_pns_sld_set.contains(stok)) {
-            ok4 = true;
+            ok4 = true; } else {
+            placeholder();
         }
 
         bool ok5 = false;
         unchecked {
             if (_pns_sld_expire_tbl[stok] + GRACE_PERIOD + dur >
                 _pns_sld_expire_tbl[stok] + GRACE_PERIOD) {
-                ok5 = true;
+                ok5 = true; } else {
+                placeholder();
             }
         }
 
@@ -1821,21 +1923,26 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
     function cons_domain_modifiable(uint256 tok) internal view returns(bool) {
         bool ok1 = false;
         if (_pns_mutable) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (msg.sender == _pns_root) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(msg.sender)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         if (h_pns_owner_is(tok, msg.sender)) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         if (_pns_approve_tbl[tok] == msg.sender) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         return ok1 && ok2;
@@ -1845,40 +1952,47 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         bool ok1 = false;
         if (_pns_mutable) {
             ok1 = true;
-            debug("pns mutable");
+            debug("pns mutable"); } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if ((msg.sender == _pns_root) || (_pns_manager_set.contains(msg.sender))) {
             ok2 = true;
 
-            debug("privileged sender");
+            debug("privileged sender"); } else {
+            placeholder();
         }
 
         bool own_tok = false;
         if (h_pns_owner_is(tok, msg.sender)) {
             own_tok = true;
-            debug("tok owned by sender ");
+            debug("tok owned by sender "); } else {
+            placeholder();
         }
         if (_pns_approve_tbl[tok] == msg.sender) {
             own_tok = true;
-            debug("tok approved to sender");
+            debug("tok approved to sender"); } else {
+            placeholder();
         }
 
         bool own_addr = false;
         if (addr == msg.sender) {
             own_addr = true;
-            debug("addr eq to sender");
+            debug("addr eq to sender"); } else {
+            placeholder();
         }
         try Ownable(addr).owner() returns(address owner) {
             if (owner == msg.sender) {
                 own_addr = true;
-                debug("addr owned by sender");
+                debug("addr owned by sender"); } else {
+                placeholder();
             }
         } catch {}
 
         if (own_tok && own_addr) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         return ok1 && ok2;
@@ -1891,7 +2005,8 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         // param generation
         address addr = addr1;
         if (addr_idx < 200) {
-            addr = h_sel_sender_with_nft(addr_idx);
+            addr = h_sel_sender_with_nft(addr_idx); } else {
+            placeholder();
         }
 
         uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
@@ -1936,7 +2051,8 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         uint256 nid = nid1;
         if (nid_idx < 200) {
-            nid = nid1 % 10;
+            nid = nid1 % 10; } else {
+            placeholder();
         }
 
         uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
@@ -1950,21 +2066,25 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         // update state
         bool ok1 = false;
         if (cons_domain_modifiable(tok)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (msg.sender == nowner) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
         try IERC721(naddr).getApproved(nid) returns(address ret) {
             if (ret == msg.sender) {
-                ok2 = true;
+                ok2 = true; } else {
+                placeholder();
             }
         } catch {}
         try IERC721(naddr).isApprovedForAll(nowner, msg.sender) returns(bool ret) {
             if (ret) {
-                ok2 = true;
+                ok2 = true; } else {
+                placeholder();
             }
         } catch {}
 
@@ -2029,12 +2149,14 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         // update state
         bool ok1 = false;
         if (cons_domain_modifiable(tok)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (bytes(_pns_key_tbl[h]).length > 0) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok = ok1 && ok2;
@@ -2085,19 +2207,22 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         // update state
         bool ok1 = false;
         if (cons_domain_modifiable(tok)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = true;
         for (uint i = 0; i < hs.length; i++) {
             if (bytes(_pns_key_tbl[hs[i]]).length == 0) {
-                ok2 = false;
+                ok2 = false; } else {
+                placeholder();
             }
         }
 
         bool ok3 = false;
         if (hs.length == vs.length) {
-            ok3 = true;
+            ok3 = true; } else {
+            placeholder();
         }
 
         bool ok = ok1 && ok2 && ok3;
@@ -2186,12 +2311,14 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         // update state
         bool ok1 = false;
         if (cons_domain_modifiable(tok)) {
-            ok1 = true;
+            ok1 = true; } else {
+            placeholder();
         }
 
         bool ok2 = false;
         if (vs.length == tgts.length) {
-            ok2 = true;
+            ok2 = true; } else {
+            placeholder();
         }
 
         bool ok = ok1 && ok2;
@@ -2231,10 +2358,12 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         bool fail = true;
 
         if (msg.sender == _pns_root) {
-            fail = false;
+            fail = false; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(msg.sender)) {
-            fail = false;
+            fail = false; } else {
+            placeholder();
         }
 
         // call op
@@ -2256,10 +2385,12 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         bool fail = true;
 
         if (msg.sender == _pns_root) {
-            fail = false;
+            fail = false; } else {
+            placeholder();
         }
         if (_pns_manager_set.contains(msg.sender)) {
-            fail = false;
+            fail = false; } else {
+            placeholder();
         }
 
         // call op
@@ -2415,12 +2546,14 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         uint l1 = _c_base_prices[idx].length;
         if (h_strlen(name) < l1) {
-            l1 = h_strlen(name);
+            l1 = h_strlen(name); } else {
+            placeholder();
         }
 
         uint l2 = _c_rent_prices[idx].length;
         if (h_strlen(name) < l2) {
-            l2 = h_strlen(name);
+            l2 = h_strlen(name); } else {
+            placeholder();
         }
 
         // avoid model fail, when implement will fail
@@ -2471,7 +2604,8 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         uint l = _c_rent_prices[idx].length;
         if (h_strlen(name) < l) {
-            l = h_strlen(name);
+            l = h_strlen(name); } else {
+            placeholder();
         }
 
         // avoid model fail, when implement will fail
