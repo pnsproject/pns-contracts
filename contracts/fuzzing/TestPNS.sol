@@ -645,7 +645,9 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         }
 
         // fix for tld
-        require(_pns_owner_tbl.contains(ptok) && (_pns_sld_set.contains(ptok) || _pns_sd_set.contains(ptok)));
+        if (_pns_owner_tbl.contains(ptok)) {
+            require(_pns_sld_set.contains(ptok) || _pns_sd_set.contains(ptok));
+        }
 
         uint256 stok = h_namehash(name, ptok);
 
@@ -780,6 +782,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
             _pns_sld_set.remove(tok);
             _pns_sd_set.remove(tok);
             _pns_sd_parent_tbl[tok] = 0;
+            _pns_sld_expire_tbl[tok] = 0;
         }
 
         // call op
@@ -931,6 +934,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
                 }
                 else {
                     _pns_sld_set.remove(tok);
+                    _pns_sld_expire_tbl[tok] = 0;
                     _pns_sd_set.add(tok);
                     _pns_sd_origin_tbl[tok] = rec.origin;
                     _pns_sd_parent_tbl[tok] = rec.parent;
@@ -2374,21 +2378,26 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         assert(P.bounded(tok) == _pns_bound_set.contains(tok));
     }
 
-    function st_p_nameExpired(uint8 tok_idx, uint256 tok1) public view {
+    function st_p_nameExpired(uint8 tok_idx, uint256 tok1) public {
         // param generation
         uint256 tok = h_sel_token_alt(tok_idx, 200, tok1);
+
+        debug(abi.encodePacked("tok = ", Strings.toHexString(tok),
+                               ", GP = ", Strings.toString(GRACE_PERIOD),
+                               ", P.expire = ", Strings.toString(P.expire(tok)),
+                               ", P.origin = ", Strings.toHexString(P.origin(tok))));
 
         // assertion
         bool get = P.nameExpired(tok);
 
         if (_pns_sld_set.contains(tok)) {
-            assert(get == (_pns_sld_expire_tbl[tok] + GRACE_PERIOD < block.timestamp));
+            assert_eq("sld nameExpired", get, (_pns_sld_expire_tbl[tok] + GRACE_PERIOD < block.timestamp));
         }
         else if (_pns_sd_set.contains(tok)) {
-            assert(get == (_pns_sld_expire_tbl[_pns_sd_origin_tbl[tok]] + GRACE_PERIOD < block.timestamp));
+            assert_eq("sd nameExpired", get, (_pns_sld_expire_tbl[_pns_sd_origin_tbl[tok]] + GRACE_PERIOD < block.timestamp));
         }
         else {
-            assert(get == (GRACE_PERIOD < block.timestamp));
+            assert_eq("other nameExpired", get, (GRACE_PERIOD < block.timestamp));
         }
     }
 

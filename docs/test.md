@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org456685f)
-2.  [模糊测试](#org015eac2)
-    1.  [合约分析](#org4807e01)
-        1.  [常数](#orgca5c3e9)
-        2.  [状态](#orgb7ccc39)
-        3.  [辅助状态和辅助合约](#org6d6f062)
-        4.  [操作与断言](#orgc6d2a93)
-        5.  [辅助操作与状态断言](#orgf23bd4c)
-    2.  [初始化](#org3c6c4d4)
-    3.  [测试代码风格](#org368903a)
+1.  [单元测试](#org0f9b583)
+2.  [模糊测试](#org36f2c59)
+    1.  [合约分析](#org0e04f04)
+        1.  [常数](#org0d49cca)
+        2.  [状态](#org51551bb)
+        3.  [辅助状态和辅助合约](#org468d816)
+        4.  [操作与断言](#orgdcbc306)
+        5.  [辅助操作与状态断言](#orgfef6e8f)
+    2.  [初始化](#org424bdbe)
+    3.  [测试代码风格](#org8689605)
 
 
 
-<a id="org456685f"></a>
+<a id="org0f9b583"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org015eac2"></a>
+<a id="org36f2c59"></a>
 
 # 模糊测试
 
 
-<a id="org4807e01"></a>
+<a id="org0e04f04"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orgca5c3e9"></a>
+<a id="org0d49cca"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgb7ccc39"></a>
+<a id="org51551bb"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org6d6f062"></a>
+<a id="org468d816"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="orgc6d2a93"></a>
+<a id="orgdcbc306"></a>
 
 ### 操作与断言
 
@@ -917,6 +917,7 @@ Controller合约包括如下状态：
         -   `_pns_sld_set.remove(tok) if exists`
         -   `_pns_sd_set.remove(tok) if exists`
         -   `_pns_sd_parent_tbl[tok] ← 0`
+        -   `_pns_sld_expire_tbl[tok] = 0`
     -   断言
         -   `!P.exists(tok)`
         -   `P.origin(tok) == 0`
@@ -925,6 +926,7 @@ Controller合约包括如下状态：
         -   tok：大概率从\_pns\_token\_set 随机选，小概率随机
     -   说明
         -   PNS.nameExpired需要进行状态断言测试
+        -   将 `_pns_sld_expire_tbl[tok]` 清零，是因为有可能某个多级子域名的origin域名被销毁，那么改多级子域名应该过期
 -   `PNS.bound(tok)`
     -   约束
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }`
@@ -949,6 +951,7 @@ Controller合约包括如下状态：
             -   `_pns_sld_expire_tbl[tok] ← rec.expire`
         -   否则，
             -   `_pns_sld_set.remove(tok)`
+            -   `_pns_sld_expire_tbl[tok] = 0`
             -   `_pns_sd_set.add(tok)`
             -   `_pns_sd_origin_tbl[tok] ← rec.origin`
             -   `_pns_sd_parent_tbl[tok] ← rec.parent`
@@ -967,6 +970,7 @@ Controller合约包括如下状态：
     -   说明
         -   供维护时迁移数据用，因此toks应该是二级域名或多级域名；
         -   迁移可能导致二级域名和多级域名类型互换；
+        -   若移除出二级域名，需要将对应的origin清零，避免过期的判定不一致；
 -   `PNS.register(name, to, dur, base)` ，受限，被合约调用
     -   约束（必要条件）
         -   `_msgSender() ∈ { _pns_root, _pns_manager_set }`
@@ -1258,7 +1262,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orgf23bd4c"></a>
+<a id="orgfef6e8f"></a>
 
 ### 辅助操作与状态断言
 
@@ -1606,7 +1610,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org3c6c4d4"></a>
+<a id="org424bdbe"></a>
 
 ## 初始化
 
@@ -1648,7 +1652,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org368903a"></a>
+<a id="org8689605"></a>
 
 ## 测试代码风格
 

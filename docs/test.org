@@ -307,6 +307,7 @@ Controller合约包括如下状态：
     + ~_pns_sld_set.remove(tok) if exists~
     + ~_pns_sd_set.remove(tok) if exists~
     + ~_pns_sd_parent_tbl[tok] ← 0~
+    + ~_pns_sld_expire_tbl[tok] = 0~
   - 断言
     + ~!P.exists(tok)~
     + ~P.origin(tok) == 0~
@@ -315,6 +316,7 @@ Controller合约包括如下状态：
     + tok：大概率从_pns_token_set 随机选，小概率随机
   - 说明
     + PNS.nameExpired需要进行状态断言测试
+    + 将 ~_pns_sld_expire_tbl[tok]~ 清零，是因为有可能某个多级子域名的origin域名被销毁，那么改多级子域名应该过期
 + ~PNS.bound(tok)~
   - 约束
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set, _pns_owner_tbl[tok], _pns_approve_tbl[tok] }~
@@ -339,6 +341,7 @@ Controller合约包括如下状态：
       - ~_pns_sld_expire_tbl[tok] ← rec.expire~
     + 否则，
       - ~_pns_sld_set.remove(tok)~
+      - ~_pns_sld_expire_tbl[tok] = 0~
       - ~_pns_sd_set.add(tok)~
       - ~_pns_sd_origin_tbl[tok] ← rec.origin~
       - ~_pns_sd_parent_tbl[tok] ← rec.parent~
@@ -357,6 +360,7 @@ Controller合约包括如下状态：
   - 说明
     + 供维护时迁移数据用，因此toks应该是二级域名或多级域名；
     + 迁移可能导致二级域名和多级域名类型互换；
+    + 若移除出二级域名，需要将对应的origin清零，避免过期的判定不一致；
 + ~PNS.register(name, to, dur, base)~ ，受限，被合约调用
   - 约束（必要条件）
     + ~_msgSender() ∈ { _pns_root, _pns_manager_set }~
