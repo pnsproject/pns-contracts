@@ -259,8 +259,8 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         return true;
     }
 
-    function placeholder() internal pure {
-        assert(1 + 2 > 1);
+    function placeholder() internal view {
+        assert(_pns_mutable || !_pns_mutable);
     }
 
     // ---------------------- operation ---------------------------
@@ -2418,8 +2418,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
                                                   from, to, tok));
         require(ok); // ok or revert
 
-        // placeholder
-        assert(1 < 2);
+        placeholder();
     }
 
     function aop_pns_approve(uint8 to_idx, uint8 tok_idx) public {
@@ -2434,8 +2433,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         (bool ok, ) = h_p_call(abi.encodeWithSelector(P.approve.selector, tok, to));
         require(ok); // ok or revert
 
-        // placeholder
-        assert(1 < 2);
+        placeholder();
     }
 
     function aop_nft_set_owner(bool idx, uint8 owner_idx) public {
@@ -2446,8 +2444,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         uint p_idx = idx ? 1 : 0;
         NFT[p_idx].transferOwnership(owner);
 
-        // placeholder
-        assert(1 < 2);
+        placeholder();
     }
 
     function aop_nft_transfer(bool idx, uint8 from_idx, uint8 to_idx, uint8 tok_idx) public {
@@ -2460,8 +2457,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         uint p_idx = idx ? 1 : 0;
         NFT[p_idx].safeTransferFrom(from, to, tok);
 
-        // placeholder
-        assert(1 < 2);
+        placeholder();
     }
 
     function aop_set_price(bool idx, int256 price) public {
@@ -2474,8 +2470,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         uint p_idx = idx ? 1 : 0;
         PriceOracle(address(PRICE[p_idx])).updateAnswer(price);
 
-        // placeholder
-        assert(1 < 2);
+        placeholder();
     }
 
     // ------------------------ state check ------------------------
