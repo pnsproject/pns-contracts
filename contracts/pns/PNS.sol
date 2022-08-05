@@ -107,6 +107,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
         // require subtokens cleared
         _burn(tokenId);
 
+        _bounds[tokenId] = false;
+
         records[tokenId].expire = 0;
         records[tokenId].origin = 0;
     }
