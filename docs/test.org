@@ -270,7 +270,6 @@ Controller合约包括如下状态：
     + ~to ≠ 0~
     + ~stok ∉ _pns_owner_tbl~
     + name为有效的域名前缀（非0长度，仅包含数字字母和“-”）
-    + ~tok ∉ _pns_bound_set~ （通过管理员销毁的冻结域名无法再次铸造）
   - 状态更新
     + ~_pns_owner_tbl[stok] ← to~
     + ~_pns_sd_set.add(stok)~
@@ -374,7 +373,6 @@ Controller合约包括如下状态：
   - 约束
     + ~_c*_is_live~
     + ~_msgSender() ∈ { _c*_root, _c*_manager_set }~
-    + ~stok ∉ _pns_bound_set~ （通过管理员销毁的冻结域名无法再次铸造）
     + 铸造约束
       - ~stok ∉ _pns_owner_tbl~
       - ~to ≠ 0~
@@ -420,7 +418,6 @@ Controller合约包括如下状态：
     + ~length(name) >= _c*_min_reg_len~
     + ~dur >= _c*_min_reg_dur~
     + ~block.timestamp + dur + GRACE_PERIOD > block.timestamp + GRACE_PERIOD~
-    + ~stok ∉ _pns_bound_set~ （通过管理员销毁的冻结域名无法再次铸造）
     + 铸造约束
       - ~stok ∉ _pns_owner_tbl~
       - ~to ≠ 0~
@@ -482,7 +479,6 @@ Controller合约包括如下状态：
     + ~block.timestamp < dl~
     + ~recover(keccak256(keccak256(name), to, dur, dl, block.chainid, C*), c) ∈ { _c*_root, _c*_manager_set }~
     + _c*_can_redeem
-    + ~stok ∉ _pns_bound_set~ （通过管理员销毁的冻结域名无法再次铸造）
     + 铸造约束
       - ~stok ∉ _pns_owner_tbl~
       - ~to ≠ 0~

@@ -1,20 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org8fc2a56)
-2.  [模糊测试](#org0111157)
-    1.  [合约分析](#orgee6d697)
-        1.  [常数](#orgd959c9b)
-        2.  [状态](#org9bb3f52)
-        3.  [辅助状态和辅助合约](#org9f538ae)
-        4.  [操作与断言](#org2152d6b)
-        5.  [辅助操作与状态断言](#org3455888)
-    2.  [初始化](#org72995eb)
-    3.  [测试代码风格](#org904d618)
+1.  [单元测试](#org0f9b583)
+2.  [模糊测试](#org36f2c59)
+    1.  [合约分析](#org0e04f04)
+        1.  [常数](#org0d49cca)
+        2.  [状态](#org51551bb)
+        3.  [辅助状态和辅助合约](#org468d816)
+        4.  [操作与断言](#orgdcbc306)
+        5.  [辅助操作与状态断言](#orgfef6e8f)
+    2.  [初始化](#org424bdbe)
+    3.  [测试代码风格](#org8689605)
 
 
 
-<a id="org8fc2a56"></a>
+<a id="org0f9b583"></a>
 
 # 单元测试
 
@@ -32,19 +32,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org0111157"></a>
+<a id="org36f2c59"></a>
 
 # 模糊测试
 
 
-<a id="orgee6d697"></a>
+<a id="org0e04f04"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orgd959c9b"></a>
+<a id="org0d49cca"></a>
 
 ### 常数
 
@@ -183,7 +183,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org9bb3f52"></a>
+<a id="org51551bb"></a>
 
 ### 状态
 
@@ -467,7 +467,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org9f538ae"></a>
+<a id="org468d816"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +550,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org2152d6b"></a>
+<a id="orgdcbc306"></a>
 
 ### 操作与断言
 
@@ -880,7 +880,6 @@ Controller合约包括如下状态：
         -   `to ≠ 0`
         -   `stok ∉ _pns_owner_tbl`
         -   name为有效的域名前缀（非0长度，仅包含数字字母和“-”）
-        -   `tok ∉ _pns_bound_set` （通过管理员销毁的冻结域名无法再次铸造）
     -   状态更新
         -   `_pns_owner_tbl[stok] ← to`
         -   `_pns_sd_set.add(stok)`
@@ -984,7 +983,6 @@ Controller合约包括如下状态：
     -   约束
         -   `_c*_is_live`
         -   `_msgSender() ∈ { _c*_root, _c*_manager_set }`
-        -   `stok ∉ _pns_bound_set` （通过管理员销毁的冻结域名无法再次铸造）
         -   铸造约束
             -   `stok ∉ _pns_owner_tbl`
             -   `to ≠ 0`
@@ -1030,7 +1028,6 @@ Controller合约包括如下状态：
         -   `length(name) >= _c*_min_reg_len`
         -   `dur >= _c*_min_reg_dur`
         -   `block.timestamp + dur + GRACE_PERIOD > block.timestamp + GRACE_PERIOD`
-        -   `stok ∉ _pns_bound_set` （通过管理员销毁的冻结域名无法再次铸造）
         -   铸造约束
             -   `stok ∉ _pns_owner_tbl`
             -   `to ≠ 0`
@@ -1092,7 +1089,6 @@ Controller合约包括如下状态：
         -   `block.timestamp < dl`
         -   `recover(keccak256(keccak256(name), to, dur, dl, block.chainid, C*), c) ∈ { _c*_root, _c*_manager_set }`
         -   \_c\*\_can\_redeem
-        -   `stok ∉ _pns_bound_set` （通过管理员销毁的冻结域名无法再次铸造）
         -   铸造约束
             -   `stok ∉ _pns_owner_tbl`
             -   `to ≠ 0`
@@ -1266,7 +1262,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="org3455888"></a>
+<a id="orgfef6e8f"></a>
 
 ### 辅助操作与状态断言
 
@@ -1614,7 +1610,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org72995eb"></a>
+<a id="org424bdbe"></a>
 
 ## 初始化
 
@@ -1656,7 +1652,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org904d618"></a>
+<a id="org8689605"></a>
 
 ## 测试代码风格
 
