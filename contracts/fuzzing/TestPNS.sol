@@ -551,13 +551,16 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         if (len > 20) len = 20;
 
+        require(len >= 1);
+
         uint256[] memory p_bpl = new uint256[](len);
         uint256[] memory p_rpl = new uint256[](len);
 
         p_bpl[len-1] = bpl_min + 1;
         p_rpl[len-1] = rpl_min + 1;
 
-        for (uint i = len - 2; i >= 0; i--) {
+        for (int j = int(len) - 2; j >= 0; j--) {
+            uint i = uint(j);
             p_bpl[i] = p_bpl[i+1] + bpl[i];
             p_rpl[i] = p_rpl[i+1] + rpl[i];
         }

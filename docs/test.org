@@ -842,7 +842,7 @@ Controller合约包括如下状态：
 | op_c_setManager             | done    |                                                       |
 | op_p_setContractConfig      | done    |                                                       |
 | op_c_setContractConfig      | done    |                                                       |
-| op_c_setPrice               | revert  |                                                       |
+| op_c_setPrice               | done    |                                                       |
 | op_p_mint                   | done    |                                                       |
 | op_p_mintSubdomain          | done    |                                                       |
 | op_p_burn                   | partial | tok是approved的情况未覆盖                             |
