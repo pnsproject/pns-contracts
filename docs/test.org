@@ -861,7 +861,7 @@ Controller合约包括如下状态：
 | op_p_setManyByHash          | done    |                                                       |
 | op_p_setlink                | done    |                                                       |
 | op_p_setlinks               | done    |                                                       |
-| chk_p_register              | revert  |                                                       |
+| chk_p_register              | done    |                                                       |
 | chk_p_renew                 | done    |                                                       |
 | aop_pns_safeTransferFrom    | done    |                                                       |
 | aop_pns_approved            | partial |                                                       |

@@ -2376,6 +2376,8 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
             assert(!ok);
         }
 
+        placeholder();
+
         revert();
     }
 
