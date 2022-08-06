@@ -1,20 +1,21 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org0f9b583)
-2.  [模糊测试](#org36f2c59)
-    1.  [合约分析](#org0e04f04)
-        1.  [常数](#org0d49cca)
-        2.  [状态](#org51551bb)
-        3.  [辅助状态和辅助合约](#org468d816)
-        4.  [操作与断言](#orgdcbc306)
-        5.  [辅助操作与状态断言](#orgfef6e8f)
-    2.  [初始化](#org424bdbe)
-    3.  [测试代码风格](#org8689605)
+1.  [单元测试](#orge0fabde)
+2.  [模糊测试](#org0c8c3a7)
+    1.  [合约分析](#org38885ed)
+        1.  [常数](#org8f1a208)
+        2.  [状态](#org4fee993)
+        3.  [辅助状态和辅助合约](#org3d69647)
+        4.  [操作与断言](#org86d71aa)
+        5.  [辅助操作与状态断言](#org62d2576)
+    2.  [初始化](#org5feddb0)
+    3.  [测试代码风格](#org69e90df)
+    4.  [覆盖情况统计](#org565a452)
 
 
 
-<a id="org0f9b583"></a>
+<a id="orge0fabde"></a>
 
 # 单元测试
 
@@ -32,19 +33,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org36f2c59"></a>
+<a id="org0c8c3a7"></a>
 
 # 模糊测试
 
 
-<a id="org0e04f04"></a>
+<a id="org38885ed"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org0d49cca"></a>
+<a id="org8f1a208"></a>
 
 ### 常数
 
@@ -183,7 +184,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org51551bb"></a>
+<a id="org4fee993"></a>
 
 ### 状态
 
@@ -467,7 +468,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org468d816"></a>
+<a id="org3d69647"></a>
 
 ### 辅助状态和辅助合约
 
@@ -550,7 +551,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="orgdcbc306"></a>
+<a id="org86d71aa"></a>
 
 ### 操作与断言
 
@@ -1262,7 +1263,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orgfef6e8f"></a>
+<a id="org62d2576"></a>
 
 ### 辅助操作与状态断言
 
@@ -1610,7 +1611,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org424bdbe"></a>
+<a id="org5feddb0"></a>
 
 ## 初始化
 
@@ -1652,7 +1653,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org8689605"></a>
+<a id="org69e90df"></a>
 
 ## 测试代码风格
 
@@ -1661,4 +1662,303 @@ Controller合约包括如下状态：
 -   辅助（auxiliary）操作以“aop\_”为前缀；
 -   操作权限检查以“chk\_”为前缀；
 -   状态测试以“st\_”为前缀；
+
+
+<a id="org565a452"></a>
+
+## 覆盖情况统计
+
+-   done: 函数覆盖正常，if的分支均覆盖；
+-   reviert: 测试函数出现不正常的revert，需要调整测试代码；
+-   partial:
+    -   函数测试功能正常，部分if分支未覆盖；
+    -   或者辅助函数参数选择有问题，未达到修改状态的目的，需要调整代码；
+
+下面是具体的统计：
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">函数</th>
+<th scope="col" class="org-left">情况</th>
+<th scope="col" class="org-left">说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td class="org-left">op_p_transferRootOwnership</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_transferRootOwnership</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setManager</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_setManager</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setContractConfig</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_setContractConfig</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_setPrice</td>
+<td class="org-left">revert</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_mint</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_mintSubdomain</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_burn</td>
+<td class="org-left">partial</td>
+<td class="org-left">tok是approved的情况未覆盖</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_bound</td>
+<td class="org-left">partial</td>
+<td class="org-left">tok是approved的情况未覆盖</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setMetadataBatch</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_nameRegisterByManager</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_nameRegister</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_nameRegisterWithConfig</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_nameRedeem</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_renew</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_c_renewByManager</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setName</td>
+<td class="org-left">partial</td>
+<td class="org-left">tok是approved的情况未覆盖</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setNftName</td>
+<td class="org-left">partial</td>
+<td class="org-left">tok是approved的情况未覆盖、合约是approved的情况未覆盖</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_addKeys</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setByHash</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setManyByHash</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setlink</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">op_p_setlinks</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">chk_p_register</td>
+<td class="org-left">revert</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">chk_p_renew</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">aop_pns_safeTransferFrom</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">aop_pns_approved</td>
+<td class="org-left">partial</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">aop_nft_set_owner</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">aop_nft_transfer</td>
+<td class="org-left">partial</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">aop_set_price</td>
+<td class="org-left">partial</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">st_p_getName</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">st_p_bounded</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">st_p_nameExpired</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">st_p_available</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">st_c_totalRegisterPrice</td>
+<td class="org-left">partial</td>
+<td class="org-left">name长度小于数组长度未覆盖、溢出情况未覆盖</td>
+</tr>
+
+
+<tr>
+<td class="org-left">st_c_renewPrice</td>
+<td class="org-left">partial</td>
+<td class="org-left">name长度小于数组长度未覆盖、溢出情况未覆盖</td>
+</tr>
+</tbody>
+</table>
 

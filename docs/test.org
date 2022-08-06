@@ -826,3 +826,52 @@ Controller合约包括如下状态：
 + 辅助（auxiliary）操作以“aop_”为前缀；
 + 操作权限检查以“chk_”为前缀；
 + 状态测试以“st_”为前缀；
+** 覆盖情况统计
++ done: 函数覆盖正常，if的分支均覆盖；
++ reviert: 测试函数出现不正常的revert，需要调整测试代码；
++ partial:
+  - 函数测试功能正常，部分if分支未覆盖；
+  - 或者辅助函数参数选择有问题，未达到修改状态的目的，需要调整代码；
+
+下面是具体的统计：
+| 函数                        | 情况    | 说明                                                  |
+|-----------------------------+---------+-------------------------------------------------------|
+| op_p_transferRootOwnership  | done    |                                                       |
+| op_c_transferRootOwnership  | done    |                                                       |
+| op_p_setManager             | done    |                                                       |
+| op_c_setManager             | done    |                                                       |
+| op_p_setContractConfig      | done    |                                                       |
+| op_c_setContractConfig      | done    |                                                       |
+| op_c_setPrice               | revert  |                                                       |
+| op_p_mint                   | done    |                                                       |
+| op_p_mintSubdomain          | done    |                                                       |
+| op_p_burn                   | partial | tok是approved的情况未覆盖                             |
+| op_p_bound                  | partial | tok是approved的情况未覆盖                             |
+| op_p_setMetadataBatch       | done    |                                                       |
+| op_c_nameRegisterByManager  | done    |                                                       |
+| op_c_nameRegister           | done    |                                                       |
+| op_c_nameRegisterWithConfig | done    |                                                       |
+| op_c_nameRedeem             | done    |                                                       |
+| op_c_renew                  | done    |                                                       |
+| op_c_renewByManager         | done    |                                                       |
+| op_p_setName                | partial | tok是approved的情况未覆盖                             |
+| op_p_setNftName             | partial | tok是approved的情况未覆盖、合约是approved的情况未覆盖 |
+| op_p_addKeys                | done    |                                                       |
+| op_p_setByHash              | done    |                                                       |
+| op_p_setManyByHash          | done    |                                                       |
+| op_p_setlink                | done    |                                                       |
+| op_p_setlinks               | done    |                                                       |
+| chk_p_register              | revert  |                                                       |
+| chk_p_renew                 | done    |                                                       |
+| aop_pns_safeTransferFrom    | done    |                                                       |
+| aop_pns_approved            | partial |                                                       |
+| aop_nft_set_owner           | done    |                                                       |
+| aop_nft_transfer            | partial |                                                       |
+| aop_set_price               | partial |                                                       |
+| st_p_getName                | done    |                                                       |
+| st_p_bounded                | done    |                                                       |
+| st_p_nameExpired            | done    |                                                       |
+| st_p_available              | done    |                                                       |
+| st_c_totalRegisterPrice     | partial | name长度小于数组长度未覆盖、溢出情况未覆盖            |
+| st_c_renewPrice             | partial | name长度小于数组长度未覆盖、溢出情况未覆盖            |
+#+caption: 覆盖情况统计
