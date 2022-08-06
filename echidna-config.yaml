@@ -9,6 +9,7 @@ corpusDir: "./corpus"
 testMode: assertion
 balanceContract: 100000000000000000000
 
+#
 #filterBlacklist: false
 #filterFunctions:
 #  - TestPNS.st_c_renewPrice(bool,string,uint64)
@@ -23,3 +24,9 @@ balanceContract: 100000000000000000000
 #  - TestPNS.op_c_nameRegister(bool,uint8,string,uint8,address,uint8,uint256,uint8,uint256)
 #  - TestPNS.op_p_setMetadataBatch((uint8,uint8,uint32,uint8)[])
 #  - TestPNS.op_c_setContractConfig(bool,uint8,uint8,uint8,uint8,uint32,bool)
+#  - TestPNS.op_p_setName(uint8,address,uint8,uint256)
+#  - TestPNS.op_p_burn(uint8,uint256)
+#  - TestPNS.st_p_nameExpired(uint8,uint256)
+#  - TestPNS.chk_p_register(string,address,uint64,uint256)
+#  - TestPNS.aop_pns_approve(uint8,uint8)
+#  - TestPNS.aop_nft_transfer(bool,uint8,uint8)
