@@ -872,6 +872,6 @@ Controller合约包括如下状态：
 | st_p_bounded                | done    |                                                       |
 | st_p_nameExpired            | done    |                                                       |
 | st_p_available              | done    |                                                       |
-| st_c_totalRegisterPrice     | partial | name长度小于数组长度未覆盖、溢出情况未覆盖            |
-| st_c_renewPrice             | partial | name长度小于数组长度未覆盖、溢出情况未覆盖            |
+| st_c_totalRegisterPrice     | partial | 溢出情况未覆盖                                        |
+| st_c_renewPrice             | partial | 溢出情况未覆盖                                        |
 #+caption: 覆盖情况统计

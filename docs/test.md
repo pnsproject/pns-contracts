@@ -1,21 +1,21 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org0923365)
-2.  [模糊测试](#orga95ed07)
-    1.  [合约分析](#orgd6fa6f2)
-        1.  [常数](#orge8a612d)
-        2.  [状态](#org38bc33f)
-        3.  [辅助状态和辅助合约](#org61f8ede)
-        4.  [操作与断言](#org5cfaf2c)
-        5.  [辅助操作与状态断言](#orgd221ff3)
-    2.  [初始化](#orgbfcba72)
-    3.  [测试代码风格](#org4d2bce6)
-    4.  [覆盖情况统计](#orgd0f330d)
+1.  [单元测试](#orgd890510)
+2.  [模糊测试](#org2a3a298)
+    1.  [合约分析](#org6107328)
+        1.  [常数](#org4d2aa15)
+        2.  [状态](#org41d9f6d)
+        3.  [辅助状态和辅助合约](#org469a7e9)
+        4.  [操作与断言](#orgb6767da)
+        5.  [辅助操作与状态断言](#orgda62033)
+    2.  [初始化](#org8eeb033)
+    3.  [测试代码风格](#org9431875)
+    4.  [覆盖情况统计](#org7c40fa8)
 
 
 
-<a id="org0923365"></a>
+<a id="orgd890510"></a>
 
 # 单元测试
 
@@ -33,19 +33,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orga95ed07"></a>
+<a id="org2a3a298"></a>
 
 # 模糊测试
 
 
-<a id="orgd6fa6f2"></a>
+<a id="org6107328"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="orge8a612d"></a>
+<a id="org4d2aa15"></a>
 
 ### 常数
 
@@ -184,7 +184,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org38bc33f"></a>
+<a id="org41d9f6d"></a>
 
 ### 状态
 
@@ -468,7 +468,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org61f8ede"></a>
+<a id="org469a7e9"></a>
 
 ### 辅助状态和辅助合约
 
@@ -551,7 +551,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org5cfaf2c"></a>
+<a id="orgb6767da"></a>
 
 ### 操作与断言
 
@@ -1263,7 +1263,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orgd221ff3"></a>
+<a id="orgda62033"></a>
 
 ### 辅助操作与状态断言
 
@@ -1611,7 +1611,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgbfcba72"></a>
+<a id="org8eeb033"></a>
 
 ## 初始化
 
@@ -1653,7 +1653,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org4d2bce6"></a>
+<a id="org9431875"></a>
 
 ## 测试代码风格
 
@@ -1664,7 +1664,7 @@ Controller合约包括如下状态：
 -   状态测试以“st\_”为前缀；
 
 
-<a id="orgd0f330d"></a>
+<a id="org7c40fa8"></a>
 
 ## 覆盖情况统计
 
@@ -1950,14 +1950,14 @@ Controller合约包括如下状态：
 <tr>
 <td class="org-left">st_c_totalRegisterPrice</td>
 <td class="org-left">partial</td>
-<td class="org-left">name长度小于数组长度未覆盖、溢出情况未覆盖</td>
+<td class="org-left">溢出情况未覆盖</td>
 </tr>
 
 
 <tr>
 <td class="org-left">st_c_renewPrice</td>
 <td class="org-left">partial</td>
-<td class="org-left">name长度小于数组长度未覆盖、溢出情况未覆盖</td>
+<td class="org-left">溢出情况未覆盖</td>
 </tr>
 </tbody>
 </table>

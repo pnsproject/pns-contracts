@@ -2542,15 +2542,21 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         // param generation
         uint idx = idx_idx ? 1 : 0;
 
+        uint l0 = h_strlen(name);
         uint l1 = _c_base_prices[idx].length;
-        if (h_strlen(name) < l1) {
-            l1 = h_strlen(name); } else {
+        uint l2 = _c_rent_prices[idx].length;
+
+        if (l0 < l1) {
+            l1 = l0;
+        }
+        else {
             placeholder();
         }
 
-        uint l2 = _c_rent_prices[idx].length;
-        if (h_strlen(name) < l2) {
-            l2 = h_strlen(name); } else {
+        if (l0 < l2) {
+            l2 = l0;
+        }
+        else {
             placeholder();
         }
 
@@ -2601,8 +2607,11 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         uint idx = idx_idx ? 1 : 0;
 
         uint l = _c_rent_prices[idx].length;
-        if (h_strlen(name) < l) {
-            l = h_strlen(name); } else {
+        uint l0 = h_strlen(name);
+        if (l0 < l) {
+            l = l0;
+        }
+        else {
             placeholder();
         }
 
