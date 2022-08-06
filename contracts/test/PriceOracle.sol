@@ -5,8 +5,10 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "../utils/RootOwnable.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
-contract PriceOracle is AggregatorV3Interface, ManagerOwnable {
+
+contract PriceOracle is AggregatorV3Interface, ManagerOwnable, ERC2771Context {
 
   uint256 public constant override version = 0;
   uint8 public override decimals;
@@ -19,10 +21,21 @@ contract PriceOracle is AggregatorV3Interface, ManagerOwnable {
   mapping(uint256 => uint256) public getTimestamp;
   mapping(uint256 => uint256) private getStartedAt;
 
-  constructor(int256 _answer) {
+  constructor(int256 _answer, address forwarder) ERC2771Context(forwarder) {
     decimals = 8;
     updateAnswer(_answer);
   }
+
+  function _msgSender() internal view virtual
+      override(ERC2771Context, Context) returns (address) {
+      return super._msgSender();
+  }
+
+  function _msgData() internal view virtual
+      override(ERC2771Context, Context) returns (bytes calldata) {
+      return super._msgData();
+  }
+
 
   function updateAnswer(int256 _answer) public onlyManager {
     latestAnswer = _answer;

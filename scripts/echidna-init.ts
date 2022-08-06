@@ -57,8 +57,8 @@ async function signer_init() {
 
 async function nft_init() {
     const MacroNFT = await ethers.getContractFactory("MacroNFT")
-    NFT[0] = await MacroNFT.deploy()
-    NFT[1] = await MacroNFT.deploy()
+    NFT[0] = await MacroNFT.deploy(TEST_CONTRACT_ADDR)
+    NFT[1] = await MacroNFT.deploy(TEST_CONTRACT_ADDR)
 
     await NFT[0].deployed()
     await NFT[1].deployed()
@@ -74,8 +74,8 @@ async function nft_init() {
 
 async function price_init() {
     const PriceOracle = await ethers.getContractFactory("PriceOracle")
-    PRICE[0] = await PriceOracle.deploy(Math.floor(79.2222 * 100000000))
-    PRICE[1] = await PriceOracle.deploy(Math.floor(47.1234 * 100000000))
+    PRICE[0] = await PriceOracle.deploy(Math.floor(79.2222 * 100000000), TEST_CONTRACT_ADDR)
+    PRICE[1] = await PriceOracle.deploy(Math.floor(47.1234 * 100000000), TEST_CONTRACT_ADDR)
 
     await PRICE[0].deployed()
     await PRICE[1].deployed()

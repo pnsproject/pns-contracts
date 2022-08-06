@@ -4,13 +4,25 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
-contract MacroNFT is ERC721, Ownable {
+contract MacroNFT is ERC721, Ownable, ERC2771Context {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    constructor() ERC721("MacroNFT", "MNFT") {
+    constructor(address forwarder) ERC721("MacroNFT", "MNFT") ERC2771Context(forwarder) {
     }
+
+    function _msgSender() internal view virtual
+        override(ERC2771Context, Context) returns (address) {
+        return super._msgSender();
+    }
+
+    function _msgData() internal view virtual
+        override(ERC2771Context, Context) returns (bytes calldata) {
+        return super._msgData();
+    }
+
 
     function mint(address to) public onlyOwner {
         _tokenIds.increment();

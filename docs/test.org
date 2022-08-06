@@ -662,7 +662,7 @@ Controller合约包括如下状态：
     + ~_pns_approve_tbl[tok] ← to~
   - *参数*
     + to：SENDER_POOL随机选
-    + tok：_pns_owner_tbl随机选
+    + tok：随机选择该用户所持有的token，若没有则在_pns_owner_tbl随机选
 + ~aop_nft_set_owner(idx, owner)~
   - 状态更新
     + ~NFT<idx>.transferOwnership(owner)~
@@ -674,9 +674,9 @@ Controller合约包括如下状态：
     + ~NFT<idx>.safeTransferFrom(from, to, tok)~
   - *参数*
     + idx：0或1
-    + from：SENDER_POOL随机选
+    + from：msg.sender
     + to：SENDER_POOL随机选
-    + tok：0～9
+    + tok：随机选择from所持有的token，若没有则从0～9随机选；
 + ~aop_set_price(idx, price)~
   - 状态更新
     + ~PRICE<idx>.updateAnswer(price)~
@@ -832,46 +832,48 @@ Controller合约包括如下状态：
 + partial:
   - 函数测试功能正常，部分if分支未覆盖；
   - 或者辅助函数参数选择有问题，未达到修改状态的目的，需要调整代码；
++ mismatch:
+  - 有部分情况，测试代码的结果和待测合约不一致，需要进一步查找原因；
 
 下面是具体的统计：
-| 函数                        | 情况    | 说明                                                  |
-|-----------------------------+---------+-------------------------------------------------------|
-| op_p_transferRootOwnership  | done    |                                                       |
-| op_c_transferRootOwnership  | done    |                                                       |
-| op_p_setManager             | done    |                                                       |
-| op_c_setManager             | done    |                                                       |
-| op_p_setContractConfig      | done    |                                                       |
-| op_c_setContractConfig      | done    |                                                       |
-| op_c_setPrice               | done    |                                                       |
-| op_p_mint                   | done    |                                                       |
-| op_p_mintSubdomain          | done    |                                                       |
-| op_p_burn                   | partial | tok是approved的情况未覆盖                             |
-| op_p_bound                  | partial | tok是approved的情况未覆盖                             |
-| op_p_setMetadataBatch       | done    |                                                       |
-| op_c_nameRegisterByManager  | done    |                                                       |
-| op_c_nameRegister           | done    |                                                       |
-| op_c_nameRegisterWithConfig | done    |                                                       |
-| op_c_nameRedeem             | done    |                                                       |
-| op_c_renew                  | done    |                                                       |
-| op_c_renewByManager         | done    |                                                       |
-| op_p_setName                | partial | tok是approved的情况未覆盖                             |
-| op_p_setNftName             | partial | tok是approved的情况未覆盖、合约是approved的情况未覆盖 |
-| op_p_addKeys                | done    |                                                       |
-| op_p_setByHash              | done    |                                                       |
-| op_p_setManyByHash          | done    |                                                       |
-| op_p_setlink                | done    |                                                       |
-| op_p_setlinks               | done    |                                                       |
-| chk_p_register              | done    |                                                       |
-| chk_p_renew                 | done    |                                                       |
-| aop_pns_safeTransferFrom    | done    |                                                       |
-| aop_pns_approved            | partial |                                                       |
-| aop_nft_set_owner           | done    |                                                       |
-| aop_nft_transfer            | partial |                                                       |
-| aop_set_price               | partial |                                                       |
-| st_p_getName                | done    |                                                       |
-| st_p_bounded                | done    |                                                       |
-| st_p_nameExpired            | done    |                                                       |
-| st_p_available              | done    |                                                       |
-| st_c_totalRegisterPrice     | partial | 溢出情况未覆盖                                        |
-| st_c_renewPrice             | partial | 溢出情况未覆盖                                        |
+| 函数                        | 情况     | 说明                                                  |
+|-----------------------------+----------+-------------------------------------------------------|
+| op_p_transferRootOwnership  | done     |                                                       |
+| op_c_transferRootOwnership  | done     |                                                       |
+| op_p_setManager             | done     |                                                       |
+| op_c_setManager             | done     |                                                       |
+| op_p_setContractConfig      | done     |                                                       |
+| op_c_setContractConfig      | done     |                                                       |
+| op_c_setPrice               | done     |                                                       |
+| op_p_mint                   | done     |                                                       |
+| op_p_mintSubdomain          | done     |                                                       |
+| op_p_burn                   | partial  | tok是approved的情况未覆盖                             |
+| op_p_bound                  | partial  | tok是approved的情况未覆盖                             |
+| op_p_setMetadataBatch       | done     |                                                       |
+| op_c_nameRegisterByManager  | done     |                                                       |
+| op_c_nameRegister           | done     |                                                       |
+| op_c_nameRegisterWithConfig | done     |                                                       |
+| op_c_nameRedeem             | done     |                                                       |
+| op_c_renew                  | done     |                                                       |
+| op_c_renewByManager         | done     |                                                       |
+| op_p_setName                | partial  | tok是approved的情况未覆盖                             |
+| op_p_setNftName             | partial  | tok是approved的情况未覆盖、合约是approved的情况未覆盖 |
+| op_p_addKeys                | done     |                                                       |
+| op_p_setByHash              | done     |                                                       |
+| op_p_setManyByHash          | done     |                                                       |
+| op_p_setlink                | done     |                                                       |
+| op_p_setlinks               | done     |                                                       |
+| chk_p_register              | done     |                                                       |
+| chk_p_renew                 | done     |                                                       |
+| aop_pns_safeTransferFrom    | done     |                                                       |
+| aop_pns_approved            | revert   |                                                       |
+| aop_nft_set_owner           | done     |                                                       |
+| aop_nft_transfer            | done     |                                                       |
+| aop_set_price               | done     |                                                       |
+| st_p_getName                | done     |                                                       |
+| st_p_bounded                | done     |                                                       |
+| st_p_nameExpired            | done     |                                                       |
+| st_p_available              | done     |                                                       |
+| st_c_totalRegisterPrice     | mismatch | 溢出情况未覆盖                                        |
+| st_c_renewPrice             | mismatch | 溢出情况未覆盖                                        |
 #+caption: 覆盖情况统计

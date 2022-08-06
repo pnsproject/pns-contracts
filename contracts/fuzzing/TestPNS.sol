@@ -2428,8 +2428,21 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
     function aop_pns_approve(uint8 to_idx, uint8 tok_idx) public {
         // param generation
-        uint256 tok = h_sel_owned_token(tok_idx);
         address to = h_sel_sender(to_idx);
+
+        uint len = _pns_owner_tbl.length();
+        uint off = tok_idx % len;
+
+        uint256 tok = h_sel_owned_token(tok_idx);
+        for (uint i = 0; i < len; i += 1) {
+            uint idx = (i + off) % len;
+
+            (uint256 tok1, address owner) = _pns_owner_tbl.at(idx);
+            if (owner == msg.sender) {
+                tok = tok1;
+                break;
+            }
+        }
 
         // update state
         _pns_approve_tbl[tok] = to;
@@ -2447,20 +2460,39 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         // update state & call op
         uint p_idx = idx ? 1 : 0;
-        NFT[p_idx].transferOwnership(owner);
+
+        (bool ok, ) = h_call(address(NFT[p_idx]), 0,
+                             abi.encodeWithSelector(NFT[p_idx].transferOwnership.selector,
+                                                    owner));
+        require(ok);
 
         placeholder();
     }
 
-    function aop_nft_transfer(bool idx, uint8 from_idx, uint8 to_idx, uint8 tok_idx) public {
+    function aop_nft_transfer(bool idx, uint8 to_idx, uint8 tok_idx) public {
         // param generation
-        address from = h_sel_sender(from_idx);
+        address from = msg.sender;
         address to   = h_sel_sender(to_idx);
-        uint256 tok  = tok_idx % 10;
 
         // update state & call op
         uint p_idx = idx ? 1 : 0;
-        NFT[p_idx].safeTransferFrom(from, to, tok);
+
+        uint256 tok  = (tok_idx % 10) + 1;
+
+        uint off = tok - 1;
+        for (uint i = 0; i < 10; i++) {
+            uint256 tok1 = 1 + ((off + i) % 10);
+
+            if (NFT[p_idx].ownerOf(tok1) == from) {
+                tok = tok1;
+                break;
+            }
+        }
+
+        (bool ok, ) = h_call(address(NFT[p_idx]), 0,
+                             abi.encodeWithSignature("safeTransferFrom(address,address,uint256)",
+                                                     from, to, tok));
+        require(ok);
 
         placeholder();
     }
@@ -2473,7 +2505,12 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         // update state & call op
         uint p_idx = idx ? 1 : 0;
-        PriceOracle(address(PRICE[p_idx])).updateAnswer(price);
+
+        (bool ok, ) =
+            h_call(address(PRICE[p_idx]), 0,
+                   abi.encodeWithSelector(PriceOracle(address(PRICE[p_idx])).updateAnswer.selector,
+                                          price));
+        require(ok);
 
         placeholder();
     }

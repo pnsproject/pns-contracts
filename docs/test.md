@@ -1,21 +1,21 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orgc9b4bf9)
-2.  [模糊测试](#org82b4b5a)
-    1.  [合约分析](#org7cd85ad)
-        1.  [常数](#org7b372ba)
-        2.  [状态](#org4943a9d)
-        3.  [辅助状态和辅助合约](#orgc895be0)
-        4.  [操作与断言](#org9a40f41)
-        5.  [辅助操作与状态断言](#orgfc658ae)
-    2.  [初始化](#org01a30db)
-    3.  [测试代码风格](#org9bfbdc7)
-    4.  [覆盖情况统计](#org8ef1c45)
+1.  [单元测试](#org93a6cca)
+2.  [模糊测试](#orgb0a797a)
+    1.  [合约分析](#org16b41bb)
+        1.  [常数](#org0b4bf25)
+        2.  [状态](#orgf86d6ef)
+        3.  [辅助状态和辅助合约](#org70dfd5d)
+        4.  [操作与断言](#orgd2db3d4)
+        5.  [辅助操作与状态断言](#orge1df85d)
+    2.  [初始化](#orgf94484c)
+    3.  [测试代码风格](#org26ea84a)
+    4.  [覆盖情况统计](#orgc6d98c4)
 
 
 
-<a id="orgc9b4bf9"></a>
+<a id="org93a6cca"></a>
 
 # 单元测试
 
@@ -33,19 +33,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org82b4b5a"></a>
+<a id="orgb0a797a"></a>
 
 # 模糊测试
 
 
-<a id="org7cd85ad"></a>
+<a id="org16b41bb"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org7b372ba"></a>
+<a id="org0b4bf25"></a>
 
 ### 常数
 
@@ -184,7 +184,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org4943a9d"></a>
+<a id="orgf86d6ef"></a>
 
 ### 状态
 
@@ -468,7 +468,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="orgc895be0"></a>
+<a id="org70dfd5d"></a>
 
 ### 辅助状态和辅助合约
 
@@ -551,7 +551,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org9a40f41"></a>
+<a id="orgd2db3d4"></a>
 
 ### 操作与断言
 
@@ -1263,7 +1263,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orgfc658ae"></a>
+<a id="orge1df85d"></a>
 
 ### 辅助操作与状态断言
 
@@ -1281,7 +1281,7 @@ Controller合约包括如下状态：
         -   `_pns_approve_tbl[tok] ← to`
     -   **参数**
         -   to：SENDER\_POOL随机选
-        -   tok：\_pns\_owner\_tbl随机选
+        -   tok：随机选择该用户所持有的token，若没有则在\_pns\_owner\_tbl随机选
 -   `aop_nft_set_owner(idx, owner)`
     -   状态更新
         -   `NFT<idx>.transferOwnership(owner)`
@@ -1293,9 +1293,9 @@ Controller合约包括如下状态：
         -   `NFT<idx>.safeTransferFrom(from, to, tok)`
     -   **参数**
         -   idx：0或1
-        -   from：SENDER\_POOL随机选
+        -   from：msg.sender
         -   to：SENDER\_POOL随机选
-        -   tok：0～9
+        -   tok：随机选择from所持有的token，若没有则从0～9随机选；
 -   `aop_set_price(idx, price)`
     -   状态更新
         -   `PRICE<idx>.updateAnswer(price)`
@@ -1611,7 +1611,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org01a30db"></a>
+<a id="orgf94484c"></a>
 
 ## 初始化
 
@@ -1653,7 +1653,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org9bfbdc7"></a>
+<a id="org26ea84a"></a>
 
 ## 测试代码风格
 
@@ -1664,7 +1664,7 @@ Controller合约包括如下状态：
 -   状态测试以“st\_”为前缀；
 
 
-<a id="org8ef1c45"></a>
+<a id="orgc6d98c4"></a>
 
 ## 覆盖情况统计
 
@@ -1673,6 +1673,8 @@ Controller合约包括如下状态：
 -   partial:
     -   函数测试功能正常，部分if分支未覆盖；
     -   或者辅助函数参数选择有问题，未达到修改状态的目的，需要调整代码；
+-   mismatch:
+    -   有部分情况，测试代码的结果和待测合约不一致，需要进一步查找原因；
 
 下面是具体的统计：
 
@@ -1893,7 +1895,7 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">aop_pns_approved</td>
-<td class="org-left">partial</td>
+<td class="org-left">revert</td>
 <td class="org-left">&#xa0;</td>
 </tr>
 
@@ -1907,14 +1909,14 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">aop_nft_transfer</td>
-<td class="org-left">partial</td>
+<td class="org-left">done</td>
 <td class="org-left">&#xa0;</td>
 </tr>
 
 
 <tr>
 <td class="org-left">aop_set_price</td>
-<td class="org-left">partial</td>
+<td class="org-left">done</td>
 <td class="org-left">&#xa0;</td>
 </tr>
 
@@ -1949,14 +1951,14 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">st_c_totalRegisterPrice</td>
-<td class="org-left">partial</td>
+<td class="org-left">mismatch</td>
 <td class="org-left">溢出情况未覆盖</td>
 </tr>
 
 
 <tr>
 <td class="org-left">st_c_renewPrice</td>
-<td class="org-left">partial</td>
+<td class="org-left">mismatch</td>
 <td class="org-left">溢出情况未覆盖</td>
 </tr>
 </tbody>
