@@ -30,3 +30,4 @@ balanceContract: 100000000000000000000
 #  - TestPNS.chk_p_register(string,address,uint64,uint256)
 #  - TestPNS.aop_pns_approve(uint8,uint8)
 #  - TestPNS.aop_nft_transfer(bool,uint8,uint8)
+#  - TestPNS.aop_set_price(bool,int128)
