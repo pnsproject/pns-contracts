@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./IHEVM.sol";
 
 contract EchidnaHelper {
-    IHEVM HEVM = IHEVM(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+    IHEVM constant HEVM = IHEVM(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
 
     event AssertionFailed(string message);
 
