@@ -2448,7 +2448,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         _pns_approve_tbl[tok] = to;
 
         // call op
-        (bool ok, ) = h_p_call(abi.encodeWithSelector(P.approve.selector, tok, to));
+        (bool ok, ) = h_p_call(abi.encodeWithSelector(P.approve.selector, to, tok));
         require(ok); // ok or revert
 
         placeholder();
