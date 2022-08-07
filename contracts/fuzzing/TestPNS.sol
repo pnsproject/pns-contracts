@@ -2500,6 +2500,45 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         placeholder();
     }
 
+    function aop_nft_approve(bool idx_idx, uint8 to_idx, uint8 tok_idx) public {
+        address to = h_sel_sender(to_idx);
+        address from = msg.sender;
+
+        uint idx = idx_idx ? 1 : 0;
+
+        uint256 tok  = (tok_idx % 10) + 1;
+
+        uint off = tok - 1;
+        for (uint i = 0; i < 10; i++) {
+            uint256 tok1 = 1 + ((off + i) % 10);
+
+            if (NFT[idx].ownerOf(tok1) == from) {
+                tok = tok1;
+                break;
+            }
+        }
+
+        // update state & call op
+        (bool ok, ) = h_call(address(NFT[idx]), 0,
+                             abi.encodeWithSelector(NFT[idx].approve.selector, to, tok));
+        require(ok);
+
+        placeholder();
+    }
+
+    function aop_nft_approval_all(bool idx_idx, uint8 op_idx, bool v) public {
+        address op = h_sel_sender(op_idx);
+        uint idx = idx_idx ? 1 : 0;
+
+        // update state & call op
+        (bool ok, ) = h_call(address(NFT[idx]), 0,
+                             abi.encodeWithSelector(NFT[idx].setApprovalForAll.selector,
+                                                    op, v));
+        require(ok);
+
+        placeholder();
+    }
+
     function aop_set_price(bool idx, int128 price) public {
         // requirements
         require(price > 0);

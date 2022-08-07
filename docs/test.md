@@ -1,21 +1,21 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org08e6bdc)
-2.  [模糊测试](#orgd984b47)
-    1.  [合约分析](#orgcb8896f)
-        1.  [常数](#org72f197c)
-        2.  [状态](#org32710e1)
-        3.  [辅助状态和辅助合约](#org81ad42d)
-        4.  [操作与断言](#org4513b8b)
-        5.  [辅助操作与状态断言](#org25a741d)
-    2.  [初始化](#orgb176795)
-    3.  [测试代码风格](#org333b48b)
-    4.  [覆盖情况统计](#orgf17d252)
+1.  [单元测试](#org9dde379)
+2.  [模糊测试](#org9a177ba)
+    1.  [合约分析](#org5a23cfa)
+        1.  [常数](#org1eb11c3)
+        2.  [状态](#orgc570007)
+        3.  [辅助状态和辅助合约](#org60b4614)
+        4.  [操作与断言](#org5e3f1e6)
+        5.  [辅助操作与状态断言](#org35a46e5)
+    2.  [初始化](#org5cd3c17)
+    3.  [测试代码风格](#orgce92d29)
+    4.  [覆盖情况统计](#orgeb3175e)
 
 
 
-<a id="org08e6bdc"></a>
+<a id="org9dde379"></a>
 
 # 单元测试
 
@@ -33,19 +33,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgd984b47"></a>
+<a id="org9a177ba"></a>
 
 # 模糊测试
 
 
-<a id="orgcb8896f"></a>
+<a id="org5a23cfa"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org72f197c"></a>
+<a id="org1eb11c3"></a>
 
 ### 常数
 
@@ -184,7 +184,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org32710e1"></a>
+<a id="orgc570007"></a>
 
 ### 状态
 
@@ -468,7 +468,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org81ad42d"></a>
+<a id="org60b4614"></a>
 
 ### 辅助状态和辅助合约
 
@@ -551,7 +551,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org4513b8b"></a>
+<a id="org5e3f1e6"></a>
 
 ### 操作与断言
 
@@ -1264,7 +1264,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="org25a741d"></a>
+<a id="org35a46e5"></a>
 
 ### 辅助操作与状态断言
 
@@ -1297,7 +1297,21 @@ Controller合约包括如下状态：
         -   idx：0或1
         -   from：msg.sender
         -   to：SENDER\_POOL随机选
-        -   tok：随机选择from所持有的token，若没有则从0～9随机选；
+        -   tok：随机选择from所持有的token，若没有则从1～10随机选；
+-   `aop_nft_approve(idx, to, tok)`
+    -   状态更新
+        -   `NFT<idx>.approve(to, tok)`
+    -   **参数**
+        -   idx: 0或1
+        -   to: SENDER\_POOL随机选
+        -   tok：随机选择from所持有的token，若没有则从1～10随机选；
+-   `aop_nft_approval_all(idx, op, v)`
+    -   状态更新
+        -   `NFT<idx>.setApprovalForAll(op, v)`
+    -   **参数**
+        -   idx: 0或1
+        -   op: SENDER\_POOL随机选
+        -   v: true或false
 -   `aop_set_price(idx, price)`
     -   状态更新
         -   `PRICE<idx>.updateAnswer(price)`
@@ -1613,7 +1627,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgb176795"></a>
+<a id="org5cd3c17"></a>
 
 ## 初始化
 
@@ -1660,7 +1674,7 @@ Controller合约包括如下状态：
 -   `echidna-test . --contract TestPNS --config echidna-config.yaml --crytic-args --hardhat-ignore-compile`
 
 
-<a id="org333b48b"></a>
+<a id="orgce92d29"></a>
 
 ## 测试代码风格
 
@@ -1671,7 +1685,7 @@ Controller合约包括如下状态：
 -   状态测试以“st\_”为前缀；
 
 
-<a id="orgf17d252"></a>
+<a id="orgeb3175e"></a>
 
 ## 覆盖情况统计
 
@@ -1777,7 +1791,7 @@ Controller合约包括如下状态：
 <tr>
 <td class="org-left">op_p_bound</td>
 <td class="org-left">partial</td>
-<td class="org-left">tok是approved的情况未覆盖</td>
+<td class="org-left">tok的origin是bound的情况未覆盖</td>
 </tr>
 
 
@@ -1839,8 +1853,8 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">op_p_setNftName</td>
-<td class="org-left">partial</td>
-<td class="org-left">合约是approved的情况未覆盖</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
 </tr>
 
 
@@ -1902,7 +1916,7 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">aop_pns_approved</td>
-<td class="org-left">revert</td>
+<td class="org-left">done</td>
 <td class="org-left">&#xa0;</td>
 </tr>
 
@@ -1916,6 +1930,20 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">aop_nft_transfer</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">aop_nft_approve</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">aop_nft_approval_all</td>
 <td class="org-left">done</td>
 <td class="org-left">&#xa0;</td>
 </tr>

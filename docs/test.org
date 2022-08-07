@@ -678,7 +678,21 @@ Controller合约包括如下状态：
     + idx：0或1
     + from：msg.sender
     + to：SENDER_POOL随机选
-    + tok：随机选择from所持有的token，若没有则从0～9随机选；
+    + tok：随机选择from所持有的token，若没有则从1～10随机选；
++ ~aop_nft_approve(idx, to, tok)~
+  - 状态更新
+    + ~NFT<idx>.approve(to, tok)~
+  - *参数*
+    + idx: 0或1
+    + to: SENDER_POOL随机选
+    + tok：随机选择from所持有的token，若没有则从1～10随机选；
++ ~aop_nft_approval_all(idx, op, v)~
+  - 状态更新
+    + ~NFT<idx>.setApprovalForAll(op, v)~
+  - *参数*
+    + idx: 0或1
+    + op: SENDER_POOL随机选
+    + v: true或false
 + ~aop_set_price(idx, price)~
   - 状态更新
     + ~PRICE<idx>.updateAnswer(price)~
@@ -854,7 +868,7 @@ Controller合约包括如下状态：
 | op_p_mint                   | done    |                                    |
 | op_p_mintSubdomain          | done    |                                    |
 | op_p_burn                   | partial | tok的origin是approved的情况未覆盖  |
-| op_p_bound                  | partial | tok是approved的情况未覆盖          |
+| op_p_bound                  | partial | tok的origin是bound的情况未覆盖     |
 | op_p_setMetadataBatch       | done    |                                    |
 | op_c_nameRegisterByManager  | done    |                                    |
 | op_c_nameRegister           | done    |                                    |
@@ -863,7 +877,7 @@ Controller合约包括如下状态：
 | op_c_renew                  | done    |                                    |
 | op_c_renewByManager         | done    |                                    |
 | op_p_setName                | done    |                                    |
-| op_p_setNftName             | partial | 合约是approved的情况未覆盖         |
+| op_p_setNftName             | done    |                                    |
 | op_p_addKeys                | done    |                                    |
 | op_p_setByHash              | done    |                                    |
 | op_p_setManyByHash          | done    |                                    |
@@ -872,9 +886,11 @@ Controller合约包括如下状态：
 | chk_p_register              | done    |                                    |
 | chk_p_renew                 | done    |                                    |
 | aop_pns_safeTransferFrom    | done    |                                    |
-| aop_pns_approved            | revert  |                                    |
+| aop_pns_approved            | done    |                                    |
 | aop_nft_set_owner           | done    |                                    |
 | aop_nft_transfer            | done    |                                    |
+| aop_nft_approve             | done    |                                    |
+| aop_nft_approval_all        | done    |                                    |
 | aop_set_price               | done    |                                    |
 | st_p_getName                | done    |                                    |
 | st_p_bounded                | done    |                                    |
