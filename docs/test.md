@@ -1,21 +1,21 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org93a6cca)
-2.  [模糊测试](#orgb0a797a)
-    1.  [合约分析](#org16b41bb)
-        1.  [常数](#org0b4bf25)
-        2.  [状态](#orgf86d6ef)
-        3.  [辅助状态和辅助合约](#org70dfd5d)
-        4.  [操作与断言](#orgd2db3d4)
-        5.  [辅助操作与状态断言](#orge1df85d)
-    2.  [初始化](#orgf94484c)
-    3.  [测试代码风格](#org26ea84a)
-    4.  [覆盖情况统计](#orgc6d98c4)
+1.  [单元测试](#orgcb7e7f4)
+2.  [模糊测试](#orgc86d0c6)
+    1.  [合约分析](#org317cf64)
+        1.  [常数](#org75fa7b6)
+        2.  [状态](#org2c80618)
+        3.  [辅助状态和辅助合约](#org128fd85)
+        4.  [操作与断言](#org5609400)
+        5.  [辅助操作与状态断言](#org25062c1)
+    2.  [初始化](#orgc4ea606)
+    3.  [测试代码风格](#org6308c64)
+    4.  [覆盖情况统计](#org3ca250c)
 
 
 
-<a id="org93a6cca"></a>
+<a id="orgcb7e7f4"></a>
 
 # 单元测试
 
@@ -33,19 +33,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgb0a797a"></a>
+<a id="orgc86d0c6"></a>
 
 # 模糊测试
 
 
-<a id="org16b41bb"></a>
+<a id="org317cf64"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org0b4bf25"></a>
+<a id="org75fa7b6"></a>
 
 ### 常数
 
@@ -184,7 +184,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgf86d6ef"></a>
+<a id="org2c80618"></a>
 
 ### 状态
 
@@ -468,7 +468,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org70dfd5d"></a>
+<a id="org128fd85"></a>
 
 ### 辅助状态和辅助合约
 
@@ -551,7 +551,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="orgd2db3d4"></a>
+<a id="org5609400"></a>
 
 ### 操作与断言
 
@@ -1263,7 +1263,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="orge1df85d"></a>
+<a id="org25062c1"></a>
 
 ### 辅助操作与状态断言
 
@@ -1301,7 +1301,7 @@ Controller合约包括如下状态：
         -   `PRICE<idx>.updateAnswer(price)`
     -   **参数**
         -   idx：0或1
-        -   price：非0的数
+        -   price：非0的数，int128（模型不支持比这大的数）
 
 状态断言用于一些状态函数的功能测试，这些状态函数在操作断言中未覆盖或覆盖不全面（Y）。还有一些状态函数虽然未完全覆盖，或者是足够简单（S），或者是在操作函数断言测试中进行了部分间接或直接的测试（P），或者是不会用来查询无效状态并用于判断（V），因此不进行状态断言。具体如下表：
 
@@ -1611,7 +1611,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgf94484c"></a>
+<a id="orgc4ea606"></a>
 
 ## 初始化
 
@@ -1653,7 +1653,7 @@ Controller合约包括如下状态：
     -   第一条命令启动后，再执行
 
 
-<a id="org26ea84a"></a>
+<a id="org6308c64"></a>
 
 ## 测试代码风格
 
@@ -1664,7 +1664,7 @@ Controller合约包括如下状态：
 -   状态测试以“st\_”为前缀；
 
 
-<a id="orgc6d98c4"></a>
+<a id="org3ca250c"></a>
 
 ## 覆盖情况统计
 
@@ -1951,14 +1951,14 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">st_c_totalRegisterPrice</td>
-<td class="org-left">mismatch</td>
+<td class="org-left">done</td>
 <td class="org-left">溢出情况未覆盖</td>
 </tr>
 
 
 <tr>
 <td class="org-left">st_c_renewPrice</td>
-<td class="org-left">mismatch</td>
+<td class="org-left">done</td>
 <td class="org-left">溢出情况未覆盖</td>
 </tr>
 </tbody>

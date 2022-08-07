@@ -2497,7 +2497,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
         placeholder();
     }
 
-    function aop_set_price(bool idx, int256 price) public {
+    function aop_set_price(bool idx, int128 price) public {
         // requirements
         require(price > 0);
 
@@ -2684,6 +2684,6 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
                                ", cost.lo = ", Strings.toString(cost.lo)));
 
         assert(cost.hi == 0); // will fail if implement not revert
-        assert((cost.lo == get) || (cost.lo == get + 1)) ;
+        assert((cost.lo == get) || (cost.lo == get + 1));
     }
 }
