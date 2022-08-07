@@ -1,21 +1,21 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#org9dde379)
-2.  [模糊测试](#org9a177ba)
-    1.  [合约分析](#org5a23cfa)
-        1.  [常数](#org1eb11c3)
-        2.  [状态](#orgc570007)
-        3.  [辅助状态和辅助合约](#org60b4614)
-        4.  [操作与断言](#org5e3f1e6)
-        5.  [辅助操作与状态断言](#org35a46e5)
-    2.  [初始化](#org5cd3c17)
-    3.  [测试代码风格](#orgce92d29)
-    4.  [覆盖情况统计](#orgeb3175e)
+1.  [单元测试](#org4c6eebf)
+2.  [模糊测试](#org779c1a6)
+    1.  [合约分析](#orgbe7e840)
+        1.  [常数](#org8a65270)
+        2.  [状态](#org4e6b274)
+        3.  [辅助状态和辅助合约](#orgd4ca15f)
+        4.  [操作与断言](#org22cbc7c)
+        5.  [辅助操作与状态断言](#org30e07ee)
+    2.  [初始化](#org865f014)
+    3.  [测试代码风格](#org2b8f786)
+    4.  [覆盖情况统计](#orgb182f15)
 
 
 
-<a id="org9dde379"></a>
+<a id="org4c6eebf"></a>
 
 # 单元测试
 
@@ -33,19 +33,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="org9a177ba"></a>
+<a id="org779c1a6"></a>
 
 # 模糊测试
 
 
-<a id="org5a23cfa"></a>
+<a id="orgbe7e840"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org1eb11c3"></a>
+<a id="org8a65270"></a>
 
 ### 常数
 
@@ -184,7 +184,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="orgc570007"></a>
+<a id="org4e6b274"></a>
 
 ### 状态
 
@@ -468,7 +468,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org60b4614"></a>
+<a id="orgd4ca15f"></a>
 
 ### 辅助状态和辅助合约
 
@@ -551,7 +551,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org5e3f1e6"></a>
+<a id="org22cbc7c"></a>
 
 ### 操作与断言
 
@@ -1264,7 +1264,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="org35a46e5"></a>
+<a id="org30e07ee"></a>
 
 ### 辅助操作与状态断言
 
@@ -1627,7 +1627,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="org5cd3c17"></a>
+<a id="org865f014"></a>
 
 ## 初始化
 
@@ -1674,7 +1674,7 @@ Controller合约包括如下状态：
 -   `echidna-test . --contract TestPNS --config echidna-config.yaml --crytic-args --hardhat-ignore-compile`
 
 
-<a id="orgce92d29"></a>
+<a id="org2b8f786"></a>
 
 ## 测试代码风格
 
@@ -1685,7 +1685,7 @@ Controller合约包括如下状态：
 -   状态测试以“st\_”为前缀；
 
 
-<a id="orgeb3175e"></a>
+<a id="orgb182f15"></a>
 
 ## 覆盖情况统计
 
@@ -1783,15 +1783,15 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">op_p_burn</td>
-<td class="org-left">partial</td>
-<td class="org-left">tok的origin是approved的情况未覆盖</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
 </tr>
 
 
 <tr>
 <td class="org-left">op_p_bound</td>
-<td class="org-left">partial</td>
-<td class="org-left">tok的origin是bound的情况未覆盖</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
 </tr>
 
 

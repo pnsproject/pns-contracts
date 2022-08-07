@@ -10,8 +10,8 @@ testMode: assertion
 balanceContract: 100000000000000000000
 
 #
-#filterBlacklist: false
-#filterFunctions:
+filterBlacklist: false
+filterFunctions:
 #  - TestPNS.st_c_renewPrice(bool,string,uint64)
 #  - TestPNS.st_c_totalRegisterPrice(bool,string,uint64)
 #  - TestPNS.op_c_nameRedeem((bool,uint8,string,uint8,address,uint8,uint64,uint8,uint256,uint8,bytes,uint8,uint8,uint8,uint8,uint8,uint8,uint8))
@@ -20,14 +20,15 @@ balanceContract: 100000000000000000000
 #  - TestPNS.op_p_setManyByHash(uint8[],uint256[],uint8,string[],uint8,uint256)
 #  - TestPNS.op_p_setlinks(uint8,uint256,uint256[],uint8,uint256[])
 #  - TestPNS.op_p_mint(uint8,uint8)
-#  - TestPNS.op_p_mintSubdomain(uint8,address,uint8,uint256,uint8,string)
-#  - TestPNS.op_c_nameRegister(bool,uint8,string,uint8,address,uint8,uint64,uint8,uint256)
+  - TestPNS.op_p_mintSubdomain(uint8,address,uint8,uint256,uint8,string)
+  - TestPNS.op_c_nameRegister(bool,uint8,string,uint8,address,uint8,uint64,uint8,uint256)
 #  - TestPNS.op_p_setMetadataBatch((uint8,uint8,uint32,uint8)[])
 #  - TestPNS.op_c_setContractConfig(bool,uint8,uint8,uint8,uint8,uint32,bool)
 #  - TestPNS.op_p_setName(uint8,address,uint8,uint256)
-#  - TestPNS.op_p_burn(uint8,uint256)
+  - TestPNS.op_p_burn(uint8,uint256)
 #  - TestPNS.st_p_nameExpired(uint8,uint256)
 #  - TestPNS.chk_p_register(string,address,uint64,uint256)
-#  - TestPNS.aop_pns_approve(uint8,uint8)
+  - TestPNS.aop_pns_approve(uint8,uint8)
 #  - TestPNS.aop_nft_transfer(bool,uint8,uint8)
 #  - TestPNS.aop_set_price(bool,int128)
+  - TestPNS.op_p_bound(uint8,uint256)
