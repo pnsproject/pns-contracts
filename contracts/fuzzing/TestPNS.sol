@@ -830,6 +830,8 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         if (ok) {
             _pns_owner_tbl.remove(tok);
+            _pns_approve_tbl[tok] = address(0);
+
             _pns_sld_set.remove(tok);
             _pns_sd_set.remove(tok);
             _pns_sd_parent_tbl[tok] = 0;
@@ -2417,6 +2419,7 @@ contract TestPNS is EchidnaInit, EchidnaHelper {
 
         // update state
         _pns_owner_tbl.set(tok, to);
+        _pns_approve_tbl[tok] = address(0);
 
         // call op
         (bool ok, ) = h_p_call(abi.encodeWithSignature("safeTransferFrom(address,address,uint256)",

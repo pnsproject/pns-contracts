@@ -1,21 +1,21 @@
 
 # &#30446;&#24405;
 
-1.  [单元测试](#orgcb7e7f4)
-2.  [模糊测试](#orgc86d0c6)
-    1.  [合约分析](#org317cf64)
-        1.  [常数](#org75fa7b6)
-        2.  [状态](#org2c80618)
-        3.  [辅助状态和辅助合约](#org128fd85)
-        4.  [操作与断言](#org5609400)
-        5.  [辅助操作与状态断言](#org25062c1)
-    2.  [初始化](#orgc4ea606)
-    3.  [测试代码风格](#org6308c64)
-    4.  [覆盖情况统计](#org3ca250c)
+1.  [单元测试](#org08e6bdc)
+2.  [模糊测试](#orgd984b47)
+    1.  [合约分析](#orgcb8896f)
+        1.  [常数](#org72f197c)
+        2.  [状态](#org32710e1)
+        3.  [辅助状态和辅助合约](#org81ad42d)
+        4.  [操作与断言](#org4513b8b)
+        5.  [辅助操作与状态断言](#org25a741d)
+    2.  [初始化](#orgb176795)
+    3.  [测试代码风格](#org333b48b)
+    4.  [覆盖情况统计](#orgf17d252)
 
 
 
-<a id="orgcb7e7f4"></a>
+<a id="org08e6bdc"></a>
 
 # 单元测试
 
@@ -33,19 +33,19 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 3.  multicall函数；
 
 
-<a id="orgc86d0c6"></a>
+<a id="orgd984b47"></a>
 
 # 模糊测试
 
 
-<a id="org317cf64"></a>
+<a id="orgcb8896f"></a>
 
 ## 合约分析
 
 实际使用时，一般是1个PNS合约和1个对应的Controller合约。考虑到Controller的升级，以及一些权限控制的测试，测试环境将部署1个PNS合约和2个Controller合约。因此，对于常数以及状态，需要区分不同的合约。下面描述的时候，在可能混淆的情况下，常数和变量的名称相对solidity源代码可能会增加前缀。
 
 
-<a id="org75fa7b6"></a>
+<a id="org72f197c"></a>
 
 ### 常数
 
@@ -184,7 +184,7 @@ PNS和Controller合约以下内容通过单元测试进行验证：
 </table>
 
 
-<a id="org2c80618"></a>
+<a id="org32710e1"></a>
 
 ### 状态
 
@@ -468,7 +468,7 @@ Controller合约包括如下状态：
 </table>
 
 
-<a id="org128fd85"></a>
+<a id="org81ad42d"></a>
 
 ### 辅助状态和辅助合约
 
@@ -551,7 +551,7 @@ Controller合约包括如下状态：
 具体可参见下面的辅助操作与状态断言小节的内容。
 
 
-<a id="org5609400"></a>
+<a id="org4513b8b"></a>
 
 ### 操作与断言
 
@@ -915,6 +915,7 @@ Controller合约包括如下状态：
             -   `_msgSender() ∈ { _pns_owner_tbl[_pns_sd_origin_tbl[tok]], _pns_approve_tbl[_pns_sd_origin_tbl[tok]] }` （若为子域名，对应二级域名授权用户可销毁）
     -   状态更新
         -   `_pns_owner_tbl.remove(tok)`
+        -   `_pns_approve_tbl[tok] = 0`
         -   `_pns_sld_set.remove(tok) if exists`
         -   `_pns_sd_set.remove(tok) if exists`
         -   `_pns_sd_parent_tbl[tok] ← 0`
@@ -1263,7 +1264,7 @@ Controller合约包括如下状态：
         -   vs#：vs处理后的值，参见PNS.setManyByHash的处理方式；
 
 
-<a id="org25062c1"></a>
+<a id="org25a741d"></a>
 
 ### 辅助操作与状态断言
 
@@ -1272,6 +1273,7 @@ Controller合约包括如下状态：
 -   `PNS.safeTransferFrom(from, to, tok)`
     -   状态更新
         -   `_pns_owner_tbl[tok] ← to`
+        -   `_pns_approve_tbl[tok] = 0`
     -   **参数**
         -   from：\_pns\_owner\_tbl[tok]
         -   to：SENDER\_POOL随机选
@@ -1611,7 +1613,7 @@ Controller合约包括如下状态：
             -   cost\_doller/cost\_wei运算使用一对uint256表示，等价uint512。
 
 
-<a id="orgc4ea606"></a>
+<a id="orgb176795"></a>
 
 ## 初始化
 
@@ -1652,8 +1654,13 @@ Controller合约包括如下状态：
 -   `npx hardhat run --network localhost  ./scripts/echidna-init.ts`
     -   第一条命令启动后，再执行
 
+一般通过以下命令运行模糊化测试：
 
-<a id="org6308c64"></a>
+-   `npx hardhat compile`
+-   `echidna-test . --contract TestPNS --config echidna-config.yaml --crytic-args --hardhat-ignore-compile`
+
+
+<a id="org333b48b"></a>
 
 ## 测试代码风格
 
@@ -1664,7 +1671,7 @@ Controller合约包括如下状态：
 -   状态测试以“st\_”为前缀；
 
 
-<a id="org3ca250c"></a>
+<a id="orgf17d252"></a>
 
 ## 覆盖情况统计
 
@@ -1763,7 +1770,7 @@ Controller合约包括如下状态：
 <tr>
 <td class="org-left">op_p_burn</td>
 <td class="org-left">partial</td>
-<td class="org-left">tok是approved的情况未覆盖</td>
+<td class="org-left">tok的origin是approved的情况未覆盖</td>
 </tr>
 
 
@@ -1825,15 +1832,15 @@ Controller合约包括如下状态：
 
 <tr>
 <td class="org-left">op_p_setName</td>
-<td class="org-left">partial</td>
-<td class="org-left">tok是approved的情况未覆盖</td>
+<td class="org-left">done</td>
+<td class="org-left">&#xa0;</td>
 </tr>
 
 
 <tr>
 <td class="org-left">op_p_setNftName</td>
 <td class="org-left">partial</td>
-<td class="org-left">tok是approved的情况未覆盖、合约是approved的情况未覆盖</td>
+<td class="org-left">合约是approved的情况未覆盖</td>
 </tr>
 
 
@@ -1952,14 +1959,14 @@ Controller合约包括如下状态：
 <tr>
 <td class="org-left">st_c_totalRegisterPrice</td>
 <td class="org-left">done</td>
-<td class="org-left">溢出情况未覆盖</td>
+<td class="org-left">合理设置价格的情况下，不会出现溢出</td>
 </tr>
 
 
 <tr>
 <td class="org-left">st_c_renewPrice</td>
 <td class="org-left">done</td>
-<td class="org-left">溢出情况未覆盖</td>
+<td class="org-left">合理设置价格的情况下，不会出现溢出</td>
 </tr>
 </tbody>
 </table>
