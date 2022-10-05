@@ -1,0 +1,57 @@
+#+title: v1.3升级说明
+#+OPTIONS: ^:nil
+#+OPTIONS: _:nil
+#+LANGUAGE: zh-CN
+
+本文档对已部署v1.3版本合约升级到v1.5版本（fuzzing分支）进行说明。
+
+* 目标
+- 对外接口保持不变（PNS合约）
+- 注册记录（状态）包括不变
+* 状态分析
+** 状态说明
+可以通过 ~slither . --print variable-order~ 来获取变量列表。
+
+| v1.3合约   | v1.3对应基类              | v1.3状态                  | v1.5合约   | v1.5对应基类              | v1.5状态                  | 关系     | 迁移方式 |
+|------------+---------------------------+---------------------------+------------+---------------------------+---------------------------+----------+----------|
+| PNS        | PNS                       | FLAGS                     | PNS        | PNS                       | FLAGS                     | 等价     |          |
+| PNS        | PNS                       | _keys                     | PNS        | PNS                       | _keys                     | 等价     |          |
+| PNS        | PNS                       | _records                  | PNS        | PNS                       | _records                  | 等价     |          |
+| PNS        | PNS                       | _names                    | PNS        | PNS                       | _names                    | 等价     |          |
+| PNS        | PNS                       | _nft_names                | PNS        | PNS                       | _nft_names                | 等价     |          |
+| PNS        | ManagerOwnableUpgradeable | _root                     | PNS        | ManagerOwnableUpgradeable | _root                     | 等价     |          |
+| PNS        | ManagerOwnableUpgradeable | _managers                 | PNS        | ManagerOwnableUpgradeable | _managers                 | 等价     |          |
+| PNS        | ERC721Upgradeable         | _name                     | PNS        | ERC721Upgradeable         | _name                     | 等价     |          |
+| PNS        | ERC721Upgradeable         | _symbol                   | PNS        | ERC721Upgradeable         | _symbol                   | 等价     |          |
+| PNS        | ERC721Upgradeable         | _owners                   | PNS        | ERC721Upgradeable         | _owners                   | 等价     |          |
+| PNS        | ERC721Upgradeable         | _balances                 | PNS        | ERC721Upgradeable         | _balances                 | 等价     |          |
+| PNS        | ERC721Upgradeable         | _tokenApprovals           | PNS        | ERC721Upgradeable         | _tokenApprovals           | 等价     |          |
+| PNS        | ERC721Upgradeable         | _operatorApprovals        | PNS        | ERC721Upgradeable         | _operatorApprovals        | 等价     |          |
+| Controller | Controller                | _pns                      | Controller | Controller                | _pns                      | 等价     |          |
+| Controller | Controller                | records                   | PNS        | PNS                       | records                   | 需要转换 |          |
+| Controller | Controller                | BASE_NODE                 | Controller | Controller                | BASE_NODE                 | 等价     |          |
+| Controller | Controller                | DEFAULT_DOMAIN_CAPACITY   | -          | -                         | -                         | -        |          |
+| Controller | Controller                | MIN_REGISTRATION_DURATION | Controller | Controller                | MIN_REGISTRATION_DURATION | 等价     |          |
+| Controller | Controller                | MIN_REGISTRATION_LENGTH   | Controller | Controller                | MIN_REGISTRATION_LENGTH   | 等价     |          |
+| Controller | Controller                | GRACE_PERIOD              | PNS        | PNS                       | GRACE_PERIOD              | 等价     |          |
+| Controller | Controller                | FLAGS                     | Controller | Controller                | FLAGS                     | 等价     |          |
+| Controller | Controller                | basePrices                | Controller | Controller                | basePrices                | 等价     |          |
+| Controller | Controller                | rentPrices                | Controller | Controller                | rentPrices                | 等价     |          |
+| Controller | Controller                | capacityPrice             | -          | -                         | -                         | -        |          |
+| Controller | RootOwnable               | _root                     | Controller | RootOwnable               | _root                     | 等价     |          |
+| Controller | ManagerOwnable            | _managers                 | Controller | ManagerOwnable            | _managers                 | 等价     |          |
+
+部分状态，例如 ~PNS.FLAGS~ ，在过程中可能会变化，最终应该和迁移前保持一致。
+
+对于 ~Controller.records~ 到 ~PNS.records~ 的迁移，类型由 ~Controller.Record~ 变为 ~PNS.Record~ ，其中 ~origin~ 和 ~expire~ 域保持不变，抛弃原 ~children~ 和 ~capacity~ ，需要新增 ~parent~ 域。
+
+下面是v1.5的一些新状态
+| v1.5合约 | v1.5基类 | v1.5新状态   | 说明 |
+|----------+----------+--------------+------|
+| PNS      | PNS      | _links       |      |
+| PNS      | PNS      | _bounds      |      |
+
+** 数据迁移方案
+* 测试方案测试
+
+* 部署步骤
