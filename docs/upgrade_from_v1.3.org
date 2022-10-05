@@ -27,6 +27,7 @@
 | PNS        | ERC721Upgradeable         | _balances                 | PNS        | ERC721Upgradeable         | _balances                 | 等价     |          |
 | PNS        | ERC721Upgradeable         | _tokenApprovals           | PNS        | ERC721Upgradeable         | _tokenApprovals           | 等价     |          |
 | PNS        | ERC721Upgradeable         | _operatorApprovals        | PNS        | ERC721Upgradeable         | _operatorApprovals        | 等价     |          |
+| Controller | Controller                | priceFeed                 | Controller | Controller                | priceFeed                 | 等价     |          |
 | Controller | Controller                | _pns                      | Controller | Controller                | _pns                      | 等价     |          |
 | Controller | Controller                | records                   | PNS        | PNS                       | records                   | 需要转换 |          |
 | Controller | Controller                | BASE_NODE                 | Controller | Controller                | BASE_NODE                 | 等价     |          |
@@ -41,15 +42,17 @@
 | Controller | RootOwnable               | _root                     | Controller | RootOwnable               | _root                     | 等价     |          |
 | Controller | ManagerOwnable            | _managers                 | Controller | ManagerOwnable            | _managers                 | 等价     |          |
 
+
 部分状态，例如 ~PNS.FLAGS~ ，在过程中可能会变化，最终应该和迁移前保持一致。
 
 对于 ~Controller.records~ 到 ~PNS.records~ 的迁移，类型由 ~Controller.Record~ 变为 ~PNS.Record~ ，其中 ~origin~ 和 ~expire~ 域保持不变，抛弃原 ~children~ 和 ~capacity~ ，需要新增 ~parent~ 域。
 
 下面是v1.5的一些新状态
-| v1.5合约 | v1.5基类 | v1.5新状态   | 说明 |
-|----------+----------+--------------+------|
-| PNS      | PNS      | _links       |      |
-| PNS      | PNS      | _bounds      |      |
+| v1.5合约   | v1.5基类   | v1.5新状态       | 说明 |
+|------------+------------+------------------+------|
+| PNS        | PNS        | _links           |      |
+| PNS        | PNS        | _bounds          |      |
+| Controller | Controller | _trustedForarder |      |
 
 ** 数据迁移方案
 * 测试方案测试

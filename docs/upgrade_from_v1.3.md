@@ -1,17 +1,17 @@
 
 # &#30446;&#24405;
 
-1.  [目标](#org1a9f7a5)
-2.  [状态分析](#orgb231a78)
-    1.  [状态说明](#orgc5e5623)
-    2.  [数据迁移方案](#orgc94c7e3)
-3.  [测试方案测试](#org2076974)
-4.  [部署步骤](#org726af0f)
+1.  [目标](#org2ab866b)
+2.  [状态分析](#org185d698)
+    1.  [状态说明](#org1f6efd0)
+    2.  [数据迁移方案](#org9b94d01)
+3.  [测试方案测试](#orgb5c0ad7)
+4.  [部署步骤](#org3927898)
 
 本文档对已部署v1.3版本合约升级到v1.5版本（fuzzing分支）进行说明。
 
 
-<a id="org1a9f7a5"></a>
+<a id="org2ab866b"></a>
 
 # 目标
 
@@ -19,12 +19,12 @@
 -   注册记录（状态）包括不变
 
 
-<a id="orgb231a78"></a>
+<a id="org185d698"></a>
 
 # 状态分析
 
 
-<a id="orgc5e5623"></a>
+<a id="org1f6efd0"></a>
 
 ## 状态说明
 
@@ -215,6 +215,18 @@
 <td class="org-left">PNS</td>
 <td class="org-left">ERC721Upgradeable</td>
 <td class="org-left">_operatorApprovals</td>
+<td class="org-left">等价</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+
+<tr>
+<td class="org-left">Controller</td>
+<td class="org-left">Controller</td>
+<td class="org-left">priceFeed</td>
+<td class="org-left">Controller</td>
+<td class="org-left">Controller</td>
+<td class="org-left">priceFeed</td>
 <td class="org-left">等价</td>
 <td class="org-left">&#xa0;</td>
 </tr>
@@ -419,21 +431,29 @@
 <td class="org-left">_bounds</td>
 <td class="org-left">&#xa0;</td>
 </tr>
+
+
+<tr>
+<td class="org-left">Controller</td>
+<td class="org-left">Controller</td>
+<td class="org-left">_trustedForarder</td>
+<td class="org-left">&#xa0;</td>
+</tr>
 </tbody>
 </table>
 
 
-<a id="orgc94c7e3"></a>
+<a id="org9b94d01"></a>
 
 ## 数据迁移方案
 
 
-<a id="org2076974"></a>
+<a id="orgb5c0ad7"></a>
 
 # 测试方案测试
 
 
-<a id="org726af0f"></a>
+<a id="org3927898"></a>
 
 # 部署步骤
 
