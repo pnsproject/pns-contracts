@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/metatx/ERC2771ContextUpgradeable.sol";
+import "../utils/ERC2771ContextUpgradeableNoGap.sol";
 
 import "./IPNS.sol";
 import "./IResolver.sol";
@@ -15,13 +15,12 @@ import "./IResolver.sol";
 import "../utils/RootOwnable.sol";
 import "../utils/StringUtils.sol";
 
-contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, ERC2771ContextUpgradeable {
+contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, ERC2771ContextUpgradeableNoGap {
     using StringUtils for *;
 
     event ConfigUpdated(uint256 flags);
 
     uint256 public FLAGS;
-    uint256 public GRACE_PERIOD;
 
     modifier writable {
         require((FLAGS & 1) > 0, "invalid op");
@@ -35,7 +34,7 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
 
     // ------------ initializer & constructor
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address forwarder) ERC2771ContextUpgradeable(forwarder) {}
+    constructor(address forwarder) ERC2771ContextUpgradeableNoGap(forwarder) {}
 
     function initialize() initializer public override {
       __ERC721_init("PNS", "PNS");
@@ -47,12 +46,12 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     // ----------------- override function for ERC2771
     // override function
     function _msgSender() internal view virtual
-        override(ERC2771ContextUpgradeable, ContextUpgradeable) returns (address) {
+        override(ERC2771ContextUpgradeableNoGap, ContextUpgradeable) returns (address) {
         return super._msgSender();
     }
 
     function _msgData() internal view virtual
-        override(ERC2771ContextUpgradeable, ContextUpgradeable) returns (bytes calldata) {
+        override(ERC2771ContextUpgradeableNoGap, ContextUpgradeable) returns (bytes calldata) {
         return super._msgData();
     }
 
@@ -119,6 +118,8 @@ contract PNS is IPNS, IResolver, ERC721Upgradeable, ManagerOwnableUpgradeable, E
     mapping(uint256 => mapping(uint256 => string)) internal _records;
     mapping(address => uint256) private _names;
     mapping(address => mapping(uint256 => uint256)) internal _nft_names;
+
+    uint256 public GRACE_PERIOD;
 
     function setName(
         address addr,
