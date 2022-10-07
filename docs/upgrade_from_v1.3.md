@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [目标](#org272e9d8)
-2.  [状态分析](#org4f1f0d3)
-    1.  [状态说明](#org4e5e8c1)
-    2.  [数据迁移方案](#orgf4ac58f)
-        1.  [PNS](#org1f22ed9)
-        2.  [Controller](#orgdaba0ee)
-3.  [测试方案测试](#orge4a036d)
-4.  [部署步骤](#org20027e7)
+1.  [目标](#orgbc927bf)
+2.  [状态分析](#orge9ea243)
+    1.  [状态说明](#org926fd06)
+    2.  [数据迁移方案](#org78351f9)
+        1.  [PNS](#org50bea42)
+        2.  [Controller](#orgaeffbbc)
+3.  [测试方案测试](#orgd6d6667)
+4.  [部署步骤](#org6c39a62)
 
 本文档对已部署v1.3版本合约升级到v1.5版本（fuzzing分支）进行说明。
 
 
-<a id="org272e9d8"></a>
+<a id="orgbc927bf"></a>
 
 # 目标
 
@@ -21,12 +21,12 @@
 -   注册记录（状态）包括不变
 
 
-<a id="org4f1f0d3"></a>
+<a id="orge9ea243"></a>
 
 # 状态分析
 
 
-<a id="org4e5e8c1"></a>
+<a id="org926fd06"></a>
 
 ## 状态说明
 
@@ -415,12 +415,12 @@
 </table>
 
 
-<a id="orgf4ac58f"></a>
+<a id="org78351f9"></a>
 
 ## 数据迁移方案
 
 
-<a id="org1f22ed9"></a>
+<a id="org50bea42"></a>
 
 ### PNS
 
@@ -431,24 +431,25 @@
 -   保留的 `_managers` 状态需要在更新 `Controller` 后更新，去除原来的 `Controller` 地址，加入新的 `Controller` 地址；
 
 
-<a id="orgdaba0ee"></a>
+<a id="orgaeffbbc"></a>
 
 ### Controller
 
 -   `Controller` 重新部署，数量和状态和旧版一一对应；
 -   状态来自旧版本的 `Controller` ；
+-   `_trustedForarder` 在部署合约时设置；
 
 
-<a id="orge4a036d"></a>
+<a id="orgd6d6667"></a>
 
 # 测试方案测试
 
 
-<a id="org20027e7"></a>
+<a id="org6c39a62"></a>
 
 # 部署步骤
 
-下面若未特别说明，~Controller~ 根据实际情况，指所有的 `Controller` 合约或者每个 `Controller` 合约：
+若未特别说明，下面的 `Controller` 根据实际情况，指所有的 `Controller` 合约或者每个 `Controller` 合约：
 
 -   准备工作
     -   记录当前 `PNS.FLAGS` 和 `Controller.FLAGS` 的值；

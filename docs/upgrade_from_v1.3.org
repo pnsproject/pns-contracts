@@ -65,10 +65,11 @@
 *** Controller
 + ~Controller~ 重新部署，数量和状态和旧版一一对应；
 + 状态来自旧版本的 ~Controller~ ；
++ ~_trustedForarder~ 在部署合约时设置；
 * 测试方案测试
 
 * 部署步骤
-下面若未特别说明，~Controller~ 根据实际情况，指所有的 ~Controller~ 合约或者每个 ~Controller~ 合约：
+若未特别说明，下面的 ~Controller~ 根据实际情况，指所有的 ~Controller~ 合约或者每个 ~Controller~ 合约：
 - 准备工作
   + 记录当前 ~PNS.FLAGS~ 和 ~Controller.FLAGS~ 的值；
   + 将 ~PNS.FLAGS~ 和 ~Controller.FLAGS~ 清零；
