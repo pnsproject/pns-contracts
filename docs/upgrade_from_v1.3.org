@@ -12,35 +12,35 @@
 ** 状态说明
 可以通过 ~slither . --print variable-order~ 来获取变量列表。
 
-| v1.3合约   | v1.3对应基类              | v1.3状态                  | v1.5合约   | v1.5对应基类              | v1.5状态                  | 关系     | 迁移方式 |
-|------------+---------------------------+---------------------------+------------+---------------------------+---------------------------+----------+----------|
-| PNS        | PNS                       | FLAGS                     | PNS        | PNS                       | FLAGS                     | 等价     |          |
-| PNS        | PNS                       | _keys                     | PNS        | PNS                       | _keys                     | 等价     |          |
-| PNS        | PNS                       | _records                  | PNS        | PNS                       | _records                  | 等价     |          |
-| PNS        | PNS                       | _names                    | PNS        | PNS                       | _names                    | 等价     |          |
-| PNS        | PNS                       | _nft_names                | PNS        | PNS                       | _nft_names                | 等价     |          |
-| PNS        | ManagerOwnableUpgradeable | _root                     | PNS        | ManagerOwnableUpgradeable | _root                     | 等价     |          |
-| PNS        | ManagerOwnableUpgradeable | _managers                 | PNS        | ManagerOwnableUpgradeable | _managers                 | 等价     |          |
-| PNS        | ERC721Upgradeable         | _name                     | PNS        | ERC721Upgradeable         | _name                     | 等价     |          |
-| PNS        | ERC721Upgradeable         | _symbol                   | PNS        | ERC721Upgradeable         | _symbol                   | 等价     |          |
-| PNS        | ERC721Upgradeable         | _owners                   | PNS        | ERC721Upgradeable         | _owners                   | 等价     |          |
-| PNS        | ERC721Upgradeable         | _balances                 | PNS        | ERC721Upgradeable         | _balances                 | 等价     |          |
-| PNS        | ERC721Upgradeable         | _tokenApprovals           | PNS        | ERC721Upgradeable         | _tokenApprovals           | 等价     |          |
-| PNS        | ERC721Upgradeable         | _operatorApprovals        | PNS        | ERC721Upgradeable         | _operatorApprovals        | 等价     |          |
-| Controller | Controller                | priceFeed                 | Controller | Controller                | priceFeed                 | 等价     |          |
-| Controller | Controller                | _pns                      | Controller | Controller                | _pns                      | 等价     |          |
-| Controller | Controller                | records                   | PNS        | PNS                       | records                   | 需要转换 |          |
-| Controller | Controller                | BASE_NODE                 | Controller | Controller                | BASE_NODE                 | 等价     |          |
-| Controller | Controller                | DEFAULT_DOMAIN_CAPACITY   | -          | -                         | -                         | -        |          |
-| Controller | Controller                | MIN_REGISTRATION_DURATION | Controller | Controller                | MIN_REGISTRATION_DURATION | 等价     |          |
-| Controller | Controller                | MIN_REGISTRATION_LENGTH   | Controller | Controller                | MIN_REGISTRATION_LENGTH   | 等价     |          |
-| Controller | Controller                | GRACE_PERIOD              | PNS        | PNS                       | GRACE_PERIOD              | 等价     |          |
-| Controller | Controller                | FLAGS                     | Controller | Controller                | FLAGS                     | 等价     |          |
-| Controller | Controller                | basePrices                | Controller | Controller                | basePrices                | 等价     |          |
-| Controller | Controller                | rentPrices                | Controller | Controller                | rentPrices                | 等价     |          |
-| Controller | Controller                | capacityPrice             | -          | -                         | -                         | -        |          |
-| Controller | RootOwnable               | _root                     | Controller | RootOwnable               | _root                     | 等价     |          |
-| Controller | ManagerOwnable            | _managers                 | Controller | ManagerOwnable            | _managers                 | 等价     |          |
+| v1.3合约   | v1.3对应基类              | v1.3状态                  | v1.5合约   | v1.5对应基类              | v1.5状态                  | 关系     |
+|------------+---------------------------+---------------------------+------------+---------------------------+---------------------------+----------|
+| PNS        | PNS                       | FLAGS                     | PNS        | PNS                       | FLAGS                     | 等价     |
+| PNS        | PNS                       | _keys                     | PNS        | PNS                       | _keys                     | 等价     |
+| PNS        | PNS                       | _records                  | PNS        | PNS                       | _records                  | 等价     |
+| PNS        | PNS                       | _names                    | PNS        | PNS                       | _names                    | 等价     |
+| PNS        | PNS                       | _nft_names                | PNS        | PNS                       | _nft_names                | 等价     |
+| PNS        | ManagerOwnableUpgradeable | _root                     | PNS        | ManagerOwnableUpgradeable | _root                     | 等价     |
+| PNS        | ManagerOwnableUpgradeable | _managers                 | PNS        | ManagerOwnableUpgradeable | _managers                 | 等价     |
+| PNS        | ERC721Upgradeable         | _name                     | PNS        | ERC721Upgradeable         | _name                     | 等价     |
+| PNS        | ERC721Upgradeable         | _symbol                   | PNS        | ERC721Upgradeable         | _symbol                   | 等价     |
+| PNS        | ERC721Upgradeable         | _owners                   | PNS        | ERC721Upgradeable         | _owners                   | 等价     |
+| PNS        | ERC721Upgradeable         | _balances                 | PNS        | ERC721Upgradeable         | _balances                 | 等价     |
+| PNS        | ERC721Upgradeable         | _tokenApprovals           | PNS        | ERC721Upgradeable         | _tokenApprovals           | 等价     |
+| PNS        | ERC721Upgradeable         | _operatorApprovals        | PNS        | ERC721Upgradeable         | _operatorApprovals        | 等价     |
+| Controller | Controller                | priceFeed                 | Controller | Controller                | priceFeed                 | 等价     |
+| Controller | Controller                | _pns                      | Controller | Controller                | _pns                      | 等价     |
+| Controller | Controller                | records                   | PNS        | PNS                       | records                   | 需要转换 |
+| Controller | Controller                | BASE_NODE                 | Controller | Controller                | BASE_NODE                 | 等价     |
+| Controller | Controller                | DEFAULT_DOMAIN_CAPACITY   | -          | -                         | -                         | -        |
+| Controller | Controller                | MIN_REGISTRATION_DURATION | Controller | Controller                | MIN_REGISTRATION_DURATION | 等价     |
+| Controller | Controller                | MIN_REGISTRATION_LENGTH   | Controller | Controller                | MIN_REGISTRATION_LENGTH   | 等价     |
+| Controller | Controller                | GRACE_PERIOD              | PNS        | PNS                       | GRACE_PERIOD              | 等价     |
+| Controller | Controller                | FLAGS                     | Controller | Controller                | FLAGS                     | 等价     |
+| Controller | Controller                | basePrices                | Controller | Controller                | basePrices                | 等价     |
+| Controller | Controller                | rentPrices                | Controller | Controller                | rentPrices                | 等价     |
+| Controller | Controller                | capacityPrice             | -          | -                         | -                         | -        |
+| Controller | RootOwnable               | _root                     | Controller | RootOwnable               | _root                     | 等价     |
+| Controller | ManagerOwnable            | _managers                 | Controller | ManagerOwnable            | _managers                 | 等价     |
 
 
 部分状态，例如 ~PNS.FLAGS~ ，在过程中可能会变化，最终应该和迁移前保持一致。
@@ -55,6 +55,44 @@
 | Controller | Controller | _trustedForarder |      |
 
 ** 数据迁移方案
+*** PNS
++ ~PNS~ 采取openzepplin的可升级合约的方案升级，保留原有状态；
++ 新增的 ~_links~ 和 ~_bounds~ 状态使用默认值（空）；
++ 新增的 ~records~ 需要从 Controller 迁移；
++ 新增的 ~GRACE_PERIOD~ 使用 ~Controller~ 原来的值（假设所有 ~Controller~ 的值相同）；
++ 保留的 ~_managers~ 状态需要在更新 ~Controller~ 后更新，去除原来的 ~Controller~ 地址，加入新的 ~Controller~ 地址；
+
+*** Controller
++ ~Controller~ 重新部署，数量和状态和旧版一一对应；
++ 状态来自旧版本的 ~Controller~ ；
 * 测试方案测试
 
 * 部署步骤
+下面若未特别说明，~Controller~ 根据实际情况，指所有的 ~Controller~ 合约或者每个 ~Controller~ 合约：
+- 准备工作
+  + 记录当前 ~PNS.FLAGS~ 和 ~Controller.FLAGS~ 的值；
+  + 将 ~PNS.FLAGS~ 和 ~Controller.FLAGS~ 清零；
+  + 移除 ~PNS._managers~ 中所有的 ~Controller~；
+- 数据导出
+  + 导出 ~Controller.records~ ；
+  + 导出所有的 ~PNS.NewSubdomain~ 事件，配合上一步的 ~records~ ，用于填充新的 ~records~ 的 ~parent~ 域；
+  + 导出 ~Controller~ 的配置，用于新版本的部署；
+    - ~BASE_NODE~
+    - ~MIN_REGISTRATION_DURATION~
+    - ~MIN_REGISTRATION_LENGTH~
+    - ~GRACE_PERIOD~
+    - ~basePrices~
+    - ~rentPrices~
+    - ~priceFeed~
+    - ~_root~
+  + 导出所有 ~Controller.ManagerChanged~ 事件，用于重建 ~_managers~ 状态；
+- 部署
+  + 部署元事务的中继合约；
+  + 升级 ~PNS~ 合约；
+  + 一一部署新版 ~Controller~ 合约，构建函数的参数来自上一步的导出旧版的值；
+  + 将新部署的 ~Controller~ 地址添加进 ~PNS._mangers~ ；
+- 数据导入及收尾
+  + 一一设置 ~Controller~ 的 ~_managers~ 状态；
+  + 根据所有旧版 ~Controller~ 导出的 ~records~ ，以及 ~PNS~ 的 ~NewSubdomain~ 事件，通过函数 ~PNS.setMetadataBatch~ 批量设置 ~PNS.records~ ；
+  + 恢复 ~PNS.FLAGS~ 和 ~Controller.FLAGS~
+  + 将新版的 ~Controller._root~ 恢复为旧版的值；
