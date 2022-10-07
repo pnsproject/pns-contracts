@@ -32,8 +32,10 @@ export async function deployPriceOracle(): Promise<string> {
     return process.env.PRICE_ORACLE || "";
   }
 
+  let forwarderAddr = await deployForwarder()
+
   let PriceOracle = await ethers.getContractFactory("PriceOracle");
-  let priceOracle = await PriceOracle.deploy(326000000);
+  let priceOracle = await PriceOracle.deploy(326000000, forwarderAddr);
   await priceOracle.deployed();
   if (process.env.PRINT_START_BLOCK) {
     console.log("priceOracle deployed to:", priceOracle.address);
