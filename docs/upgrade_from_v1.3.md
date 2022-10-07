@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [目标](#org6145256)
-2.  [状态分析](#org007c0a1)
-    1.  [状态说明](#orgf92d2fb)
-    2.  [数据迁移方案](#org0b73f2a)
-        1.  [PNS](#org00cfe3a)
-        2.  [Controller](#orgce56b24)
-3.  [测试方案测试](#org633075b)
-4.  [部署步骤](#org4ef2979)
+1.  [目标](#org284c9cd)
+2.  [状态分析](#org8c20a73)
+    1.  [状态说明](#org2931ffa)
+    2.  [数据迁移方案](#orgce97847)
+        1.  [PNS](#orgcc7b054)
+        2.  [Controller](#org3301c36)
+3.  [测试方案测试](#org6530f68)
+4.  [部署步骤](#org49bb076)
 
 本文档对已部署v1.3版本合约升级到v1.5版本（fuzzing分支）进行说明。
 
 
-<a id="org6145256"></a>
+<a id="org284c9cd"></a>
 
 # 目标
 
@@ -21,12 +21,12 @@
 -   注册记录（状态）包括不变
 
 
-<a id="org007c0a1"></a>
+<a id="org8c20a73"></a>
 
 # 状态分析
 
 
-<a id="orgf92d2fb"></a>
+<a id="org2931ffa"></a>
 
 ## 状态说明
 
@@ -415,23 +415,23 @@
 </table>
 
 
-<a id="org0b73f2a"></a>
+<a id="orgce97847"></a>
 
 ## 数据迁移方案
 
 
-<a id="org00cfe3a"></a>
+<a id="orgcc7b054"></a>
 
 ### PNS
 
--   `PNS` 采取openzepplin的可升级合约的方案升级，保留原有状态；
+-   `PNS` 采取openzepplin的可升级合约的方案升级，保留旧版状态；
 -   新增的 `_links` 和 `_bounds` 状态使用默认值（空）；
 -   新增的 `records` 需要从 Controller 迁移；
--   新增的 `GRACE_PERIOD` 使用 `Controller` 原来的值（假设所有 `Controller` 的值相同）；
--   保留的 `_managers` 状态需要在更新 `Controller` 后更新，去除原来的 `Controller` 地址，加入新的 `Controller` 地址；
+-   新增的 `GRACE_PERIOD` 使用旧版 `Controller.GRACE_PERIOD` 的值（假设所有 `Controller` 的值相同）；
+-   保留的 `_managers` 状态需要在更新 `Controller` 后更新，去除旧版 `Controller` 地址，加入新版 `Controller` 地址；
 
 
-<a id="orgce56b24"></a>
+<a id="org3301c36"></a>
 
 ### Controller
 
@@ -440,12 +440,12 @@
 -   `_trustedForarder` 在部署合约时设置；
 
 
-<a id="org633075b"></a>
+<a id="org6530f68"></a>
 
 # 测试方案测试
 
 
-<a id="org4ef2979"></a>
+<a id="org49bb076"></a>
 
 # 部署步骤
 
@@ -454,7 +454,7 @@
 1.  准备工作
     1.  记录当前 `PNS.FLAGS` 和 `Controller.FLAGS` 的值；
     2.  将 `PNS.FLAGS` 和 `Controller.FLAGS` 清零；
-    3.  移除 `PNS._managers` 中所有的 ~Controller~；
+    3.  移除 `PNS._managers` 中所有的 `Controller` ；
 2.  数据导出
     1.  导出 `Controller.records` ；
     2.  导出所有的 `PNS.NewSubdomain` 事件，配合上一步的 `records` ，用于填充新的 `records` 的 `parent` 域；

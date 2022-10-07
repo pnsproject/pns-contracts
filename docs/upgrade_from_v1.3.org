@@ -56,11 +56,11 @@
 
 ** 数据迁移方案
 *** PNS
-+ ~PNS~ 采取openzepplin的可升级合约的方案升级，保留原有状态；
++ ~PNS~ 采取openzepplin的可升级合约的方案升级，保留旧版状态；
 + 新增的 ~_links~ 和 ~_bounds~ 状态使用默认值（空）；
 + 新增的 ~records~ 需要从 Controller 迁移；
-+ 新增的 ~GRACE_PERIOD~ 使用 ~Controller~ 原来的值（假设所有 ~Controller~ 的值相同）；
-+ 保留的 ~_managers~ 状态需要在更新 ~Controller~ 后更新，去除原来的 ~Controller~ 地址，加入新的 ~Controller~ 地址；
++ 新增的 ~GRACE_PERIOD~ 使用旧版 ~Controller.GRACE_PERIOD~ 的值（假设所有 ~Controller~ 的值相同）；
++ 保留的 ~_managers~ 状态需要在更新 ~Controller~ 后更新，去除旧版 ~Controller~ 地址，加入新版 ~Controller~ 地址；
 
 *** Controller
 + ~Controller~ 重新部署，数量和状态和旧版一一对应；
@@ -73,7 +73,7 @@
 1. 准备工作
    1) 记录当前 ~PNS.FLAGS~ 和 ~Controller.FLAGS~ 的值；
    2) 将 ~PNS.FLAGS~ 和 ~Controller.FLAGS~ 清零；
-   3) 移除 ~PNS._managers~ 中所有的 ~Controller~；
+   3) 移除 ~PNS._managers~ 中所有的 ~Controller~ ；
 2. 数据导出
    1) 导出 ~Controller.records~ ；
    2) 导出所有的 ~PNS.NewSubdomain~ 事件，配合上一步的 ~records~ ，用于填充新的 ~records~ 的 ~parent~ 域；
