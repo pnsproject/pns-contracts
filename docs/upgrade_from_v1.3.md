@@ -1,19 +1,19 @@
 
 # &#30446;&#24405;
 
-1.  [目标](#orgbc927bf)
-2.  [状态分析](#orge9ea243)
-    1.  [状态说明](#org926fd06)
-    2.  [数据迁移方案](#org78351f9)
-        1.  [PNS](#org50bea42)
-        2.  [Controller](#orgaeffbbc)
-3.  [测试方案测试](#orgd6d6667)
-4.  [部署步骤](#org6c39a62)
+1.  [目标](#org6145256)
+2.  [状态分析](#org007c0a1)
+    1.  [状态说明](#orgf92d2fb)
+    2.  [数据迁移方案](#org0b73f2a)
+        1.  [PNS](#org00cfe3a)
+        2.  [Controller](#orgce56b24)
+3.  [测试方案测试](#org633075b)
+4.  [部署步骤](#org4ef2979)
 
 本文档对已部署v1.3版本合约升级到v1.5版本（fuzzing分支）进行说明。
 
 
-<a id="orgbc927bf"></a>
+<a id="org6145256"></a>
 
 # 目标
 
@@ -21,12 +21,12 @@
 -   注册记录（状态）包括不变
 
 
-<a id="orge9ea243"></a>
+<a id="org007c0a1"></a>
 
 # 状态分析
 
 
-<a id="org926fd06"></a>
+<a id="orgf92d2fb"></a>
 
 ## 状态说明
 
@@ -415,12 +415,12 @@
 </table>
 
 
-<a id="org78351f9"></a>
+<a id="org0b73f2a"></a>
 
 ## 数据迁移方案
 
 
-<a id="org50bea42"></a>
+<a id="org00cfe3a"></a>
 
 ### PNS
 
@@ -431,7 +431,7 @@
 -   保留的 `_managers` 状态需要在更新 `Controller` 后更新，去除原来的 `Controller` 地址，加入新的 `Controller` 地址；
 
 
-<a id="orgaeffbbc"></a>
+<a id="orgce56b24"></a>
 
 ### Controller
 
@@ -440,25 +440,25 @@
 -   `_trustedForarder` 在部署合约时设置；
 
 
-<a id="orgd6d6667"></a>
+<a id="org633075b"></a>
 
 # 测试方案测试
 
 
-<a id="org6c39a62"></a>
+<a id="org4ef2979"></a>
 
 # 部署步骤
 
 若未特别说明，下面的 `Controller` 根据实际情况，指所有的 `Controller` 合约或者每个 `Controller` 合约：
 
--   准备工作
-    -   记录当前 `PNS.FLAGS` 和 `Controller.FLAGS` 的值；
-    -   将 `PNS.FLAGS` 和 `Controller.FLAGS` 清零；
-    -   移除 `PNS._managers` 中所有的 ~Controller~；
--   数据导出
-    -   导出 `Controller.records` ；
-    -   导出所有的 `PNS.NewSubdomain` 事件，配合上一步的 `records` ，用于填充新的 `records` 的 `parent` 域；
-    -   导出 `Controller` 的配置，用于新版本的部署；
+1.  准备工作
+    1.  记录当前 `PNS.FLAGS` 和 `Controller.FLAGS` 的值；
+    2.  将 `PNS.FLAGS` 和 `Controller.FLAGS` 清零；
+    3.  移除 `PNS._managers` 中所有的 ~Controller~；
+2.  数据导出
+    1.  导出 `Controller.records` ；
+    2.  导出所有的 `PNS.NewSubdomain` 事件，配合上一步的 `records` ，用于填充新的 `records` 的 `parent` 域；
+    3.  导出 `Controller` 的配置，用于新版本的部署；
         -   `BASE_NODE`
         -   `MIN_REGISTRATION_DURATION`
         -   `MIN_REGISTRATION_LENGTH`
@@ -467,15 +467,15 @@
         -   `rentPrices`
         -   `priceFeed`
         -   `_root`
-    -   导出所有 `Controller.ManagerChanged` 事件，用于重建 `_managers` 状态；
--   部署
-    -   部署元事务的中继合约；
-    -   升级 `PNS` 合约；
-    -   一一部署新版 `Controller` 合约，构建函数的参数来自上一步的导出旧版的值；
-    -   将新部署的 `Controller` 地址添加进 `PNS._mangers` ；
--   数据导入及收尾
-    -   一一设置 `Controller` 的 `_managers` 状态；
-    -   根据所有旧版 `Controller` 导出的 `records` ，以及 `PNS` 的 `NewSubdomain` 事件，通过函数 `PNS.setMetadataBatch` 批量设置 `PNS.records` ；
-    -   恢复 `PNS.FLAGS` 和 `Controller.FLAGS`
-    -   将新版的 `Controller._root` 恢复为旧版的值；
+    4.  导出所有 `Controller.ManagerChanged` 事件，用于重建 `_managers` 状态；
+3.  部署
+    1.  部署元事务的中继合约；
+    2.  升级 `PNS` 合约；
+    3.  一一部署新版 `Controller` 合约，构建函数的参数来自上一步的导出旧版的值；
+    4.  将新部署的 `Controller` 地址添加进 `PNS._mangers` ；
+4.  数据导入及收尾
+    1.  一一设置 `Controller` 的 `_managers` 状态；
+    2.  根据所有旧版 `Controller` 导出的 `records` ，以及 `PNS` 的 `NewSubdomain` 事件，通过函数 `PNS.setMetadataBatch` 批量设置 `PNS.records` ；
+    3.  恢复 `PNS.FLAGS` 和 `Controller.FLAGS`
+    4.  将新版的 `Controller._root` 恢复为旧版的值；
 
