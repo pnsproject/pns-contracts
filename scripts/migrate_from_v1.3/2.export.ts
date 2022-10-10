@@ -1,5 +1,5 @@
 import { ethers } from "hardhat"
-import { ContractFactory, Contract, BigNumberish, BigNumber } from "ethers"
+import { ContractFactory, Contract, BigNumberish, BigNumber, EventFilter } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { existsSync, rename, writeFileSync } from "fs"
 
@@ -38,6 +38,30 @@ function save_file(path: string, str: string) {
     writeFileSync(path, str)
 }
 
+async function query_event(contract: Contract, filter: EventFilter, start: number): Promise<any[]> {
+    var end = start - 1
+    const STEP = 1000
+    var res: any[] = []
+
+    while (true) {
+        const block = await ethers.provider.getBlockNumber()
+        const begin = end + 1
+        if (begin > block) break
+
+        end = ((begin + STEP - 1) > block) ? block : (begin + STEP - 1)
+
+        console.log(`query [${begin}, ${end}]: `)
+
+        const res1 = await contract.queryFilter(filter, begin, end)
+
+        console.log(`${res1.length} records`)
+
+        res = res.concat(res1)
+    }
+
+    return res
+}
+
 async function main() {
     const PNS = await ethers.getContractFactory("PNS")
     const Controller = await ethers.getContractFactory("Controller")
@@ -45,9 +69,12 @@ async function main() {
     // get contract
     const pns: Contract = PNS.attach(PNS_ADDRESS)
 
+    console.log("pns.FLAGS = ", await pns.FLAGS())
+
     // get all tokennn
     let token_list: string[] = []
-    let ev_list = await pns.queryFilter(pns.filters.Transfer(ethers.constants.AddressZero), PNS_BLOCK)
+    let ev_list = await query_event(pns, pns.filters.Transfer(ethers.constants.AddressZero), PNS_BLOCK)
+
     for (let ev of ev_list) {
         let tok = ev.args![2]
         if (await pns.exists(tok)) {
@@ -55,12 +82,18 @@ async function main() {
         }
     }
 
+    console.log("token_list", token_list)
+
     // get controller info
     let controller_info_list: ControllerInfo[] = []
 
     for (const address of CONTROLLER_ADDRESS_LIST) {
         const ctrl = Controller.attach(address)
         let records: Record<string, ControllerRecord> = {}
+
+        console.log(`process controller ${address}`)
+        console.log("isManager: ", await pns.isManager(address))
+        console.log(`FLAGS: `, await ctrl.FLAGS())
 
         let prices: BigNumberish[][] = await ctrl.getPrices()
 
@@ -89,6 +122,8 @@ async function main() {
                 capacity: toNum(await ctrl.capacity(tok)),
                 children: toNum(await ctrl.children(tok)),
             }
+
+            console.log(`records[${tok}]`, records[tok])
         }
     }
 
@@ -99,7 +134,7 @@ async function main() {
         records: {} // TODO
     }
 
-    let ev_list_nsd = await pns.queryFilter(pns.filters.NewSubdomain())
+    let ev_list_nsd = await query_event(pns, pns.filters.NewSubdomain(), PNS_BLOCK)
     for (let ev of ev_list_nsd) {
         pns_info.new_subdomain.push({
             to: ev.args![0],
