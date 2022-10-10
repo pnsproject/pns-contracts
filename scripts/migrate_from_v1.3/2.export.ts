@@ -1,8 +1,10 @@
 import { ethers } from "hardhat"
 import { ContractFactory, Contract, BigNumberish, BigNumber } from "ethers"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { existsSync, rename, writeFileSync } from "fs"
 
 import { PNS_ADDRESS, CONTROLLER_ADDRESS_LIST,
+         PNS_BLOCK,
          ControllerRecord, PNSRecord,
          NewSubdomain, ControllerConfig
        } from "./rc"
@@ -23,6 +25,19 @@ function toNum(a: BigNumberish): number {
     return BigNumber.from(a).toNumber()
 }
 
+function save_file(path: string, str: string) {
+    if (existsSync(path)) {
+        rename(path, path + ".old-" + Date.now().toString(), (e) => {
+            if (e) throw(e)
+        })
+    }
+
+    console.log("================= ", path)
+    console.log(str)
+
+    writeFileSync(path, str)
+}
+
 async function main() {
     const PNS = await ethers.getContractFactory("PNS")
     const Controller = await ethers.getContractFactory("Controller")
@@ -32,7 +47,7 @@ async function main() {
 
     // get all tokennn
     let token_list: string[] = []
-    let ev_list = await pns.queryFilter(pns.filters.Transfer(ethers.constants.AddressZero))
+    let ev_list = await pns.queryFilter(pns.filters.Transfer(ethers.constants.AddressZero), PNS_BLOCK)
     for (let ev of ev_list) {
         let tok = ev.args![2]
         if (await pns.exists(tok)) {
@@ -94,10 +109,8 @@ async function main() {
         })
     }
 
-    console.log("pns_info")
-    console.log(JSON.stringify(pns_info, null, 2))
-    console.log("controller_info_list")
-    console.log(JSON.stringify(controller_info_list, null, 2))
+    save_file("pns_info.json", JSON.stringify(pns_info, null, 2))
+    save_file("controller_info_list.json", JSON.stringify(controller_info_list, null, 2))
 }
 
 main().catch((error) => {
