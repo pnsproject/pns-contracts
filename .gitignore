@@ -27,3 +27,5 @@ data/
 
 /crytic-export
 /corpus
+/*.json
+/*.json.old-*
