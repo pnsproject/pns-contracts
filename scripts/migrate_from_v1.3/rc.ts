@@ -1,9 +1,24 @@
 import { ContractFactory, Contract, BigNumberish, BigNumber } from "ethers"
 
-export const PNS_ADDRESS = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
-export const CONTROLLER_ADDRESS_LIST = [
-    "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
-]
+export var PNS_ADDRESS: string
+export var PNS_BLOCK: number
+export var CONTROLLER_ADDRESS_LIST: string[]
+
+if (process.env.HARDHAT_NETWORK == "localhost") {
+    PNS_ADDRESS  = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+    PNS_BLOCK = 1
+    CONTROLLER_ADDRESS_LIST = [
+        "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+    ]
+}
+else if (process.env.HARDHAT_NETWORK == "glmr") {
+    PNS_ADDRESS = "0x2dF0fC48837e69D26eFA50fD3baE86977903B697"
+    PNS_BLOCK = 1270370
+    CONTROLLER_ADDRESS_LIST = [
+        "0xaf5B6573ADBE5126FB2fc5e60FB7964b1c225dF9"
+    ]
+}
+
 
 export interface ControllerRecord {
     origin: BigNumberish
