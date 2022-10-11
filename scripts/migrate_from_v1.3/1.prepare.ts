@@ -29,36 +29,20 @@ async function main() {
         console.log(`controller ${address} FLAGS: `, await ctrl.FLAGS())
     }
 
-
-    console.log("now, set PNS.FLAGS & Controller.FLAGS to 0")
-
-    await (await pns.setContractConfig(0)).wait()
-
     // controller
     for (const address of CONTROLLER_ADDRESS_LIST) {
+        console.log(`remove ${address} from manager list`)
         const ctrl = Controller.attach(address)
 
-        let min_length = toNum(await ctrl.MIN_REGISTRATION_LENGTH())
-        let min_duration = toNum(await ctrl.MIN_REGISTRATION_DURATION())
-        let grace_period = toNum(await ctrl.GRACE_PERIOD())
-        let default_capacity = toNum(await ctrl.DEFAULT_DOMAIN_CAPACITY())
-        let capacity_price = toNum(await ctrl.capacityPrice())
-        let price_feed = ethers.utils.hexlify(await ctrl.priceFeed())
-
-        console.log({
-            address,
-            min_length,
-            min_duration,
-            grace_period,
-            default_capacity,
-            capacity_price,
-            price_feed
-        })
-
-        await (await ctrl.setContractConfig(
-            0, min_length, min_duration, grace_period,
-            default_capacity, capacity_price, price_feed)).wait()
+        if (await pns.isManager(address)) {
+            await (await pns.setManager(address, false)).wait()
+        }
+        console.log(`isManager ${await pns.isManager(address)}`)
     }
+
+    console.log("now, set PNS.FLAGS to 0")
+
+    await (await pns.setContractConfig(0)).wait()
 }
 
 main().catch((error) => {
