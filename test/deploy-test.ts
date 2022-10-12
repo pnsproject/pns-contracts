@@ -54,13 +54,13 @@ describe("PNS", async function () {
         await controller.setManager(threeAddr, true);
 
           await registerName();
-          for (var i = 0; i < 500; ++i) {
+          for (var i = 0; i < 200; ++i) {
               let tx = await registerName("test-domain-123456-" + i.toString(), oneAddr);
               let rc = await tx.wait()
               let tok = rc.events.filter((x: any) =>
                   { return x.event == "NameRegistered" })[0].args[1]
 
-              for (var j = 0; j < 10; ++j) {
+              for (var j = 0; j < 8; ++j) {
                   await controller.mintSubdomain(threeAddr, tok, "domain-another-" + j.toString() + "-" + i.toString());
               }
           }
