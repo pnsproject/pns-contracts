@@ -50,3 +50,15 @@ export interface ControllerConfig {
     priceFeed: string
     root: string
 }
+
+export interface PNSInfo {
+    token_list: BigNumberish[]
+    new_subdomain: NewSubdomain[]
+}
+
+export interface ControllerInfo {
+    address: string
+    config: ControllerConfig
+    records: Record<string, ControllerRecord>
+    managers: string[]
+}

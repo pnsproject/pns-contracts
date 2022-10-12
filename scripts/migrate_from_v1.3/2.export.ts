@@ -6,20 +6,9 @@ import { existsSync, rename, writeFileSync } from "fs"
 import { PNS_ADDRESS, CONTROLLER_ADDRESS_LIST,
          PNS_BLOCK,
          ControllerRecord, PNSRecord,
-         NewSubdomain, ControllerConfig
+         NewSubdomain, ControllerConfig,
+         PNSInfo, ControllerInfo
        } from "./rc"
-
-interface PNSInfo {
-    token_list: BigNumberish[]
-    new_subdomain: NewSubdomain[]
-    records: Record<string, PNSRecord>
-}
-
-interface ControllerInfo {
-    address: string
-    config: ControllerConfig
-    records: Record<string, ControllerRecord>
-}
 
 function toNum(a: BigNumberish): number {
     return BigNumber.from(a).toNumber()
@@ -97,6 +86,16 @@ async function main() {
 
         let prices: BigNumberish[][] = await ctrl.getPrices()
 
+        let manager_set: Set<string> = new Set()
+        let ev_list_mgr = await query_event(ctrl, ctrl.filters.ManagerChanged(), PNS_BLOCK)
+        for (const ev of ev_list_mgr) {
+            let m = ethers.utils.hexlify(ev.args![0])
+            let r = ev.args![1]
+
+            if (r) { manager_set.add(m) }
+            else { manager_set.delete(m) }
+        }
+
         controller_info_list.push({
             address,
             config: {
@@ -110,6 +109,7 @@ async function main() {
                 root: await ctrl.root(),
             },
             records,
+            managers: Array.from(manager_set)
         })
 
         for (const tok of token_list) {
@@ -131,7 +131,6 @@ async function main() {
     let pns_info: PNSInfo = {
         token_list,
         new_subdomain: [],
-        records: {} // TODO
     }
 
     let ev_list_nsd = await query_event(pns, pns.filters.NewSubdomain(), PNS_BLOCK)
