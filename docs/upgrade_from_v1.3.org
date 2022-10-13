@@ -115,10 +115,15 @@
 将以下文件复制到 ~post~ 目录，相对路径保持不变：
 - pns_info.json
 - controller_info_list.json
-- .openzeppelin/unknown-31337.json（或其他文件）
+- .openzeppelin/unknown-31337.json（或其他类似文件，openzepplin通过该文件保证合约升级的兼容性）
 
 复制完后，在 ~post~ 目录执行后续的步骤3和步骤4：
 - 执行步骤3
   : npx hardhat run --network localhost scripts/migrate_from_v1.3/3.deploy.ts
 - 执行步骤4
   : npx hardhat run --network localhost scripts/migrate_from_v1.3/4.import_finalize.ts
+
+部署完成后，可以简单的验证一下（测试）部署的结果：
+: npx hardhat run --network localhost scripts/migrate_from_v1.3/5.verify.ts
+* 实际部署
+流程和测试方案类似，不过跳过前面的启动节点以及部署旧版合约部分，且网络需要选择 ~glmr~ （即 ~--netowrk glmr~ ）。此外，需要以 ~PNS~ 和 ~Controller~ 的管理员帐号执行脚本。

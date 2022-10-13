@@ -1,19 +1,20 @@
 
 # &#30446;&#24405;
 
-1.  [目标](#org3f867e7)
-2.  [状态分析](#orgcec47ff)
-    1.  [状态说明](#org0bf1227)
-    2.  [数据迁移方案](#org6a177b4)
-        1.  [PNS](#orgd6bc9b9)
-        2.  [Controller](#org8b00d78)
-3.  [部署步骤](#orga4e3583)
-4.  [测试方案](#orgda946e7)
+1.  [目标](#orgbf8ccb4)
+2.  [状态分析](#org5566900)
+    1.  [状态说明](#orgef89553)
+    2.  [数据迁移方案](#org72858f9)
+        1.  [PNS](#orge95eb7b)
+        2.  [Controller](#orgf9fab8c)
+3.  [部署步骤](#org55ff5ed)
+4.  [测试方案](#orga3f5ef2)
+5.  [实际部署](#org8e0d6b6)
 
 本文档对已部署v1.3版本合约升级到v1.5版本（fuzzing分支）进行说明。
 
 
-<a id="org3f867e7"></a>
+<a id="orgbf8ccb4"></a>
 
 # 目标
 
@@ -21,12 +22,12 @@
 -   注册记录（状态）包括不变
 
 
-<a id="orgcec47ff"></a>
+<a id="org5566900"></a>
 
 # 状态分析
 
 
-<a id="org0bf1227"></a>
+<a id="orgef89553"></a>
 
 ## 状态说明
 
@@ -415,12 +416,12 @@
 </table>
 
 
-<a id="org6a177b4"></a>
+<a id="org72858f9"></a>
 
 ## 数据迁移方案
 
 
-<a id="orgd6bc9b9"></a>
+<a id="orge95eb7b"></a>
 
 ### PNS
 
@@ -431,7 +432,7 @@
 -   保留的 `_managers` 状态需要在更新 `Controller` 后更新，去除旧版 `Controller` 地址，加入新版 `Controller` 地址；
 
 
-<a id="org8b00d78"></a>
+<a id="orgf9fab8c"></a>
 
 ### Controller
 
@@ -440,7 +441,7 @@
 -   `_trustedForarder` 在部署合约时设置；
 
 
-<a id="orga4e3583"></a>
+<a id="org55ff5ed"></a>
 
 # 部署步骤
 
@@ -479,7 +480,7 @@
     6.  将新版的 `Controller._root` 恢复为旧版的值；
 
 
-<a id="orgda946e7"></a>
+<a id="orga3f5ef2"></a>
 
 # 测试方案
 
@@ -504,7 +505,7 @@
 
 -   pns\_info.json
 -   controller\_info\_list.json
--   .openzeppelin/unknown-31337.json（或其他文件）
+-   .openzeppelin/unknown-31337.json（或其他类似文件，openzepplin通过该文件保证合约升级的兼容性）
 
 复制完后，在 `post` 目录执行后续的步骤3和步骤4：
 
@@ -514,4 +515,15 @@
 -   执行步骤4
     
         npx hardhat run --network localhost scripts/migrate_from_v1.3/4.import_finalize.ts
+
+部署完成后，可以简单的验证一下（测试）部署的结果：
+
+    npx hardhat run --network localhost scripts/migrate_from_v1.3/5.verify.ts
+
+
+<a id="org8e0d6b6"></a>
+
+# 实际部署
+
+流程和测试方案类似，不过跳过前面的启动节点以及部署旧版合约部分，且网络需要选择 `glmr` （即 `--netowrk glmr` ）。此外，需要以 `PNS` 和 `Controller` 的管理员帐号执行脚本。
 
