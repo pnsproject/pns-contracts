@@ -8,7 +8,7 @@ let altTld = "dot";
 let basePrices: any = [2000, 2000, 2000, 200, 200, 20];
 let rentPrices: any = [500, 500, 500, 50, 50, 5];
 
-export async function deployForwarder(): Promise<string> {
+export async function deployForwarder() {
     if (process.env.FORWARDER) {
         return process.env.FORWARDER || ""
     }
