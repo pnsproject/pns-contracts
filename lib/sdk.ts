@@ -426,7 +426,7 @@ export function abiDataEncode(data: any, datatype: string): Buffer {
 export function encodeMsg(nameTokenId: string, address: string, duration: number, deadline: number, chainId: number, contractAddr: string): Uint8Array {
   let nameTokenIdBuffer = abiDataEncode(nameTokenId, "string");
   let addressBuffer = abiDataEncode(address, "uint160").slice(12);
-  let durationBuffer = abiDataEncode(duration, "uint");
+  let durationBuffer = abiDataEncode(duration, "uint64").slice(24);
   let deadlineBuffer = abiDataEncode(deadline, "uint");
   let chainIdBuffer = abiDataEncode(chainId, "uint");
   let contractAddrBuffer = abiDataEncode(contractAddr, "uint");

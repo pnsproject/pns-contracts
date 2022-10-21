@@ -388,33 +388,33 @@ describe("PNS", async function () {
       });
     });
 
-    describe("PNSController#nameRedeem", async () => {
-      // it("should redeem a new domain name", async () => {
-      //   let chainId = (await ethers.provider.getNetwork()).chainId
-      //   let deadline = Math.floor(Date.now() / 1000) + 86400;
-      //   let sig = await generateRedeemCode(sha3("gavinwood100"), twoAddr, 86400 * 365, deadline, chainId, controller.address, one);
-      //   await controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig);
-      //   expect(await pns.exists(tokenId)).to.eq(true);
-      // });
+    // describe("PNSController#nameRedeem", async () => {
+    //   it("should redeem a new domain name", async () => {
+    //     let chainId = (await ethers.provider.getNetwork()).chainId
+    //     let deadline = Math.floor(Date.now() / 1000) + 86400;
+    //     let sig = await generateRedeemCode(sha3("gavinwood100"), twoAddr, 86400 * 365, deadline, chainId, controller.address, one);
+    //     await controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig);
+    //     expect(await pns.exists(tokenId)).to.eq(true);
+    //   });
 
-      // it("should not redeem with invalid name", async () => {
-      //   let deadline = Math.floor(Date.now() / 1000) + 86400;
-      //   let sig = await generateRedeemCode(sha3("gavinwood101"), twoAddr, 86400 * 365, deadline, one);
-      //   await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
-      // });
+    //   it("should not redeem with invalid name", async () => {
+    //     let deadline = Math.floor(Date.now() / 1000) + 86400;
+    //     let sig = await generateRedeemCode(sha3("gavinwood101"), twoAddr, 86400 * 365, deadline, one);
+    //     await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
+    //   });
 
-      // it("should not redeem with invalid address", async () => {
-      //   let deadline = Math.floor(Date.now() / 1000) + 86400;
-      //   let sig = await generateRedeemCode(sha3("gavinwood101"), threeAddr, 86400 * 365, deadline, one);
-      //   await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
-      // });
+    //   it("should not redeem with invalid address", async () => {
+    //     let deadline = Math.floor(Date.now() / 1000) + 86400;
+    //     let sig = await generateRedeemCode(sha3("gavinwood101"), threeAddr, 86400 * 365, deadline, one);
+    //     await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
+    //   });
 
-      // it("should not redeem with invalid signer", async () => {
-      //   let deadline = Math.floor(Date.now() / 1000) + 86400;
-      //   let sig = await generateRedeemCode(sha3("gavinwood101"), threeAddr, 86400 * 365, deadline, three);
-      //   await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
-      // });
-    });
+    //   it("should not redeem with invalid signer", async () => {
+    //     let deadline = Math.floor(Date.now() / 1000) + 86400;
+    //     let sig = await generateRedeemCode(sha3("gavinwood101"), threeAddr, 86400 * 365, deadline, three);
+    //     await expect(controller.nameRedeem("gavinwood100", twoAddr, 86400 * 365, deadline, sig)).revertedWith(`code invalid`);
+    //   });
+    // });
 
     describe("PNSController#renew", async () => {
       beforeEach(async () => {
