@@ -57,6 +57,12 @@ describe("PNS", async function () {
         console.log("ctrl deployed to:", ctrl.address);
         // console.log(tx)
 
+
+        await ctrl.setContractConfig(7,
+                               7,
+                               2419200,
+                               PriceOracleAddr);
+
         // await (await pns.setManager(controller.address, false)).wait()
         // await (await pns.setManager(ctrl.address, true)).wait()
         // await (await ctrl.setManager(twoAddr, true)).wait()
