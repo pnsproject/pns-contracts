@@ -102,6 +102,8 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
             IResolver(address(_pns)).setName(to, tokenId);
         }
 
+        emit NameRegistered(to, tokenId, 0, _pns.expire(tokenId), name);
+
         return tokenId;
     }
 
@@ -123,6 +125,8 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         if(msg.value > cost) {
             payable(_msgSender()).transfer(msg.value - cost);
         }
+
+        emit NameRegistered(to, tokenId, cost, _pns.expire(tokenId), name);
 
         return tokenId;
     }
@@ -150,6 +154,8 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         require(block.timestamp < deadline, "deadline mismatched");
 
         uint256 tokenId = _pns.register(name, to, duration, BASE_NODE);
+
+        emit NameRegistered(to, tokenId, 0, _pns.expire(tokenId), name);
 
         return tokenId;
     }
