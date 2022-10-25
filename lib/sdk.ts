@@ -205,7 +205,7 @@ export async function totalRegisterPrice(name: LabelString, duration: number): P
 }
 
 export async function renewPrice(name: LabelString, duration: number): Promise<BigNumber> {
-  return controller.totalRegisterPrice(name, duration);
+  return controller.renewPrice(name, duration);
 }
 
 export async function getControllerRoot(): Promise<HexAddress> {
