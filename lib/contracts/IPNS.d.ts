@@ -21,17 +21,26 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface IPNSInterface extends ethers.utils.Interface {
   functions: {
+    "GRACE_PERIOD()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
+    "available(uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "bound(uint256)": FunctionFragment;
+    "bounded(uint256)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
     "exists(uint256)": FunctionFragment;
+    "expire(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isApprovedOrOwner(address,uint256)": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
     "mintSubdomain(address,uint256,string)": FunctionFragment;
     "name()": FunctionFragment;
+    "origin(uint256)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
+    "parent(uint256)": FunctionFragment;
+    "register(string,address,uint64,uint256)": FunctionFragment;
+    "renew(uint256,uint64)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -41,13 +50,30 @@ interface IPNSInterface extends ethers.utils.Interface {
   };
 
   encodeFunctionData(
+    functionFragment: "GRACE_PERIOD",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "approve",
     values: [string, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "available",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(functionFragment: "bound", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "bounded",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "exists",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "expire",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -72,8 +98,24 @@ interface IPNSInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "origin",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "parent",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "register",
+    values: [string, string, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "renew",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom",
@@ -97,10 +139,18 @@ interface IPNSInterface extends ethers.utils.Interface {
     values: [string, string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "GRACE_PERIOD",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "available", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "bound", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "bounded", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "expire", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -119,7 +169,11 @@ interface IPNSInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "origin", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "parent", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "register", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "renew", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeTransferFrom",
     data: BytesLike
@@ -231,16 +285,35 @@ export class IPNS extends BaseContract {
   interface: IPNSInterface;
 
   functions: {
+    GRACE_PERIOD(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    available(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     balanceOf(
       owner: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { balance: BigNumber }>;
+
+    bound(
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    bounded(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     burn(
       tokenId: BigNumberish,
@@ -251,6 +324,11 @@ export class IPNS extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    expire(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -284,10 +362,34 @@ export class IPNS extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<[string]>;
 
+    origin(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string] & { owner: string }>;
+
+    parent(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    register(
+      name: string,
+      to: string,
+      duration: BigNumberish,
+      BASE_NODE: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    renew(
+      id: BigNumberish,
+      duration: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     "safeTransferFrom(address,address,uint256)"(
       from: string,
@@ -330,13 +432,26 @@ export class IPNS extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  GRACE_PERIOD(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   approve(
     to: string,
     tokenId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  available(tokenId: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  bound(
+    tokenId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  bounded(tokenId: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
   burn(
     tokenId: BigNumberish,
@@ -344,6 +459,8 @@ export class IPNS extends BaseContract {
   ): Promise<ContractTransaction>;
 
   exists(tokenId: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
+  expire(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   getApproved(
     tokenId: BigNumberish,
@@ -377,7 +494,25 @@ export class IPNS extends BaseContract {
 
   name(overrides?: CallOverrides): Promise<string>;
 
+  origin(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
   ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  parent(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
+  register(
+    name: string,
+    to: string,
+    duration: BigNumberish,
+    BASE_NODE: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  renew(
+    id: BigNumberish,
+    duration: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   "safeTransferFrom(address,address,uint256)"(
     from: string,
@@ -417,17 +552,33 @@ export class IPNS extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    GRACE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
+    available(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    bound(tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    bounded(tokenId: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     burn(tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     exists(tokenId: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
+    expire(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -461,7 +612,31 @@ export class IPNS extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<string>;
 
+    origin(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    parent(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    register(
+      name: string,
+      to: string,
+      duration: BigNumberish,
+      BASE_NODE: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    renew(
+      id: BigNumberish,
+      duration: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256)"(
       from: string,
@@ -594,13 +769,32 @@ export class IPNS extends BaseContract {
   };
 
   estimateGas: {
+    GRACE_PERIOD(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    available(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    bound(
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    bounded(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     burn(
       tokenId: BigNumberish,
@@ -608,6 +802,11 @@ export class IPNS extends BaseContract {
     ): Promise<BigNumber>;
 
     exists(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    expire(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -644,9 +843,33 @@ export class IPNS extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
+    origin(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    parent(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    register(
+      name: string,
+      to: string,
+      duration: BigNumberish,
+      BASE_NODE: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    renew(
+      id: BigNumberish,
+      duration: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256)"(
@@ -691,14 +914,33 @@ export class IPNS extends BaseContract {
   };
 
   populateTransaction: {
+    GRACE_PERIOD(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     approve(
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    available(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     balanceOf(
       owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    bound(
+      tokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    bounded(
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -708,6 +950,11 @@ export class IPNS extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     exists(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    expire(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -744,9 +991,33 @@ export class IPNS extends BaseContract {
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    origin(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    parent(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    register(
+      name: string,
+      to: string,
+      duration: BigNumberish,
+      BASE_NODE: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    renew(
+      id: BigNumberish,
+      duration: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256)"(

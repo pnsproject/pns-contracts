@@ -29,10 +29,14 @@ interface IResolverInterface extends ethers.utils.Interface {
     "getManyByHash(uint256[],uint256)": FunctionFragment;
     "getName(address)": FunctionFragment;
     "getNftName(address,uint256)": FunctionFragment;
+    "getlink(uint256,uint256)": FunctionFragment;
+    "getlinks(uint256,uint256[])": FunctionFragment;
     "setByHash(uint256,string,uint256)": FunctionFragment;
     "setManyByHash(uint256[],string[],uint256)": FunctionFragment;
     "setName(address,uint256)": FunctionFragment;
     "setNftName(address,uint256,uint256)": FunctionFragment;
+    "setlink(uint256,uint256,uint256)": FunctionFragment;
+    "setlinks(uint256,uint256[],uint256[])": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "addKeys", values: [string[]]): string;
@@ -62,6 +66,14 @@ interface IResolverInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "getlink",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getlinks",
+    values: [BigNumberish, BigNumberish[]]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setByHash",
     values: [BigNumberish, string, BigNumberish]
   ): string;
@@ -77,6 +89,14 @@ interface IResolverInterface extends ethers.utils.Interface {
     functionFragment: "setNftName",
     values: [string, BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setlink",
+    values: [BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setlinks",
+    values: [BigNumberish, BigNumberish[], BigNumberish[]]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addKeys", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "get", data: BytesLike): Result;
@@ -89,6 +109,8 @@ interface IResolverInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getName", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getNftName", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getlink", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getlinks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setByHash", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setManyByHash",
@@ -96,11 +118,14 @@ interface IResolverInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setName", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setNftName", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setlink", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setlinks", data: BytesLike): Result;
 
   events: {
     "NewKey(string,string)": EventFragment;
     "ResetRecords(uint256)": EventFragment;
     "Set(uint256,uint256,string)": EventFragment;
+    "SetLink(uint256,uint256,uint256)": EventFragment;
     "SetName(address,uint256)": EventFragment;
     "SetNftName(address,uint256,uint256)": EventFragment;
   };
@@ -108,6 +133,7 @@ interface IResolverInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "NewKey"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ResetRecords"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Set"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SetLink"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetName"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetNftName"): EventFragment;
 }
@@ -125,6 +151,14 @@ export type SetEvent = TypedEvent<
     tokenId: BigNumber;
     keyHash: BigNumber;
     value: string;
+  }
+>;
+
+export type SetLinkEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber] & {
+    tokenId: BigNumber;
+    keyHash: BigNumber;
+    value: BigNumber;
   }
 >;
 
@@ -223,6 +257,18 @@ export class IResolver extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]] & { values: BigNumber[] }>;
+
     setByHash(
       keyHash: BigNumberish,
       value: string,
@@ -247,6 +293,20 @@ export class IResolver extends BaseContract {
       nft: string,
       nftTokenId: BigNumberish,
       nameTokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      value: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      values: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -290,6 +350,18 @@ export class IResolver extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getlink(
+    source: BigNumberish,
+    target: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getlinks(
+    source: BigNumberish,
+    targets: BigNumberish[],
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
+
   setByHash(
     keyHash: BigNumberish,
     value: string,
@@ -314,6 +386,20 @@ export class IResolver extends BaseContract {
     nft: string,
     nftTokenId: BigNumberish,
     nameTokenId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setlink(
+    source: BigNumberish,
+    target: BigNumberish,
+    value: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setlinks(
+    source: BigNumberish,
+    targets: BigNumberish[],
+    values: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -354,6 +440,18 @@ export class IResolver extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
+
     setByHash(
       keyHash: BigNumberish,
       value: string,
@@ -378,6 +476,20 @@ export class IResolver extends BaseContract {
       nft: string,
       nftTokenId: BigNumberish,
       nameTokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      value: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      values: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -417,6 +529,24 @@ export class IResolver extends BaseContract {
     ): TypedEventFilter<
       [BigNumber, BigNumber, string],
       { tokenId: BigNumber; keyHash: BigNumber; value: string }
+    >;
+
+    "SetLink(uint256,uint256,uint256)"(
+      tokenId?: BigNumberish | null,
+      keyHash?: BigNumberish | null,
+      value?: BigNumberish | null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, BigNumber],
+      { tokenId: BigNumber; keyHash: BigNumber; value: BigNumber }
+    >;
+
+    SetLink(
+      tokenId?: BigNumberish | null,
+      keyHash?: BigNumberish | null,
+      value?: BigNumberish | null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, BigNumber],
+      { tokenId: BigNumber; keyHash: BigNumber; value: BigNumber }
     >;
 
     "SetName(address,uint256)"(
@@ -497,6 +627,18 @@ export class IResolver extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     setByHash(
       keyHash: BigNumberish,
       value: string,
@@ -521,6 +663,20 @@ export class IResolver extends BaseContract {
       nft: string,
       nftTokenId: BigNumberish,
       nameTokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      value: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      values: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -571,6 +727,18 @@ export class IResolver extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     setByHash(
       keyHash: BigNumberish,
       value: string,
@@ -595,6 +763,20 @@ export class IResolver extends BaseContract {
       nft: string,
       nftTokenId: BigNumberish,
       nameTokenId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setlink(
+      source: BigNumberish,
+      target: BigNumberish,
+      value: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setlinks(
+      source: BigNumberish,
+      targets: BigNumberish[],
+      values: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

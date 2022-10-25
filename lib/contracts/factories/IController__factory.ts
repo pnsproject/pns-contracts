@@ -44,19 +44,6 @@ const _abi = [
     inputs: [
       {
         indexed: false,
-        internalType: "uint256[]",
-        name: "data",
-        type: "uint256[]",
-      },
-    ],
-    name: "MetadataUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
         internalType: "address",
         name: "to",
         type: "address",
@@ -142,101 +129,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "available",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "string",
         name: "name",
         type: "string",
       },
     ],
     name: "basePrice",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "burn",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "capacity",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "children",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "expire",
     outputs: [
       {
         internalType: "uint256",
@@ -281,29 +179,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "name",
-        type: "string",
-      },
-    ],
-    name: "mintSubdomain",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "string",
         name: "name",
         type: "string",
@@ -314,9 +189,9 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
-        type: "uint256",
+        type: "uint64",
       },
       {
         internalType: "uint256",
@@ -353,9 +228,9 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     name: "nameRegister",
@@ -382,8 +257,13 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
+        type: "uint64",
+      },
+      {
+        internalType: "uint256",
+        name: "data",
         type: "uint256",
       },
       {
@@ -421,8 +301,13 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
+        type: "uint64",
+      },
+      {
+        internalType: "uint256",
+        name: "data",
         type: "uint256",
       },
       {
@@ -450,33 +335,14 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "origin",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "string",
         name: "name",
         type: "string",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     name: "renew",
@@ -492,9 +358,9 @@ const _abi = [
         type: "string",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     name: "renewByManager",
@@ -510,9 +376,9 @@ const _abi = [
         type: "string",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     name: "renewPrice",
@@ -534,9 +400,9 @@ const _abi = [
         type: "string",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     name: "rentPrice",
@@ -548,42 +414,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_capacity",
-        type: "uint256",
-      },
-    ],
-    name: "setCapacity",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_capacity",
-        type: "uint256",
-      },
-    ],
-    name: "setCapacityByManager",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -612,9 +442,9 @@ const _abi = [
         type: "string",
       },
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "duration",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     name: "totalRegisterPrice",
