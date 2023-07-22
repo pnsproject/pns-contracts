@@ -59,6 +59,7 @@ async function main() {
     [oneAddr, twoAddr, threeAddr] = await Promise.all([one, two, three].map((s) => s.getAddress()));
 
     console.log("accounts", { oneAddr, twoAddr, threeAddr });
+    // process.exit(0)
 
     process.env.PRINT_START_BLOCK = "1"
 
@@ -112,7 +113,6 @@ async function main() {
       console.log("addKeys:");
     }
     await pns.addKeys(keylist);
-
 
     await controller.setContractConfig(7, 7, 28*86400, priceOracleAddr);
 

@@ -19,7 +19,7 @@ async function main() {
 
     const pns: Contract = PNS.attach("0x7d5F0398549C9fDEa03BbDde388361827cb376D5")
 
-    // disable discount controller
+    // task : disable discount controller
     const controller0 = Controller.attach('0x4EA48B8045889A7426CcD00b3968686010B4cc62')
     // console.log('pns.setManager false', await pns.setManager(controller0.address, false))
     console.log('pns.isManager false', await pns.isManager(controller0.address))
@@ -29,8 +29,8 @@ async function main() {
     console.log(await pns.root())
     console.log(await controller.getPrices())
 
-    // set min length
-    // set new prices
+    // task : set min length
+    // task : set new prices
 
     // await controller.setContractConfig(7, 2, 2419200, "0x4497B606be93e773bbA5eaCFCb2ac5E2214220Eb")
     // await controller.setPrices(
