@@ -77,11 +77,6 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         _;
     }
 
-    modifier redeemable {
-        require((FLAGS & 4) > 0, "invalid op");
-        _;
-    }
-
     function setContractConfig(uint256 _flags, uint256 _min_length, uint64 _min_duration, address _price_feed) public onlyRoot {
         FLAGS = _flags;
         MIN_REGISTRATION_LENGTH = _min_length;
@@ -108,23 +103,17 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function nameRegister(string calldata name, address to, uint64 duration) public override payable open returns(uint256) {
-        // require(name.domainPreifxValid()); // skip due this will check by _pns.register
-
-        uint256 len = bytes(name).length;
-        require(len >= MIN_REGISTRATION_LENGTH, "name too short");
-        uint256 GRACE_PERIOD = _pns.GRACE_PERIOD();
-        require(block.timestamp + duration + GRACE_PERIOD > block.timestamp + GRACE_PERIOD, "overflow");
+        require(bytes(name).length >= MIN_REGISTRATION_LENGTH, "name too short");
         require(duration >= MIN_REGISTRATION_DURATION, "duration too small");
 
         uint256 cost = totalRegisterPrice(name, duration);
         require(msg.value >= cost, "insufficient fee");
 
         uint256 tokenId = _pns.register(name, to, duration, BASE_NODE);
-
         payable(_root).transfer(cost);
-        if(msg.value > cost) {
-            payable(_msgSender()).transfer(msg.value - cost);
-        }
+        // if(msg.value > cost) {
+        //     payable(_msgSender()).transfer(msg.value - cost);
+        // }
 
         emit NameRegistered(to, tokenId, cost, _pns.expire(tokenId), name);
 
@@ -132,7 +121,6 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
     }
 
     function nameRegisterWithConfig(string calldata name, address to, uint64 duration, uint256 data, uint256[] calldata keyHashes, string[] calldata values) public override payable returns(uint256) {
-        // require(name.domainPreifxValid()); // skip due this will check by nameRegister
         uint256 tokenId = nameRegister(name, to, duration);
 
         if (keyHashes.length > 0) {
@@ -146,7 +134,7 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         return tokenId;
     }
 
-    function nameRedeem(string calldata name, address to, uint64 duration, uint256 deadline, bytes calldata code) public override redeemable returns(uint256) {
+    function nameRedeem(string calldata name, address to, uint64 duration, uint256 deadline, bytes calldata code) public override open returns(uint256) {
         // require(name.domainPreifxValid()); // skip due this will check by _pns.register
         bytes32 label = keccak256(bytes(name));
         bytes memory combined = abi.encodePacked(label, to, duration, deadline, block.chainid, address(this));
@@ -174,9 +162,9 @@ contract Controller is IController, ManagerOwnable, ERC165, IMulticallable, ERC2
         emit NameRenewed(tokenId, cost, expireAt, name);
 
         payable(_root).transfer(cost);
-        if(msg.value > cost) {
-            payable(_msgSender()).transfer(msg.value - cost);
-        }
+        // if(msg.value > cost) {
+        //     payable(_msgSender()).transfer(msg.value - cost);
+        // }
     }
 
     function renewByManager(string calldata name, uint64 duration) external override live onlyManager {
