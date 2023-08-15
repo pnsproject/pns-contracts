@@ -10,7 +10,7 @@
     "remove-local-graph": "graph remove --node http://127.0.0.1:8020/ name-graph2",
     "deploy-local-graph": "graph deploy --node http://127.0.0.1:8020/ --ipfs http://localhost:5001 name-graph",
     "prettier": "prettier --config .prettierrc 'test/**/*.ts' 'lib/**/*.ts' --write",
-    "typify": "typechain --target ethers-v5 --out-dir lib/contracts artifacts/contracts/utils/RootOwnable.sol/IOwnable.json artifacts/contracts/utils/RootOwnable.sol/IManagerOwnable.json artifacts/contracts/pns/IPNS.sol/IPNS.json artifacts/contracts/pns/IController.sol/IController.json artifacts/contracts/pns/IResolver.sol/IResolver.json",
+    "typify": "typechain --target ethers-v5 --out-dir types/contracts artifacts/contracts/utils/RootOwnable.sol/IOwnable.json artifacts/contracts/utils/RootOwnable.sol/IManagerOwnable.json artifacts/contracts/pns/IPNS.sol/IPNS.json artifacts/contracts/pns/IController.sol/IController.json artifacts/contracts/pns/IResolver.sol/IResolver.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

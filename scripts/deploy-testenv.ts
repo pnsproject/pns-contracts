@@ -6,12 +6,23 @@ import { sha3, getNamehash, emptyAddress, weirdNode, emptyNode, baseNode, baseLa
 import { isException, ensureException, expectFailure } from "../lib/test-helper";
 
 let tld = "dot";
-let basePrices: any = [2000, 2000, 2000, 200, 20, 20];
-let rentPrices: any = [500, 500, 500, 50, 5, 5];
+let basePrices: any = [
+         "1000",
+         "1000",
+         "250",
+         "50",
+         "20"
+      ];
+let rentPrices: any = [
+         "500",
+         "500",
+         "100",
+         "20",
+         "5"
+      ];
 let oneyear = 86400 * 365;
 let tokenId = getNamehash("gavinwood100.dot");
 let subTokenId = getNamehash("sub0.gavinwood100.dot");
-
 
 export async function deployForwarder() {
     if (process.env.FORWARDER) {
@@ -40,7 +51,7 @@ export async function deployPriceOracle(): Promise<string> {
   let forwarderAddr = await deployForwarder()
 
   let PriceOracle = await ethers.getContractFactory("PriceOracle");
-  let priceOracle = await PriceOracle.deploy(326000000, forwarderAddr);
+  let priceOracle = await PriceOracle.deploy(50000000000, forwarderAddr);
   await priceOracle.deployed();
   if (process.env.PRINT_START_BLOCK) {
     console.log("priceOracle deployed to:", priceOracle.address);
@@ -63,6 +74,7 @@ async function main() {
 
     process.env.PRINT_START_BLOCK = "1"
 
+    // let priceOracleAddr = '0x5498BB86BC934c8D34FDA08E81D444153d0D06aD' // await deployPriceOracle();
     let priceOracleAddr = await deployPriceOracle();
 
     let forwarderAddr = await deployForwarder()
@@ -94,27 +106,27 @@ async function main() {
     await (await controller.setManager(threeAddr, true)).wait();
 
     let keylist = [
-      "ETH",
-      "BTC",
-      "DOT",
-      "KSM",
-      "text.email",
-      "text.url",
-      "text.avatar",
-      "text.description",
-      "text.notice",
-      "text.keywords",
-      "text.com.twitter",
-      "text.com.github",
-      "contenthash",
-      "cname",
+       "eth",
+       "btc",
+       "dot",
+       "ksm",
+       "profile.email",
+       "profile.url",
+       "profile.avatar",
+       "profile.description",
+       "profile.notice",
+       "social.twitter",
+       "social.github",
+       "contenthash",
+       "cname",
+       "nft",
     ];
     if (process.env.PRINT_START_BLOCK) {
       console.log("addKeys:");
     }
     await pns.addKeys(keylist);
 
-    await controller.setContractConfig(7, 7, 28*86400, priceOracleAddr);
+    await controller.setContractConfig(7, 2, 28*86400, priceOracleAddr);
 
     console.log("dot owner:", await pns.ownerOf(getNamehash("dot")));
     // console.log("controller.getPrices", await controller.getPrices());
